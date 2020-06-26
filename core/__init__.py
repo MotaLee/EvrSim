@@ -17,16 +17,19 @@ class EvrSimCore(object):
         global ESC
         ESC=self
         # Core global var;
-        self.MOD_LIST=[]
+        self.CORE_STAUS='READY'     # ['READY','BUSY','STOP','STEP']
         self.SIM_NAME=''
         self.SIM_FD=None
+        self.MOD_LIST=[]
         self.USER_SETTING={}
 
         # User changeable setting;
         self.SIM_REALTIME=True
+        self.SIM_RECORD=False
         self.SIM_QUEUE_LEN=1
         self.ACP_DEPTH=20
         self.TIME_STEP=0.1
+        self.MODEL_DISABLE=[]
 
         # Maps and models;
         self.ARO_MAP=[]
@@ -76,15 +79,12 @@ class EvrSimCore(object):
         else: return self.bug('E: Sim not found.')
 
         # Read sim index;
-        line=self.SIM_FD.readline()
-        while line!='# SIM INDEX\n':
-            line=self.SIM_FD.readline()
-        comtxt=''
-        while line!='# END\n':
-            comtxt+=line
-            line=self.SIM_FD.readline()
-        _locals=dict(locals())
-        exec(comtxt,globals(),_locals)
+        simtxt=self.SIM_FD.read()
+        _locals=dict()
+        exec(simtxt,globals(),_locals)
+
+        # Setting;
+        self.setSim(_locals['USER_SETTING'])
 
         # Mod;
         self.loadMod(_locals['MOD_INDEX'])
@@ -94,7 +94,7 @@ class EvrSimCore(object):
         self.loadMapFile(self.ARO_MAP_LIST[0])
         # Models;
         for model in _locals['MODEL_INDEX']:
-            self.loadModelFile(model)
+            self.loadModelFile((self.SIM_NAME,model))
         return
 
     def closeSim(self,save=False):
@@ -109,7 +109,7 @@ class EvrSimCore(object):
         self.__init__()
         return
 
-    def setSim(self,setdict={}):
+    def setSim(self,setdict={},usercall=True):
         ''' Lv1: Load setting.
 
             Wouldnt change which in USER_SETTING.
@@ -117,20 +117,42 @@ class EvrSimCore(object):
             Empty setdict to reset all to default;'''
         if self.SIM_FD is None:return self.bug('E: Sim not opened.')
         if setdict=={}:
-            'load dafault'
+            'todo:load dafault;'
         else:
             for k,v in setdict.items():
-                if k not in self.USER_SETTING:
+                if k not in self.USER_SETTING or usercall:
                     self.__dict__[k]=v
+                    if usercall:self.USER_SETTING[k]=v
         return
 
     def saveSim(self):
         if self.SIM_FD is None:return self.bug('E: Sim not opened.')
         self.updateModelFile()
         self.updateMapFile()
+
+        simtxt='SIM_NAME="'+self.SIM_NAME+'"\n'
+        simtxt+='USER_SETTING='+self.USER_SETTING.__str__()+'\n'
+        simtxt+='MOD_INDEX='+self.MOD_LIST.__str__()+'\n'
+        simtxt+='AROCLASS_INDEX=[]\n'
+        simtxt+='ACPCLASS_INDEX=[]\n'
+        simtxt+='TOOL_INDEX=[]\n'
+        simtxt+='MAP_INDEX='+self.ARO_MAP_LIST.__str__()+'\n'
+        model_index=[]
+        for model in self.ACP_MAP.keys():
+            if model[0]==self.SIM_NAME:
+                model_index.append(model[1])
+        simtxt+='MODEL_INDEX='+model_index.__str__()+'\n'
+        simtxt+='COM_INDEX=["com"]\n'
+        self.SIM_FD.seek(0,0)
+        self.SIM_FD.truncate()
+        self.SIM_FD.write(simtxt)
+        self.SIM_FD.flush()
+        shutil.copy('sim/'+self.SIM_NAME+'/_sim.py','sim/'+self.SIM_NAME+'/sim.py')
+
         return
 
     def comSim(self):
+        'todo'
         ESC.ARO_MAP=[]
         if self.SIM_FD is None:return self.bug('E: Sim not opened.')
         self.SIM_FD.seek(0,0)
@@ -144,35 +166,53 @@ class EvrSimCore(object):
         self.SIM_FD.seek(0,0)
         return
 
-    def runSim(self):
+    def runSim(self,itorlist=['time']):
+        'Lv1: Run Sim with iterators, time default;'
+        if self.SIM_FD is None: return self.bug('E: Sim not opened.')
+        if self.CORE_STAUS=='BUSY':return self.bug('E: Core busy.')
+        self.CORE_STAUS='BUSY'
+
+        # Collect providers and iterators;
         pvdrs=dict()
         itors=dict()
         for model,acplist in self.ACP_MAP.items():
+            if model in self.MODEL_DISABLE:continue
             for acp in acplist:
-                if isinstance(acp,mod.AroCore.AcpIterator):
-                    if model not in itors:itors[model]=list()
-                    itors[model].append(acp)
-                elif isinstance(acp,mod.AroCore.AcpProvider):
-                    if model not in pvdrs:pvdrs[model]=list()
+                if isinstance(acp,mod.AroCore.AcpIterator) and acp.item in itorlist:
+                    if model not in itors and model not in self.MODEL_DISABLE:
+                        itors[model]=list()
+                    if acp not in itors[model]:
+                        # All models use the same iterators;
+                        itors[model].append(acp)
+                elif isinstance(acp,mod.AroCore.AcpProvider) and model not in self.MODEL_DISABLE:
+                    if model not in pvdrs:
+                        pvdrs[model]=list()
                     pvdrs[model].append(acp)
+
+        # Snapshot preparing;
+        self.ARO_QUEUE.append(list(self.ARO_MAP))
+        if len(self.ARO_QUEUE)>self.SIM_QUEUE_LEN:
+            self.ARO_QUEUE=self.ARO_QUEUE[1:]
+
         if len(itors)==0:
             # Static;
-            pass
+            self.travesalPvdrs(pvdrs)
+            'todo: convergence check;'
+            self.CORE_STAUS='STOP'
         elif len(itors)==1:
             # Single dimension;
-            self.ARO_QUEUE.append(list(self.ARO_MAP))
-            if len(self.ARO_QUEUE)>self.SIM_QUEUE_LEN:
-                self.ARO_QUEUE=self.ARO_QUEUE[1:]
-
             itor=list(itors.values())[0][0]
-            itor.iterate()
-            for model,pvdrlist in pvdrs.items():
-                for pvdr in pvdrlist:
-                    ret,data=self.reqAcp(pvdr,model)
-            pass
+            if self.SIM_REALTIME:
+                itor.iterate()
+                self.travesalPvdrs(pvdrs)
+            else:
+                while not itor.iterate():
+                    self.travesalPvdrs(pvdrs)
+            self.CORE_STAUS='READY'
         else:
             # Multi-dimension;
             pass
+
         return
 
     def runSimStep(self):
@@ -296,15 +336,17 @@ class EvrSimCore(object):
         acp=self.getAcp(acpid,acpmodel)
         if type(acp) is str:return acp
         for ip,ip_tar in acp.inport.items():
-            acpid=ip_tar[0:ip_tar.find('.')]
-            port=ip_tar[ip_tar.find('.')+1:]
-            tar_acp=self.getAcp(int(acpid),acpmodel)
-            tar_acp.outport[port].remove(ip)
+            if ip_tar is None:continue
+            acpid=ip_tar[0]
+            port=ip_tar[1]
+            tar_acp=self.getAcp(acpid,acpmodel)
+            tar_acp.outport[port].remove((acp.AcpID,ip))
         for op,op_tar_list in acp.outport.items():
+            if op_tar_list==[]:continue
             for op_tar in op_tar_list:
-                acpid=op_tar[0:op_tar.find('.')]
-                port=op_tar[op_tar.find('.')+1:]
-                tar_acp=self.getAcp(int(acpid),acpmodel)
+                acpid=op_tar[0]
+                port=op_tar[1]
+                tar_acp=self.getAcp(acpid,acpmodel)
                 tar_acp.inport[port]=None
         self.ACP_MAP[acpmodel].remove(acp)
         return acp
@@ -393,7 +435,6 @@ class EvrSimCore(object):
             if len(stack)>self.ACP_DEPTH:return self.bug('E: Acp too deep.')
             acp=stack[-1]
             # Requesting check;
-            # if (acp.AcpID,'REQ') not in datadict:
             datadict.update(acp.preProgress(datadict))
             # IOports check;
             out_ready=True
@@ -407,6 +448,7 @@ class EvrSimCore(object):
                     in_ready=False
                     stack.append(self.getAcp(vout[0],acpmodel))
                     break
+            # Checked;
             if out_ready and in_ready:
                 # All ready, post progress;
                 datadict.update(acp.postProgress(datadict))
@@ -416,7 +458,8 @@ class EvrSimCore(object):
                 try:ret=acp.AcpProgress(datadict)
                 except BaseException as e:
                     self.bug('E: Acp Calculation.'+e.__str__())
-                    break
+                    self.CORE_STAUS='STOP'
+                    return None,None
                 datadict.update(ret)
             continue
 
@@ -431,15 +474,28 @@ class EvrSimCore(object):
 
 # Model reravant;
     def getModelPath(self,acpmodel):
-        dotp=acpmodel.find('.')
-        if dotp==-1:
-            path='sim/'+self.SIM_NAME+'/model/'+acpmodel+'.py'
+        'Lv1: Get model path even not existed.'
+        if acpmodel[0]==self.SIM_NAME:
+            path='sim/'+acpmodel[0]+'/model/'+acpmodel[1]+'.py'
         else:
-            path='mod/'+acpmodel[0:dotp]+'/model/'+acpmodel[dotp+1:]+'.py'
+            path='mod/'+acpmodel[0]+'/model/'+acpmodel[1]+'.py'
         return path
 
+    def newModelFile(self,modelname):
+        'Lv2: Create a new model in opened sim.'
+        if self.SIM_FD is None:return self.bug('E: Sim not opened.')
+        if modelname not in self.ACP_MAP:
+            self.ACP_MAP[(self.SIM_NAME,modelname)]=list()
+            self.ACPID_MAX[(self.SIM_NAME,modelname)]=0
+        else:
+            return self.bug('E: Model name already existed.')
+        return
+
     def updateModelFile(self,acpmodel=None):
-        'Empty para for all models;'
+        ''' Lv2: Update model files by ESC.ACP_MAP.
+
+            Empty para acpmodel for all models;'''
+        if self.SIM_FD is None:return self.bug('E: Sim not opened.')
         if acpmodel is None:
             models=list(self.ACP_MAP.keys())
         else: models=[acpmodel]
@@ -467,12 +523,14 @@ class EvrSimCore(object):
                 txt+='Acp_'+str(acp.AcpID)+'='+temp_dict.__str__()+'\n'
 
             path=self.getModelPath(model)
-            with open(path,'r+') as model_fd:
+            with open(path,'w+') as model_fd:
                 model_fd.truncate()
                 model_fd.write(txt)
         return
 
     def loadModelFile(self,acpmodel):
+        ''' Lv2: Load model from file;'''
+        if self.SIM_FD is None:return self.bug('E: Sim not opened.')
         path=self.getModelPath(acpmodel)
         with open(path,'r') as model_fd:
             content=model_fd.read()
@@ -488,28 +546,6 @@ class EvrSimCore(object):
                     del acp[k]
                     acp[v]=temp
             self.initAcp(acp['AcpClass'],acp,acpmodel)
-        return
-
-# Other relavant;
-    def loadMod(self,modlist):
-        ''' Lv1: Load Mod from MOD_LIST.
-
-            Include models and setting;'''
-        global mod
-        for m in modlist:
-            if m not in ESC.MOD_LIST:
-                ESC.MOD_LIST.append(m)
-                _locals=dict(locals())
-                exec('import mod.'+m,globals(),_locals)
-                exec('from mod.'+m+' import MODEL_INDEX as models',globals(),_locals)
-                exec('from mod.'+m+' import MOD_SETTING as mod_setting',globals(),_locals)
-
-            mod_setting=_locals['mod_setting']
-            self.setSim(mod_setting)
-
-            models=_locals['models']
-            for model in models:
-                self.loadModelFile(m+'.'+model)
         return
 
 # Map relavant;
@@ -567,6 +603,36 @@ class EvrSimCore(object):
                     aro[v]=temp
             self.initAro(aro['AroClass'],aro)
         return
+
+# Other relavant;
+    def loadMod(self,modlist):
+        ''' Lv1: Load Mod from MOD_LIST.
+
+            Include models and setting;'''
+        global mod
+        for m in modlist:
+            if m not in self.MOD_LIST:
+                self.MOD_LIST.append(m)
+                _locals=dict(locals())
+                exec('import mod.'+m,globals(),_locals)
+                exec('from mod.'+m+' import MODEL_INDEX as models',globals(),_locals)
+                exec('from mod.'+m+' import MOD_SETTING as mod_setting',globals(),_locals)
+
+            mod_setting=_locals['mod_setting']
+            self.setSim(mod_setting,usercall=False)
+
+            models=_locals['models']
+            for model in models:
+                self.loadModelFile((m,model))
+        return
+
+    def travesalPvdrs(self,pvdrs):
+        for model,pvdrlist in pvdrs.items():
+            for pvdr in pvdrlist:
+                ret,data=self.reqAcp(pvdr,model)
+                if self.CORE_STAUS=='STOP':
+                    return None,None
+        return ret,data
 
     pass
 

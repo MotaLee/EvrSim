@@ -43,9 +43,10 @@ from .estab import AroSideTab
 from .estab import AroveSideTab
 from .estab import AcpSideTab
 
-# Menu btn;
-from .menubtn import MenuBtn
-from .menubtn import BorderlessMenuBtn
+# Popup;
+from .popup import MenuBtn
+from .popup import BorderlessMenuBtn
+from .popup import SelectMenuBtn
 
 # EvrSim general dialog;
 from .esdialog import EsDialog

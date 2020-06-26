@@ -1,8 +1,0 @@
-20200401: 0.0.1:
-    1.First initilization;
-
-20200518: 0.0.2:
-    1.UpdateLog created;
-
-20200622: 0.0.3:
-    1.Base frame finished;

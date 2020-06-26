@@ -79,8 +79,8 @@ class SelectBtn(wx.ToggleButton):
             style=wx.NO_BORDER)
         self.enable_ctrl=enable
         self.SetToolTip(tip)
-        txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,'微软雅黑')
-        self.SetFont(txtfont)
+        self.txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,'微软雅黑')
+        self.SetFont(self.txtfont)
         self.SetValue(select)
         self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
@@ -104,6 +104,7 @@ class SelectBtn(wx.ToggleButton):
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
         if self.GetValue():dc.SetTextForeground(gmv.COLOR_Back)
         else: dc.SetTextForeground(gmv.COLOR_Text)
+        dc.SetFont(self.txtfont)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -118,4 +119,3 @@ class SelectBtn(wx.ToggleButton):
         self.on_ctrl=False
         return
     pass
-

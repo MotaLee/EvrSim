@@ -1,5 +1,5 @@
-ARO_INDEX=[1, 2, 3]
-KEY_DICT={1: 'AroID', 2: 'AroClass', 3: 'parent', 4: 'AroName', 5: 'mark', 6: 'desc', 7: 'position', 8: 'velocity', 9: 'force', 10: 'mass'}
-Aro_1={1: 1, 2: 'mod.AroCore.aroclass.Aro', 3: None, 4: 'main', 5: '', 6: ''}
-Aro_2={1: 2, 2: 'mod.Dynamics.aroclass.MassPoint', 3: 1, 4: 'm1', 5: '', 6: '', 7: [0, 0, 0], 8: [0, 0, 0], 9: [0, 0, 0], 10: 10}
-Aro_3={1: 3, 2: 'mod.Dynamics.aroclass.MassPoint', 3: 1, 4: 'm2', 5: '', 6: '', 7: [1, 2, 0], 8: [0, 0, 0], 9: [0, 0, 0], 10: 100}
+ARO_INDEX=[1, 2, 4]
+KEY_DICT={1: 'AroID', 2: 'AroClass', 3: 'parent', 4: 'AroName', 5: 'desc', 6: 'mark', 7: 'position', 8: 'velocity', 9: 'force', 10: 'mass'}
+Aro_1={'AroID': 1, 'AroClass': 'mod.AroCore.aroclass.Aro', 'parent': None, 'AroName': 'main', 'desc': '', 'mark': ''}
+Aro_2={'AroID': 2, 'AroClass': 'mod.Dynamics.aroclass.MassPoint', 'parent': 1, 'AroName': 'm1', 'desc': '', 'position': [1, 0, 0], 'velocity': [0.0,1.0, 0.0], 'force': [0.0, 0.0, 0.0], 'mass': 10, 'mark': ''}
+Aro_4={'AroID': 4, 'AroClass': 'mod.Dynamics.aroclass.MassPoint', 'parent': None, 'AroName': 'm3', 'desc': '', 'position': [0, 0, 0], 'velocity': [0.0, 0.0, 0.0], 'force': [0.0, 0.0, 0.0], 'mass': 100}

@@ -3,19 +3,18 @@
 'EvrSim Core and Terminal;'
 # system libs;
 import sys
-import os
-import re
-import shutil
+# import os
+# import re
+# import shutil
 # Terminal needed variable;
-from core import EvrSimCore
+from core import ESC
 EST_VER = '0.0.2'
 EST_EXIT=False
 EST_CONTINUE=None
 
 # Terminal enterance;
 # EvrSim Core and Terminal initilization;
-print('EvrSim '+' Console '+EST_VER)
-ESC=EvrSimCore()
+print('EvrSim Terminal '+EST_VER)
 
 # system main loop;
 if len(sys.argv)!=1:

@@ -153,11 +153,17 @@ class AcpSideTab(SideTab):
     def __init__(self,parent,p,s,tablabel,cn=''):
         SideTab.__init__(self,parent,p,s,tablabel,cn)
         yu=gmv.YU
-        self.model_menu=esui.MenuBtn(self,(yu,yu),(8*yu,4*yu),'Model',[])
-        self.updeate_btn=esui.btn(self,(self.Size[0]-9*yu,yu),(8*yu,4*yu),txt='Update')
-        self.detail_plc=esui.Plc(self,(yu,6*yu),(self.Size[0]-2*yu,self.Size[1]/1.5))
+
+        self.model_name=esui.Stc(self,(yu,yu),(8*yu,4*yu),'Model:',align='left')
+        self.model_enable_btn=esui.SelectBtn(self,(self.Size[0]-9*yu,yu),(8*yu,4*yu),'Enable',tsize=12)
+        self.model_menu=esui.SelectMenuBtn(self,(yu,6*yu),(self.Size[0]-2*yu,4*yu),'Model',[])
+
+        self.updeate_btn=esui.btn(self,(self.Size[0]-9*yu,11*yu),(8*yu,4*yu),txt='Update')
+        self.detail_plc=esui.Plc(self,(yu,16*yu),(self.Size[0]-2*yu,self.Size[1]/1.5))
+
         self.detail_plc.SetBackgroundColour('#333333')
         self.updeate_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkUpdate)
+        self.model_enable_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkEnable)
         return
 
     def showAcpDetail(self,acp):
@@ -166,11 +172,17 @@ class AcpSideTab(SideTab):
         DP=self.detail_plc
         yu=gmv.YU
         i=0
+        banlist=['AcpID','AcpClass','inport','outport','position','fixIO','port']
+        nbanlist=['AcpID','AcpClass','position','fixIO']
         for k,v in acp.__dict__.items():
-            if k not in ['AcpID','AcpClass','inport','outport','position','fixIO','port']:
+            if not acp.fixIO: nl=nbanlist
+            else:nl=banlist
+            if k not in nl:
                 esui.Stc(DP,(0,i*4*yu),(12*yu,4*yu),k+':',align='left')
                 esui.Tcc(DP,(12*yu,i*4*yu),(DP.Size[0]-12*yu,4*yu),hint=v.__str__(),cn=k)
                 i+=1
+        'todo:port setting build;'
+
         for ctrl in self.detail_plc.Children:
             ctrl.Refresh()
         return
@@ -183,9 +195,30 @@ class AcpSideTab(SideTab):
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
                 set_dcit[ctrl.Name]=v_eval
-        wxmw=self.Parent.Parent     # wxmw.Sidepl.self;
-        acppl=wxmw.FindWindowByName('acppl')
+        acppl=self.Parent.acppl_agent
         ESC.setAcp(self.acp.AcpID,set_dcit,acppl.acpmodel)
         acppl.drawAcp()
+        return
+
+    def onClkAcpModel(self,e):
+        fc=self.model_menu.PopupControl
+        acpmodel=fc.items[fc.ipos]
+        self.model_menu.SetLabel(acpmodel[0]+'.'+acpmodel[1])
+        self.model_enable_btn.SetValue(acpmodel not in ESC.MODEL_DISABLE)
+        self.Parent.acppl_agent.drawAcp(acpmodel)
+        if e is not None:e.Skip()
+        return
+
+    def onClkEnable(self,e):
+        fc=self.model_menu.PopupControl
+        acpmodel=fc.items[fc.ipos]
+        enable_already=self.model_enable_btn.GetValue()
+        disable_list=list(ESC.MODEL_DISABLE)
+        if enable_already:
+            disable_list.append(acpmodel)
+        else:
+            disable_list.remove(acpmodel)
+        ESC.setSim({'MODEL_DISABLE':disable_list})
+        e.Skip()
         return
     pass

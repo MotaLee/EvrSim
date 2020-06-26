@@ -14,7 +14,11 @@ class BaseTool(object):
         self.ctrl=None
         return
 
-    def getToolByName(self,toolname):
+    def getToolShellByName(self,toolname):
+        ctrl=self.getToolCtrlByName(toolname)
+        return ctrl.shell
+
+    def getToolCtrlByName(self,toolname):
         if self.ctrl is None: return ESC.bug('E: Control not built.')
         for ctrl in self.ctrl.Parent.Children:
             if ctrl.name==toolname:
@@ -25,16 +29,17 @@ class BaseTool(object):
 # Lv.2;
 class CreateTool(BaseTool):
     'Lv:2: Second tool class. Build MenuBtn ctrl;'
-    def __init__(self,name,label,p,s,indexlist):
+    def __init__(self,name,label,p,s,items):
         super().__init__(name,label,p,s)
-        self.index=indexlist
+        self.items=items
         return
 
     def build(self,parent):
         self.ctrl=esui.MenuBtn(parent,
             self.p,self.s,
-            self.label,self.index)
+            self.label,self.items)
         self.ctrl.name=self.name
+        self.ctrl.shell=self
         return
     pass
 
@@ -53,6 +58,7 @@ class ToggleTool(BaseTool):
             select=self.state,
             tip=self.tip,tsize=self.s[1]/2)
         self.ctrl.name=self.name
+        self.ctrl.shell=self
         return
     pass
 
@@ -67,6 +73,7 @@ class TextTool(BaseTool):
             self.label,
             tsize=self.s[1]/2)
         self.ctrl.name=self.name
+        self.ctrl.shell=self
         return
     pass
 
@@ -80,42 +87,53 @@ class ButtonTool(BaseTool):
         self.ctrl=esui.btn(parent,self.p,self.s,
             self.label)
         self.ctrl.name=self.name
+        self.ctrl.shell=self
         return
     pass
 
 # Lv.3;
 class CreateAroTool(CreateTool):
     'Lv:3: Thrid tool class. Bind event;'
-    def __init__(self,name,label,p,s,indexlist):
-        super().__init__(name,label,p,s,indexlist)
+    def __init__(self,name,label,p,s,items):
+        super().__init__(name,label,p,s,items)
         return
-    def build(self,parent):
-        super().build(parent)
-        self.popup=self.ctrl.GetPopupControl()
-        self.popup.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
-        return
-    def onClkPopup(self,e):
-        self.ctrl.HidePopup()
-        print(self.popup.ipos)
-        return
-    pass
 
-class CreateAcpTool(CreateTool):
-    'Lv:3: Thrid tool class. Bind event;'
-    def __init__(self,name,label,p,s,indexlist):
-        super().__init__(name,label,p,s,indexlist)
-        return
     def build(self,parent):
         super().build(parent)
         self.mod_name=self.ctrl.Parent.Label
         self.popup=self.ctrl.GetPopupControl()
         self.popup.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
         return
+
+    def onClkPopup(self,e):
+        self.ctrl.HidePopup()
+        wxmw=self.ctrl.Parent.Parent.Parent  # wxmw.modpl.modtab.self;
+        aropl=wxmw.FindWindowByName('aropl')
+        aroclass='mod.'+self.mod_name+'.'+self.items[self.popup.ipos]
+        aro=ESC.addAro(aroclass)
+        ESC.setArove(aro.AroID,{'AroName':'New Aro'})
+        aropl.readMap()
+        return
+    pass
+
+class CreateAcpTool(CreateTool):
+    'Lv:3: Thrid tool class. Bind event;'
+    def __init__(self,name,label,p,s,items):
+        super().__init__(name,label,p,s,items)
+        return
+
+    def build(self,parent):
+        super().build(parent)
+        self.mod_name=self.ctrl.Parent.Label
+        self.popup=self.ctrl.GetPopupControl()
+        self.popup.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
+        return
+
     def onClkPopup(self,e):
         self.ctrl.HidePopup()
         wxmw=self.ctrl.Parent.Parent.Parent  # wxmw.modpl.modtab.self;
         acppl=wxmw.FindWindowByName('acppl')
-        acpclass='mod.'+self.mod_name+'.'+self.index[self.popup.ipos-1]
+        acpclass='mod.'+self.mod_name+'.'+self.items[self.popup.ipos]
         acp=ESC.addAcp(acpclass,acppl.acpmodel)
         ESC.setAcp(acp.AcpID,{'AcpName':'New Acp'},acppl.acpmodel)
         acppl.drawAcp()
@@ -135,7 +153,7 @@ class RunSimTool(ToggleTool):
 
     def onClk(self,e):
         self.wxmw.sendEvent(esevt.esEVT_RUN_SIM)
-        time_txt=self.getToolByName('time_txt')
+        time_txt=self.getToolCtrlByName('time_txt')
         if time_txt.timer.IsRunning():
             time_txt.timer.Stop()
         else:
@@ -155,6 +173,8 @@ class ResetMapTool(ButtonTool):
         return
     def onClk(self,e):
         ESC.loadMapFile()
+        time_txt_shell=self.getToolShellByName('time_txt')
+        time_txt_shell.clearTimer()
         wxmw=self.ctrl.Parent.Parent.Parent
         aropl=wxmw.FindWindowByName('aropl')
         aropl.readMap()
@@ -174,6 +194,12 @@ class TimeTextTool(TextTool):
         return
 
     def onTimer(self,e):
+        if ESC.CORE_STAUS=='STOP':
+            self.ctrl.timer.Stop()
+            run_btn=self.getToolCtrlByName('run_btn')
+            run_btn.SetValue(False)
+            # self.timestamp
+            return
         if self.ctrl.timer.IsRunning():
             self.timestamp+=ESC.TIME_STEP
             m=int(self.timestamp/60)
@@ -188,4 +214,13 @@ class TimeTextTool(TextTool):
             self.ctrl.SetLabel(m+':'+s+':'+ms)
             self.ctrl.Refresh()
         return
+
+    def clearTimer(self):
+        self.timestamp=0
+        self.ctrl.SetLabel('00:00:00')
+        self.ctrl.Refresh()
+        return
+    pass
+
+class ProbeTool(ToggleTool):
     pass

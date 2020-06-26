@@ -1,6 +1,8 @@
+import sys
 import numpy as np
 from core import ESC
 # Acp class defination;
+# Acp Core;
 class Acp(object):
     'Arove calculation part;'
     def __init__(self):
@@ -26,7 +28,11 @@ class Acp(object):
     def AcpProgress(self,datadict):
         ''' Calculate Acp.
 
-            Be called after inports ready;'''
+            Be called after inports ready.
+
+            Returning datadict forms like:
+
+            `{(AcpID,portID):{items:[data...]}}`;'''
         return {}
 
     def postProgress(self,datadict):
@@ -36,8 +42,13 @@ class Acp(object):
 
             Should be overrided by sub class;'''
         return {}
+
+    def presetVar(self):
+        '''ARO, SELF_ARO, SELF_AROID, AROVE, etc.'''
+        return
     pass
 
+# Base Acp;
 class AcpSelector(Acp):
     ''' Select Arove in last map snapshot.
 
@@ -59,15 +70,21 @@ class AcpSelector(Acp):
         for kt in datadict.keys():
             if 'REQ' in kt:
                 reqlist=datadict[kt]
-        arvdict=dict()
+        slctdict=dict()
         for SELF_AROID in reqlist:
+            SELF_ARO=ESC.getAro(SELF_AROID)
             selfdict={SELF_AROID:list()}
             for ARO in ESC.ARO_QUEUE[-1]:
+                AROVE=ARO.__dict__
                 condi=eval(self.expression)
                 if condi:
-                    selfdict[SELF_AROID].append(ARO.__dict__[self.item])
-            arvdict.update(selfdict)
-        return {(self.AcpID,1):arvdict}
+                    if type(AROVE[self.item])!=list:
+                        data=[AROVE[self.item]]
+                    else:
+                        data=AROVE[self.item]
+                    selfdict[SELF_AROID].append(data)
+            slctdict.update(selfdict)
+        return {(self.AcpID,1):slctdict}
     pass
 
 class AcpProvider(Acp):
@@ -89,9 +106,10 @@ class AcpProvider(Acp):
         if datakey in datadict: return {}
         reqdict={datakey:list()}
         arolist=list()
-        for Aro in ESC.ARO_MAP:
-            target=eval(self.expression.__str__()) and 'position' in Aro.__dict__
-            if target: arolist.append(Aro.AroID)
+        for ARO in ESC.ARO_MAP:
+            AROVE=ARO.__dict__
+            target=eval(self.expression.__str__()) and 'position' in AROVE
+            if target: arolist.append(ARO.AroID)
         reqdict[datakey]=arolist
         return reqdict
 
@@ -100,7 +118,12 @@ class AcpProvider(Acp):
         reqlist=datadict[(self.AcpID,'REQ')]
         for aroid,itemvalue in indict.items():
             if aroid in reqlist:
-                ESC.setArove(aroid,{self.item:itemvalue})
+                if len(itemvalue)!=1:return ESC.bug('E: Provide too more')
+                if len(itemvalue[0])==1:
+                    data=itemvalue[0][0]
+                else:
+                    data=itemvalue[0]
+                ESC.setArove(aroid,{self.item:data})
         return {}
     pass
 
@@ -129,46 +152,18 @@ class AcpIterator(Acp):
         return ret
 
     def iterate(self):
+        'Return 0 when iterator stoped;'
         self.current+=self.step
-        return
+        if self.current>self.end and not ESC.SIM_REALTIME:
+            return 0
+        return 1
 
-    pass
-
-class AcpPMTD(Acp):
-    ''' PMTD Function. Accept single value list input.
-
-        Addition: expression.
-
-        Inport: a, b.
-
-        Outport: output;'''
-    def __init__(self):
-        super().__init__()
-        self.expression=''  # Use symbol a and b to do PMTD;
-        self.inport={1:None,2:None}
-        self.outport={3:[]}
-        self.port={1:'in a',2:'in b',3:'out r'}
-        return
-
-    def AcpProgress(self,datadict):
-        adict=datadict[self.inport[1]]
-        bdict=datadict[self.inport[2]]
-        out_dict=dict()
-        a=np.array(list(adict.values()))
-        b=np.array(list(bdict.values()))
-        res=eval(self.expression,globals(),{'a':a,'b':b})
-        if len(adict)>=len(bdict):tdict=adict
-        else:tdict=bdict
-        i=0
-        for k in tdict:
-            out_dict[k]=[res[i][0]]
-            i+=1
-        return {(self.AcpID,3):out_dict}
     pass
 
 class AcpGroup(Acp):
     pass
 
+# Operator;
 class AcpBuffer(Acp):
     ''' Addition: NONE.
 
@@ -181,6 +176,43 @@ class AcpBuffer(Acp):
         self.outport={2:list()}
         self.port={1:'in',2:'out'}
         return
+    pass
+
+class AcpPMTD(Acp):
+    ''' PMTD Function. Accept single value list input.
+
+        Addition: expression.
+
+        Inport: a, b.
+
+        Outport: output;'''
+    def __init__(self):
+        super().__init__()
+        self.fixIO=False
+        self.expression=''  # Use symbol a and b to do PMTD;
+        self.inport={1:None,2:None}
+        self.outport={0:[]}
+        self.port={0:'out r',1:'in a',2:'in b'}
+        return
+
+    def AcpProgress(self,datadict):
+        max_dict=dict()
+        sym_dict=dict()
+        symindex='abcdefghijklmnopqrstuvwxyz'
+        for inkey,invalue in self.inport.items():
+            d=datadict[invalue]
+            if len(d)>len(max_dict):max_dict=d
+            sym=symindex[inkey-1]
+            sym_dict[sym]=np.array(list(d.values()))
+        res=eval(self.expression,globals(),sym_dict)
+
+        output_dict=dict()
+        i=0
+        for k in max_dict:
+            output_dict[k]=res[i].tolist()
+            i+=1
+        opid=list(self.outport.keys())[0]
+        return {(self.AcpID,opid):output_dict}
     pass
 
 class AcpVector3(Acp):
@@ -205,7 +237,8 @@ class AcpVector3(Acp):
             for i in range(0,len(xlist)):
                 if aroid not in vec3_dict:
                     vec3_dict[aroid]=list()
-                vec3_dict[aroid]=[xlist[i],ydict[aroid][i],zdict[aroid][i]]
+                vec3=[xlist[i],ydict[aroid][i],zdict[aroid][i]]
+                vec3_dict[aroid]=[vec3]
 
         return {(self.AcpID,4):vec3_dict}
 
@@ -239,4 +272,58 @@ class AcpDepartor3(Acp):
                 ydict[aroid].append(vec3[1])
                 zdict[aroid].append(vec3[2])
         return {(self.AcpID,2):xdict,(self.AcpID,3):ydict,(self.AcpID,4):zdict}
+    pass
+
+class AcpConst(Acp):
+    def __init__(self):
+        super().__init__()
+        self.item=''
+        self.value=0
+        self.outport={1:list()}
+        self.port={1:'out'}
+        return
+
+    def AcpProgress(self,datadict):
+        return {(self.AcpID,1):{self.item:[self.value]}}
+    pass
+
+class AcpNorm(Acp):
+    def __init__(self):
+        super().__init__()
+        self.inport={1:None}
+        self.outport={2:[]}
+        self.port={1:'in vec',2:'out norm'}
+        return
+
+    def AcpProgress(self,datadict):
+        vec_dict=datadict[self.inport[1]]
+        out_dict=dict()
+        for aroid,vec_list in vec_dict.items():
+            out_dict[aroid]=list()
+            for vec in vec_list:
+                vec=np.array(vec)
+                out_dict[aroid].append([np.linalg.norm(vec)])
+        return {(self.AcpID,2):out_dict}
+    pass
+
+class AcpSum(Acp):
+    ''' Addition: NONE.
+
+            Inport: 1.in.
+
+            Outport: 2.out;'''
+    def __init__(self):
+        super().__init__()
+        self.inport={1:None}
+        self.outport={2:list()}
+        self.port={1:'in',2:'out'}
+        return
+
+    def AcpProgress(self,datadict):
+        in_dict=datadict[self.inport[1]]
+        out_dict=dict()
+        for aroid,dlist in in_dict.items():
+            # darr=np.array(dlist)
+            out_dict[aroid]=[np.sum(dlist,axis=0).tolist()]
+        return {(self.AcpID,2):out_dict}
     pass

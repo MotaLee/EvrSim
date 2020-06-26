@@ -7,8 +7,7 @@ gmv=esui.gmv
 class Plc(wx.Panel):
     '''Base container.
 
-        Ctrl in Plc can only call other TopPlc;
-    '''
+        Ctrl in Plc can only call other TopPlc;'''
     def __init__(self,parent,p,s,cn=''):
         wx.Panel.__init__(self,parent,
             pos=(int(p[0]),int(p[1])),
@@ -23,29 +22,33 @@ class ComPlc(Plc):
     def __init__(self,parent,p,s):
         Plc.__init__(self,parent,p,s)
         self.SetBackgroundColour('#333333')
+
+        self.sidepl_agent=None
+
         yu=gmv.YU
-        xu=gmv.XU
-        self.estbtn=esui.BorderlessBtn(self,(0,0),(4*yu,4*yu),'ES')
-        self.simenu=esui.BorderlessMenuBtn(self,(4*yu+1,1),(8*yu-2,4*yu-2),
-            'Sim',['New','Open','Save','Save as','Mods','Pack'])
-        self.mapmenu=esui.BorderlessMenuBtn(self,(12*yu+1,1),(8*yu-2,4*yu-2),
-            'Map',['New','Delete current'])
-        self.mdlmenu=esui.BorderlessMenuBtn(self,(20*yu+1,1),(8*yu-2,4*yu-2),
-            'Model',['New','Delete current'])
-        self.helpmenu=esui.BorderlessMenuBtn(self,(28*yu+1,1),(8*yu-2,4*yu-2),
+        # xu=gmv.XU
+        self.es_btn=esui.BorderlessBtn(self,(0,0),(4*yu,4*yu),'ES')
+        self.sim_menu=esui.BorderlessMenuBtn(self,(4*yu+1,1),(8*yu-2,4*yu-2),
+            'Sim',['New','Open','Save','Save as','Mods','Reset'])
+        self.map_menu=esui.BorderlessMenuBtn(self,(12*yu+1,1),(8*yu-2,4*yu-2),
+            'Map',['New','Delete','Rename','Save as','Snapshot','Manage'])
+        self.mdl_menu=esui.BorderlessMenuBtn(self,(20*yu+1,1),(8*yu-2,4*yu-2),
+            'Model',['New','Delete','Rename','Save as','Manage'])
+        self.help_menu=esui.BorderlessMenuBtn(self,(28*yu+1,1),(8*yu-2,4*yu-2),
             'Help',['Help','About'])
 
-        self.comhead=esui.Stc(self,(75*xu,0),(4*xu,4*yu),'ES>>',tsize=1.5*yu)
-        self.comtxt=esui.Tcc(self,(79*xu,0),(21*xu-8*yu,4*yu),tsize=1.5*yu)
-        self.combtn=esui.BorderlessBtn(self,(self.Size[0]-8*yu,0),(4*yu,4*yu),'<<')
-        self.extbtn=esui.BorderlessBtn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'X')
+        # self.comhead=esui.Stc(self,(75*xu,0),(4*xu,4*yu),'ES>>',tsize=1.5*yu)
+        # self.comtxt=esui.Tcc(self,(79*xu,0),(21*xu-8*yu,4*yu),tsize=1.5*yu)
+        self.com_btn=esui.BorderlessBtn(self,(self.Size[0]-8*yu,0),(4*yu,4*yu),'<<')
+        self.ext_btn=esui.BorderlessBtn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'X')
 
-        self.comhead.Hide()
-        self.comtxt.Hide()
+        # self.comhead.Hide()
+        # self.comtxt.Hide()
         self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.combtn.Bind(wx.EVT_BUTTON,self.onClkCom)
-        self.extbtn.Bind(wx.EVT_BUTTON,self.onClkExt)
-        self.simenu.GetPopupControl().lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkSim)
+        self.com_btn.Bind(wx.EVT_BUTTON,self.onClkCom)
+        self.ext_btn.Bind(wx.EVT_BUTTON,self.onClkExt)
+        self.sim_menu.GetPopupControl().lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkSim)
+        self.mdl_menu.GetPopupControl().lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkModel)
 
         # comtxt.Bind(wx.EVT_TEXT_ENTER,wxmw.esWxCom)
         # histxt=esui.Tcc(wxmw,(0,4*yu),(75*xu,21*yu),
@@ -69,30 +72,50 @@ class ComPlc(Plc):
         return
 
     def onClkSim(self,e):
-        fc=self.simenu.GetPopupControl()
-        if fc.ipos==1:
+        fc=self.sim_menu.GetPopupControl()
+        if fc.ipos==0:
             DlgType=esui.NewDialog
-        elif fc.ipos==2:
+        elif fc.ipos==1:
             DlgType=esui.OpenDialog
 
-        if fc.ipos==3:
+        if fc.ipos==2:
             if not ESC.SIM_NAME:return
             DlgType=None
             ESC.saveSim()
-            self.simenu.HidePopup()
+            self.sim_menu.HidePopup()
+        elif fc.ipos==3:
+            if not ESC.SIM_NAME:return
         elif fc.ipos==4:
             if not ESC.SIM_NAME:return
-        elif fc.ipos==5:
-            if not ESC.SIM_NAME:return
             # DlgType=esui.ModDialog
-        elif fc.ipos==6:
-            if not ESC.SIM_NAME:return
         if DlgType:
             xu=gmv.XU
             yu=gmv.YU
             wxmw=self.Parent
-            wxmw.dlgw=DlgType(wxmw,(20*xu,20*yu),(60*xu,60*yu),fc.item[fc.ipos-1])
+            wxmw.dlgw=DlgType(wxmw,(20*xu,20*yu),(60*xu,60*yu),fc.items[fc.ipos])
             wxmw.dlgw.ShowModal()
+        return
+
+    def onClkModel(self,e):
+        if not ESC.SIM_NAME:return
+        if self.sidepl_agent is None:
+            self.sidepl_agent=self.Parent.FindWindowByName('sidepl')
+        pc=self.mdl_menu.GetPopupControl()
+
+        if pc.ipos==0:  # New;
+            ESC.newModelFile('New model')
+            self.sidepl_agent.loadModels([(ESC.SIM_NAME,'New model')])
+            self.sidepl_agent.acp_btn.onClk(None)
+            self.sidepl_agent.onClkAcpTabBtn(None)
+        elif pc.ipos==1:    # Delete;
+            pass
+        elif pc.ipos==2:    # Rename;
+            pass
+        elif pc.ipos==3:    # Save as;
+            pass
+        elif pc.ipos==4:    # Manage;
+            pass
+        e.Skip()
         return
 
     def onClkCom(self,e):
@@ -109,30 +132,30 @@ class ComPlc(Plc):
     pass
 
 class SidePlc(Plc):
+
     def __init__(self,parent,p,s):
         Plc.__init__(self,parent,p,s,cn='sidepl')
         self.SetBackgroundColour('#333333')
-
-        wxmw=self.Parent
-        self.aropl_agent=wxmw.FindWindowByName('aropl')
-        self.acppl_agent=wxmw.FindWindowByName('acppl')
+        self.model_list=list()
+        self.aropl_agent=self.Parent.FindWindowByName('aropl')
+        self.acppl_agent=self.Parent.FindWindowByName('acppl')
         yu=gmv.YU
-        self.arobtn=esui.TabBtn(self,(1,0),(s[0]/3,4*yu),'Aro','Arobtn')
-        self.arotab=esui.AroSideTab(self,(0,4*yu),(s[0],92*yu),'Aro','Arotab')
-        self.arobtn.SetValue(True)
+        self.aro_btn=esui.TabBtn(self,(1,0),(s[0]/3,4*yu),'Aro','Aro_btn')
+        self.aro_tab=esui.AroSideTab(self,(0,4*yu),(s[0],92*yu),'Aro','Aro_tab')
+        self.aro_btn.SetValue(True)
 
-        self.arovebtn=esui.TabBtn(self,(1+s[0]/3,0),(s[0]/3,4*yu),'Arove','Arovebtn')
-        self.arovetab=esui.AroveSideTab(self,(0,4*yu),(s[0],92*yu),'Arove','Arovetab')
+        self.arove_btn=esui.TabBtn(self,(1+s[0]/3,0),(s[0]/3,4*yu),'Arove','Arove_btn')
+        self.arove_tab=esui.AroveSideTab(self,(0,4*yu),(s[0],92*yu),'Arove','Arove_tab')
 
-        self.acpbtn=esui.TabBtn(self,(1+2*s[0]/3,0),(s[0]/3,4*yu),'Acp','Acpbtn')
-        self.acptab=esui.AcpSideTab(self,(0,4*yu),(s[0],92*yu),'Acp','Acptab')
+        self.acp_btn=esui.TabBtn(self,(1+2*s[0]/3,0),(s[0]/3,4*yu),'Acp','Acp_btn')
+        self.acp_tab=esui.AcpSideTab(self,(0,4*yu),(s[0],92*yu),'Acp','Acp_tab')
 
         self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.arobtn.Bind(wx.EVT_LEFT_DOWN,self.onClkAro)
-        self.arotab.arotree.Bind(wx.EVT_LEFT_DOWN,self.onClkAroList)
-        self.arotab.arotree.Bind(wx.EVT_LEFT_DCLICK,self.onDClkAroList)
-        self.arovebtn.Bind(wx.EVT_LEFT_DOWN,self.onClkArove)
-        self.acpbtn.Bind(wx.EVT_LEFT_DOWN,self.onClkAcp)
+        self.aro_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkAroTabBtn)
+        self.aro_tab.arotree.Bind(wx.EVT_LEFT_DOWN,self.onClkAroList)
+        self.aro_tab.arotree.Bind(wx.EVT_LEFT_DCLICK,self.onDClkAroList)
+        self.arove_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkAroveTabBtn)
+        self.acp_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkAcpTabBtn)
         return
 
     def onPaint(self,e):
@@ -141,44 +164,52 @@ class SidePlc(Plc):
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
         return
 
-    def loadMM(self,maps,models):
-        '''Load maps and models.'''
+    def loadMaps(self,maps):
+        '''Load maps;'''
         self.maps=maps
-        self.models=models
-        self.arotab.map_menu.setItems(maps)
-        self.acptab.model_menu.setItems(models)
+        self.aro_tab.map_menu.setItems(maps)
+        return
+
+    def loadModels(self,models):
+        for model in models:
+            if model not in self.model_list:
+                self.model_list.append(model)
+        self.acp_tab.model_menu.setItems(self.model_list)
+        self.acp_tab.model_menu.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.acp_tab.onClkAcpModel)
+        self.acp_tab.model_menu.PopupControl.ipos=len(self.model_list)-1
+        self.acp_tab.onClkAcpModel(None)
         return
 
     def updateAroList(self):
         tree=list()
         for aro in ESC.ARO_MAP:tree.append(aro.AroID)
-        self.arotab.arotree.updateList(tree)
+        self.aro_tab.arotree.updateList(tree)
         return
 
     def showArove(self,aroid):
-        self.onClkArove(None)
-        self.arovebtn.onClk(None)
-        self.arovetab.showAroveDetail(aroid)
+        self.onClkAroveTabBtn(None)
+        self.arove_btn.onClk(None)
+        self.arove_tab.showAroveDetail(aroid)
         return
 
     def showAcpDetail(self,acp):
-        self.acptab.showAcpDetail(acp)
+        self.acp_tab.showAcpDetail(acp)
         return
 
-    def onClkAcp(self,e):
+    def onClkAcpTabBtn(self,e):
         self.aropl_agent.Hide()
         self.acppl_agent.Show()
         self.acppl_agent.drawConnection()
-        e.Skip()
+        if e is not None:e.Skip()
         return
 
-    def onClkArove(self,e=None):
+    def onClkAroveTabBtn(self,e=None):
         self.aropl_agent.Show()
         self.acppl_agent.Hide()
         if e is not None:e.Skip()
         return
 
-    def onClkAro(self,e):
+    def onClkAroTabBtn(self,e):
         self.aropl_agent.Show()
         self.acppl_agent.Hide()
         e.Skip()
@@ -192,13 +223,10 @@ class SidePlc(Plc):
         return
 
     def onDClkAroList(self,e):
-        treeid=e.EventObject.GetSelections()
-        for k,v in e.EventObject.id_dict.items():
-            if treeid[0]==v:
-                aroid=k
-                break
+        aroid=e.EventObject.items[e.EventObject.ipos]
         self.showArove(aroid)
         return
+
     pass
 
 class ModPlc(Plc):
@@ -254,7 +282,10 @@ class AcpPlc(Plc):
         self.innerpl.Bind(wx.EVT_MIDDLE_UP,self.onRlsWhl)
         return
 
-    def drawAcp(self):
+    def drawAcp(self,acpmodel=None):
+        'Empty para acpmodel to draw now model;'
+        if acpmodel is not None:
+            self.acpmodel=acpmodel
         self.innerpl.DestroyChildren()
         if self.acpmodel not in ESC.ACP_MAP:
             return

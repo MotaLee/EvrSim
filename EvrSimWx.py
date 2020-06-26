@@ -1,17 +1,18 @@
 # -*- coding: UTF-8 -*-
 # system libs;
 import sys
-import os
-import re
-import subprocess
+# import os
+# import re
+# import subprocess
 # Outer libs;
 import wx
 # Builtin libs
+from EvrSim import ES_WX_TITLE,ES_VER
+from core import ESC
 from core import esui
 from core import esevt
 from core import esgl
-from core import ESC
-# system vars;
+# wx vars;
 wxapp = wx.App()
 cx,cy,cw,ch=wx.ClientDisplayRect()
 xu=cw/100
@@ -20,15 +21,13 @@ esui.gmv.XU=xu
 esui.gmv.YU=yu
 # Wx frame main window;
 class ESW(wx.Frame):
-    WIN_TITLE='EvrSimWx'
-    WIN_VER='0.0.2'
 
     def __init__(self):
         wx.Frame.__init__(self,None,
             pos=(cx,cy),
             size=(cw,ch),
             style=wx.NO_BORDER | wx.ICON_HAND,
-            title=self.WIN_TITLE)
+            title=ES_WX_TITLE)
         self.SetBackgroundColour('#333333')
         self.dlgw=None
         self.gl_timer=wx.Timer(self)
@@ -110,19 +109,22 @@ class ESW(wx.Frame):
         self.dlgw.Destroy()
 
         ESC.openSim(sim_name)
+
         welpl.Hide()
         modpl.loadMod()
-        acppl.Hide()
-        aropl.Show()
-        aropl.readMap()
 
         maps=list(ESC.ARO_MAP_LIST)
         models=list(ESC.ACP_MAP.keys())
-        sidepl.loadMM(maps,models)
+        sidepl.loadMaps(maps)
+        sidepl.loadModels(models)
         sidepl.updateAroList()
+
+        aropl.Show()
+        aropl.readMap()
         aropl.map_name=maps[0]
-        acppl.acpmodel=models[0]
-        acppl.drawAcp()
+
+        acppl.Hide()
+        acppl.drawAcp(models[-1])
         return
 
     def onRunSim(self,e):
@@ -130,10 +132,14 @@ class ESW(wx.Frame):
             self.gl_timer.Stop()
         else:
             aropl.time_step=ESC.TIME_STEP
+            if ESC.CORE_STAUS=='STOP':ESC.CORE_STAUS='READY'
             self.gl_timer.Start(int(ESC.TIME_STEP*1000))
         return
 
     def onRunSimTimer(self,e):
+        if ESC.CORE_STAUS=='STOP':
+            self.gl_timer.Stop()
+            return
         ESC.runSim()
         aropl.readMap()
         return
@@ -161,7 +167,7 @@ sidepl=esui.SidePlc(wxmw,(75*xu,4*yu),(25*xu,96*yu))
 # Welcome panel;
 welpl=esui.Plc(wxmw,(0,25*yu),(75*xu,75*yu),'welpl')
 welttc=esui.Ttc(welpl,(0,15*yu),(75*xu,10*yu),'E  v  r  S  i  m',tsize=int(4*yu))
-verttc=esui.Ttc(welpl,(0,25*yu),(75*xu,4*yu),wxmw.WIN_VER,tsize=int(2*yu))
+verttc=esui.Ttc(welpl,(0,25*yu),(75*xu,4*yu),ES_VER,tsize=int(2*yu))
 
 # Main enterance;
 wxmw.Show()
