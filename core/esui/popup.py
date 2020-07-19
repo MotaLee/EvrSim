@@ -1,7 +1,7 @@
 # Parent lib;
 import wx
 from core import esui
-gmv=esui.gmv
+gmv=esui
 
 class PopupList(wx.ComboPopup):
     def __init__(self,items):
@@ -14,7 +14,7 @@ class PopupList(wx.ComboPopup):
         # Overrided;
         self.lctrl=wx.ListCtrl(parent,
             style=wx.LC_LIST | wx.LC_SINGLE_SEL | wx.NO_BORDER)
-        self.lctrl.SetBackgroundColour(gmv.COLOR_Back)
+        self.lctrl.SetBackgroundColour(esui.COLOR_BACK)
         self.lctrl.Bind(wx.EVT_MOTION, self.onMove)
         self.lctrl.Bind(wx.EVT_LEFT_DOWN, self.onClk)
         self.lctrl.Bind(wx.EVT_PAINT,self.onPaint)
@@ -38,18 +38,18 @@ class PopupList(wx.ComboPopup):
 
     def onPaint(self,e):
         dc=wx.BufferedPaintDC(self.lctrl)
-        dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+        dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.lctrl.Size[0],self.lctrl.Size[1])
         dc.DrawLine(5,self.ph*(self.ipos+1),self.pw*2-5,self.ph*(self.ipos+1))
-        dc.SetTextForeground(gmv.COLOR_Text)
+        dc.SetTextForeground(esui.COLOR_TEXT)
         pts=dc.GetTextExtent(self.GetComboCtrl().GetLabel())
         for i in range(0,len(self.items)):
             if type(self.items[i])==tuple:
                 txt=self.items[i][0]+'.'+self.items[i][1]
             else:
                 txt=self.items[i]
-            dc.DrawText(txt,(self.pw-pts[0])//2,int(i*self.ph+pts[1]/2))
+            dc.DrawText(txt,(self.pw-pts[0])/2,i*self.ph+pts[1]/2)
         return
 
     def onClk(self,e):
@@ -70,8 +70,8 @@ class MenuBtn(wx.ComboCtrl):
 
     def __init__(self,parent,p,s,menulabel,items):
         wx.ComboCtrl.__init__(self,parent,
-            pos=(int(p[0]),int(p[1])),
-            size=(int(s[0]),int(s[1])),
+            pos=p,
+            size=s,
             value=menulabel,
             style=wx.CB_READONLY)
         self.Label=menulabel
@@ -86,33 +86,38 @@ class MenuBtn(wx.ComboCtrl):
         return
 
     def setItems(self,items):
-        popup=PopupList(items)
-        self.SetPopupControl(popup)
-        self.SetPopupMaxHeight(len(items)*self.Size[1]+gmv.YU)
-        self.SetPopupMinWidth(2*self.Size[0]+gmv.YU)
+        try:
+            popup=self.GetPopupControl()
+            popup.items=items
+            popup.ipos=0
+        except BaseException:
+            popup=PopupList(items)
+            self.SetPopupControl(popup)
+        self.SetPopupMaxHeight(len(items)*self.Size[1]+esui.YU)
+        self.SetPopupMinWidth(2*self.Size[0]+esui.YU)
         return
 
     def onPaint(self,e):
         dc=wx.PaintDC(self)
         if self.click_ctrl:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush('#555555'))
+            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
         else:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
 
-        dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+        dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         dc.DrawPolygon([
             (self.Size[0]-1,self.Size[1]-1),
             (self.Size[0]-7,self.Size[1]-1),
             (self.Size[0]-1,self.Size[1]-7)])
 
         if self.click_ctrl:
-            dc.SetTextForeground(gmv.COLOR_Back)
+            dc.SetTextForeground(esui.COLOR_BACK)
         else:
-            dc.SetTextForeground(gmv.COLOR_Text)
+            dc.SetTextForeground(esui.COLOR_TEXT)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -139,54 +144,65 @@ class BorderlessMenuBtn(MenuBtn):
     def onPaint(self,e):
         dc=wx.PaintDC(self)
         if self.click_ctrl:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush('#555555'))
+            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
         else:
-            dc.SetBrush(wx.Brush('#333333'))
+            dc.SetBrush(wx.Brush(esui.COLOR_LBACK))
         dc.SetPen(wx.TRANSPARENT_PEN)
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
 
         if self.click_ctrl:
-            dc.SetTextForeground(gmv.COLOR_Back)
+            dc.SetTextForeground(esui.COLOR_BACK)
         else:
-            dc.SetTextForeground(gmv.COLOR_Text)
+            dc.SetTextForeground(esui.COLOR_TEXT)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+
+        dc.SetBrush(wx.Brush(esui.COLOR_TEXT))
+        dc.DrawPolygon([
+            (self.Size[0]-1,self.Size[1]-1),
+            (self.Size[0]-7,self.Size[1]-1),
+            (self.Size[0]-1,self.Size[1]-7)])
         return
     pass
 
 class SelectMenuBtn(MenuBtn):
 
     def setItems(self,items):
-        popup=PopupList(items)
-        self.SetPopupControl(popup)
-        self.SetPopupMaxHeight(len(items)*self.Size[1]+gmv.YU)
+        try:
+            popup=self.GetPopupControl()
+            popup.items=items
+            popup.ipos=0
+        except BaseException:
+            popup=PopupList(items)
+            self.SetPopupControl(popup)
+        self.SetPopupMaxHeight(len(items)*self.Size[1]+esui.YU)
         self.SetPopupMinWidth(self.Size[0])
         return
 
     def onPaint(self,e):
         dc=wx.PaintDC(self)
         if self.click_ctrl:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush('#555555'))
+            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
         else:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
 
-        dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+        dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         dc.DrawPolygon([
             (self.Size[0]-1,self.Size[1]-1),
             (self.Size[0]-7,self.Size[1]-1),
             (self.Size[0]-1,self.Size[1]-7)])
 
         if self.click_ctrl:
-            dc.SetTextForeground(gmv.COLOR_Back)
+            dc.SetTextForeground(esui.COLOR_BACK)
         else:
-            dc.SetTextForeground(gmv.COLOR_Text)
+            dc.SetTextForeground(esui.COLOR_TEXT)
         tsize=dc.GetTextExtent(self.GetLabel())
-        dc.DrawText(self.GetLabel(),(gmv.YU,(self.Size[1]-tsize[1])/2))
+        dc.DrawText(self.GetLabel(),(esui.YU,(self.Size[1]-tsize[1])/2))
         return
     pass

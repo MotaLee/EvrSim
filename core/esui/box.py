@@ -2,19 +2,15 @@
 import wx
 from core import ESC
 from core import esui
-gmv=esui.gmv
 
 # List box wx sub class;
 class ListBox(wx.Panel):
     def __init__(self,parent,p,s):
-        wx.Panel.__init__(self,parent,
-            pos=(int(p[0]),int(p[1])),
-            size=(int(s[0]),int(s[1])),
-            style=wx.NO_BORDER)
+        wx.Panel.__init__(self,parent,pos=p,size=s,style=wx.NO_BORDER)
         self.items=list()
         self.ipos=0
         self.spos=-1
-        self.SetBackgroundColour(gmv.COLOR_Back)
+        self.SetBackgroundColour(esui.COLOR_BACK)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_MOTION,self.onMove)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -27,18 +23,18 @@ class ListBox(wx.Panel):
 
     def onPaint(self,e):
         dc=wx.BufferedPaintDC(self)
-        yu=gmv.YU
-        dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Back))
+        yu=esui.YU
+        dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+        dc.SetPen(wx.Pen(esui.COLOR_LBACK))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
 
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
-        dc.DrawLine(0,1,self.Size[0],1)
-        dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
+        # dc.DrawLine(0,1,self.Size[0],1)
+        # dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
 
-        txtfont=wx.Font(12,wx.MODERN,wx.NORMAL,wx.NORMAL,False,'微软雅黑')
+        txtfont=wx.Font(12,wx.MODERN,wx.NORMAL,wx.NORMAL,False,esui.TEXT_FONT)
         dc.SetFont(txtfont)
-        dc.SetTextForeground(gmv.COLOR_Text)
+        dc.SetTextForeground(esui.COLOR_TEXT)
         for i in range(0,len(self.items)):
             aroname=ESC.getAro(self.items[i]).AroName
             dc.DrawText(aroname,4*yu+1,i*4*yu+1)
@@ -49,12 +45,12 @@ class ListBox(wx.Panel):
             ts=dc.GetTextExtent(aroname)
             dc.DrawLine(4*yu,ip*4*yu-yu,4*yu+ts[0],ip*4*yu-yu)
         if self.spos!=-1:
-            dc.SetBrush(wx.Brush(gmv.COLOR_Front))
+            dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
             dc.DrawRectangle(yu,self.spos*4*yu+yu,2*yu,2*yu)
         return
 
     def onMove(self,e):
-        self.ipos=int(e.GetPosition()[1]/(4*gmv.YU))
+        self.ipos=int(e.GetPosition()[1]/(4*esui.YU))
         if self.ipos<len(self.items):
             self.Refresh(eraseBackground=False)
         e.Skip()

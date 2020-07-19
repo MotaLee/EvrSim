@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\Sunyata\\demi\\python\\python.exe",
+    "python.pythonPath": "C:\\Users\\deminuit\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
     "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
@@ -8,7 +8,6 @@
     ],
     "editor.renderWhitespace": "all",
     "editor.wordWrap": "on",
-    "files.autoGuessEncoding": true,
     "files.insertFinalNewline": true,
     "files.simpleDialog.enable": true,
     "files.trimTrailingWhitespace": true,
@@ -27,5 +26,17 @@
     "scm.defaultViewMode": "tree",
     "scm.diffDecorationsGutterVisibility": "hover",
     "scm.diffDecorations": "gutter",
+    "breadcrumbs.symbolSortOrder": "type",
+    "explorer.compactFolders": false,
+    "explorer.sortOrder": "type",
+    "vsicons.presets.hideExplorerArrows": true,
+    "explorer.incrementalNaming": "smart",
+    "outline.problems.colors": false,
+    "editor.showFoldingControls": "always",
+    "files.trimFinalNewlines": true,
+    "workbench.enableExperiments": false,
+    "workbench.view.alwaysShowHeaderActions": true,
+    "search.collapseResults": "alwaysCollapse",
+    "workbench.tree.indent": 16,
 
 }

@@ -1,6 +1,5 @@
-ARO_INDEX=[1, 2, 3, 4]
-KEY_DICT={1: 'AroID', 2: 'AroClass', 3: 'parent', 4: 'AroName', 5: 'desc', 6: 'mark', 7: 'position', 8: 'velocity', 9: 'force', 10: 'mass'}
-Aro_1={'AroID': 1, 'AroClass': 'mod.AroCore.aroclass.Aro', 'parent': None, 'AroName': 'main', 'desc': '', 'mark': ''}
-Aro_2={'AroID': 2, 'AroClass': 'mod.Dynamics.aroclass.MassPoint', 'parent': 1, 'AroName': 'm1', 'desc': '', 'position': [1, 0, 0], 'velocity': [-0.4, 1.0, 0.0], 'force': [-10.0, 25.0, 0.0], 'mass': 10, 'mark': ''}
-Aro_3={'AroID': 3, 'AroClass': 'mod.Dynamics.aroclass.MassPoint', 'parent': 1, 'AroName': 'm2', 'desc': '', 'position': [1, 2, 0], 'velocity': [-0.03577708763999663, -0.17155417527999328, 0.0], 'force': [-8.944271909999157, -42.88854381999832, 0.0], 'mass': 100, 'mark': ''}
-Aro_4={'AroID': 4, 'AroClass': 'mod.Dynamics.aroclass.MassPoint', 'parent': None, 'AroName': 'm3', 'desc': '', 'position': [0, 0, 0], 'velocity': [0.7577708763999664, 0.7155417527999326, 0.0], 'force': [18.94427190999916, 17.888543819998315, 0.0], 'mass': 10}
+ARO_INDEX=[1, 2, 3]
+KEY_DICT={1: 'AroID', 2: 'AroClass', 3: 'draw_type', 4: 'data_type', 5: 'AroName', 6: 'desc', 7: 'enable', 8: 'visable', 9: 'position', 10: 'velocity', 11: 'force', 12: 'mass'}
+Aro_1={1: 1, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: '', 5: 'm1', 6: '', 7: True, 8: True, 9: [2, 0, 0], 10: [0, 0, -3], 11: [0, 0, 0], 12: 100}
+Aro_2={1: 2, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: '', 5: 'm2', 6: '', 7: True, 8: True, 9: [-2, 0, 0], 10: [0, 0, 1.5], 11: [0, 0, 0], 12: 100}
+Aro_3={1: 3, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: '', 5: 'm3', 6: '', 7: True, 8: True, 9: [0, 0, 3], 10: [2, 0, 0], 11: [0, 0, 0], 12: 300}

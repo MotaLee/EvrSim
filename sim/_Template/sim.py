@@ -1,0 +1,9 @@
+SIM_NAME="_Template"
+USER_SETTING={}
+MOD_INDEX=[]
+AROCLASS_INDEX=[]
+ACPCLASS_INDEX=[]
+TOOL_INDEX=[]
+MAP_INDEX=['init']
+MODEL_INDEX=['model']
+COM_INDEX=["com"]

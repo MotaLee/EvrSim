@@ -1,47 +1,40 @@
 # -*- coding: UTF-8 -*-
 'ESUI defination, base on wx;'
-# Libs;
-# import core
-import sys
-import os
-import math
-import time
-import wx
-sys.path.append(os.getcwd())
 
-# Global module variable;
-class GMV:
-    XU=0
-    YU=0
-    COLOR_Front='#66ffcc'
-    COLOR_Back='#222222'
-    COLOR_Text='#ffffff'
-    COLOR_Second='#555555'
-    pass
-gmv=GMV()
+# Globals variable;
+XU=0
+YU=0
+WXMW=None
+HEAD_PLC=None
+MOD_PLC=None
+COM_PLC=None
+ARO_PLC=None
+ACP_PLC=None
+SIDE_PLC=None
+COLOR_FRONT='#66ffcc'
+COLOR_BLACK='#000000'
+COLOR_BACK='#222222'
+COLOR_LBACK='#333333'
+COLOR_TEXT='#ffffff'
+COLOR_SECOND='#555555'
+TEXT_FONT='Microsoft YaHei'
 
 # Text ctrl;
 from .textctrl import Stc
 from .textctrl import Ttc
 from .textctrl import Tcc
+from .textctrl import Mtc
 
 # Panel container;
 from .plc import Plc
+from .plc import ScrolledPlc
+from .plc import AroTreePlc
+
+from .plc_HeadPlc import HeadPlc
+from .plc_ModPlc import ModPlc
 from .plc import ComPlc
-from .plc import SidePlc
-from .plc import ModPlc
-from .plc import AcpPlc
-
-# Move bar;
-from.movebar import MoveBar
-
-# Tab btn;
-from .estab import TabBtn
-from .estab import ModTab
-from .estab import SideTab
-from .estab import AroSideTab
-from .estab import AroveSideTab
-from .estab import AcpSideTab
+from .plc_AcpPlc import AcpPlc
+from .plc_SidePlc import SidePlc
 
 # Popup;
 from .popup import MenuBtn
@@ -52,12 +45,17 @@ from .popup import SelectMenuBtn
 from .esdialog import EsDialog
 from .esdialog import NewDialog
 from .esdialog import OpenDialog
+from .esdialog import SaveAsDialog
+from .esdialog import SettingDialog
 from .esdialog import ModDialog
 
 # Button;
 from .btn import btn
 from .btn import BorderlessBtn
 from .btn import SelectBtn
+from .btn import BlSelectBtn
+from .btn import TabBtn
+
 
 # Box;
 from .box import ListBox

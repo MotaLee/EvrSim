@@ -6,16 +6,15 @@ import sys
 # import os
 # import re
 # import shutil
-# Terminal needed variable;
 from core import ESC
-EST_VER = '0.0.2'
+from EvrSim import EST_VER
+
+# Terminal needed variable;
 EST_EXIT=False
 EST_CONTINUE=None
-
 # Terminal enterance;
 # EvrSim Core and Terminal initilization;
 print('EvrSim Terminal '+EST_VER)
-
 # system main loop;
 if len(sys.argv)!=1:
     # As subprogress of EvrSimWx;

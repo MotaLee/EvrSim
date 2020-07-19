@@ -1,14 +1,12 @@
-# Parent lib;
-import core.esui as esui
-wx=esui.wx
-gmv=esui.gmv
+import wx
+from core import esui
 
 # Btn wx sub class;
 class btn(wx.Button):
     def __init__(self,parent,p=wx.DefaultPosition,s=wx.DefaultSize,txt='',able=True,tip='',cn=''):
         wx.Button.__init__(self,parent,
-            pos=(int(p[0]),int(p[1])),
-            size=(int(s[0]),int(s[1])),
+            pos=p,
+            size=s,
             label=txt,
             name=cn,
             style=wx.NO_BORDER)
@@ -22,12 +20,12 @@ class btn(wx.Button):
 
     def onPaint(self,e):
         dc = wx.PaintDC(self)
-        if self.on_ctrl: dc.SetBrush(wx.Brush('#555555'))
-        else: dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+        if self.on_ctrl: dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+        else: dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
-        if self.btn_able: dc.SetTextForeground(gmv.COLOR_Text)
-        else: dc.SetTextForeground('#555555')
+        if self.btn_able: dc.SetTextForeground(esui.COLOR_TEXT)
+        else: dc.SetTextForeground(esui.COLOR_SECOND)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -54,14 +52,14 @@ class BorderlessBtn(btn):
     def onPaint(self,e):
         dc = wx.PaintDC(self)
         clr=self.Parent.BackgroundColour
-        if self.on_ctrl: dc.SetBrush(wx.Brush('#555555'))
+        if self.on_ctrl: dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
         else: dc.SetBrush(wx.Brush(clr))
         dc.SetPen(wx.Pen(clr))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawLine(0,self.Size[1],self.Size[0],self.Size[1])
-        if self.btn_able: dc.SetTextForeground(gmv.COLOR_Text)
-        else: dc.SetTextForeground('#555555')
+        if self.btn_able: dc.SetTextForeground(esui.COLOR_TEXT)
+        else: dc.SetTextForeground(esui.COLOR_SECOND)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -71,17 +69,19 @@ class BorderlessBtn(btn):
 class SelectBtn(wx.ToggleButton):
     on_ctrl=False
     enable_ctrl=True
-    def __init__(self,parent,p,s,txt,tip='',select=False,enable=True,tsize=12):
+    def __init__(self,parent,p,s,txt,tip='',select=False,enable=True,tsize=10):
         wx.ToggleButton.__init__(self,parent,
-            pos=(int(p[0]),int(p[1])),
-            size=(int(s[0]),int(s[1])),
+            pos=p,
+            size=s,
             label=txt,
             style=wx.NO_BORDER)
         self.enable_ctrl=enable
+
         self.SetToolTip(tip)
-        self.txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,'微软雅黑')
+        self.txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,'Microsoft YaHei')
         self.SetFont(self.txtfont)
         self.SetValue(select)
+
         self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -96,14 +96,15 @@ class SelectBtn(wx.ToggleButton):
 
     def onPaint(self,e):
         dc = wx.PaintDC(self)
-        # dc.Clear()
-        if self.GetValue(): dc.SetBrush(wx.Brush(gmv.COLOR_Front))
-        elif self.on_ctrl:dc.SetBrush(wx.Brush(gmv.COLOR_Second))
-        else:dc.SetBrush(wx.Brush(gmv.COLOR_Back))
-        dc.SetPen(wx.Pen(gmv.COLOR_Front))
+        if self.GetValue(): dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
+        elif self.on_ctrl:dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+        else:dc.SetBrush(wx.Brush(esui.COLOR_BACK))
+
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
-        if self.GetValue():dc.SetTextForeground(gmv.COLOR_Back)
-        else: dc.SetTextForeground(gmv.COLOR_Text)
+
+        if self.GetValue():dc.SetTextForeground(esui.COLOR_BACK)
+        else: dc.SetTextForeground(esui.COLOR_TEXT)
         dc.SetFont(self.txtfont)
         tsize=dc.GetTextExtent(self.GetLabel())
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
@@ -117,5 +118,80 @@ class SelectBtn(wx.ToggleButton):
     def onLeave(self,e):
         if not self.enable_ctrl: return
         self.on_ctrl=False
+        return
+    pass
+
+class BlSelectBtn(SelectBtn):
+    def onPaint(self,e):
+        dc = wx.PaintDC(self)
+        if self.GetValue():
+            dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
+        elif self.on_ctrl:
+            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+        else:
+            bg=self.Parent.GetBackgroundColour()
+            dc.SetBrush(wx.Brush(bg))
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
+
+        if self.GetValue():dc.SetTextForeground(esui.COLOR_BACK)
+        else: dc.SetTextForeground(esui.COLOR_TEXT)
+        dc.SetFont(self.txtfont)
+        tsize=dc.GetTextExtent(self.GetLabel())
+        dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2,)
+        return
+    pass
+
+# Tab btn wx sub class;
+class TabBtn(wx.ToggleButton):
+    ''' Label of btn and its tab must be the same.
+
+        btn.cn is label_btn, while tab.cn is label_tab;'''
+    def __init__(self,parent,p,s,tablabel,cn=''):
+        wx.ToggleButton.__init__(self,parent,
+            pos=p,
+            size=s,
+            label=tablabel,
+            name=cn,
+            style=wx.NO_BORDER)
+        self.on_ctrl=False
+        self.SetBackgroundColour(esui.COLOR_BACK)
+        self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
+        self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        return
+
+    def onClk(self,e):
+        # if ESC.SIM_FD is None:return
+        self.SetValue(True)
+        for ctrl in self.Parent.Children:
+            if type(ctrl)==TabBtn and ctrl!=self:
+                ctrl.SetValue(False)
+            if isinstance(ctrl,(wx.Panel,wx.ScrolledWindow)):
+                if ctrl.GetLabel()==self.GetLabel():
+                    ctrl.Show()
+                else: ctrl.Hide()
+        return
+
+    def onPaint(self,e):
+        dc = wx.PaintDC(self)
+        if self.GetValue(): pw=8
+        else:pw=1
+        dc.SetPen(wx.Pen(esui.COLOR_FRONT,width=pw))
+        dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
+        dc.SetTextForeground(esui.COLOR_TEXT)
+        tsize=dc.GetTextExtent(self.GetLabel())
+        dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+        return
+
+    def onEnter(self,e):
+        self.on_ctrl=True
+        self.SetBackgroundColour(esui.COLOR_SECOND)
+        return
+
+    def onLeave(self,e):
+        self.on_ctrl=False
+        self.SetBackgroundColour(esui.COLOR_BACK)
         return
     pass
