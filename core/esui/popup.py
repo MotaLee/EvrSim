@@ -41,7 +41,7 @@ class PopupList(wx.ComboPopup):
         dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.lctrl.Size[0],self.lctrl.Size[1])
-        dc.DrawLine(5,self.ph*(self.ipos+1),self.pw*2-5,self.ph*(self.ipos+1))
+        dc.DrawLine(5,self.ph*(self.ipos+1),self.lctrl.Size[0]-5,self.ph*(self.ipos+1))
         dc.SetTextForeground(esui.COLOR_TEXT)
         pts=dc.GetTextExtent(self.GetComboCtrl().GetLabel())
         for i in range(0,len(self.items)):
@@ -65,19 +65,18 @@ class PopupList(wx.ComboPopup):
         return
     pass
 
-# Menu btn wx sub class;
+# Menu Btn wx sub class;
 class MenuBtn(wx.ComboCtrl):
 
-    def __init__(self,parent,p,s,menulabel,items):
-        wx.ComboCtrl.__init__(self,parent,
-            pos=p,
-            size=s,
-            value=menulabel,
-            style=wx.CB_READONLY)
-        self.Label=menulabel
+    def __init__(self,parent,p,s,label,items):
+        super().__init__(parent,
+            pos=p,size=s,value=label,style=wx.CB_READONLY)
+        self.Label=label
         self.click_ctrl=False
         self.on_ctrl=False
         self.setItems(items)
+        self.popup=self.PopupControl
+        self.pop_ctrl=self.PopupControl.lctrl
 
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -136,7 +135,6 @@ class MenuBtn(wx.ComboCtrl):
         self.click_ctrl=True
         self.ShowPopup()
         self.GetPopupControl().lctrl.Refresh(eraseBackground=False)
-        # e.Skip()
         return
     pass
 

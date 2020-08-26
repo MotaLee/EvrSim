@@ -1,15 +1,10 @@
+import os
 from core import esc as ESC
-# def updateMap():
-#     ''' Lv.1: Update all Aroves in current Aro map;'''
-#     for aro in ESC.ARO_MAP:
-#         aro.onSet()
-#     return
-
 def newMapFile(mapname):
     if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
-    if mapname not in ESC.ARO_MAP_LIST:
+    if mapname not in ESC.MAP_LIST:
         updateMapFile()
-        ESC.ARO_MAP_LIST.append(mapname)
+        ESC.MAP_LIST.append(mapname)
         ESC.ARO_MAP=list()
         ESC.ARO_MAP_NAME=mapname
         updateMapFile(mapname)
@@ -49,14 +44,17 @@ def updateMapFile(mapname=''):
     for aro in ESC.ARO_MAP:
         aro_index.append(aro.AroID)
         for k,v in aro.__dict__.items():
+            if k[0]=='_':continue
             if k not in key_dict.values():
                 key_dict[len(key_dict)+1]=k
     # Complete building;
     txt='ARO_INDEX='+aro_index.__str__()+'\n'
     txt+='KEY_DICT='+key_dict.__str__()+'\n'
     # Replace key;
+    temp_dict=dict()
     for aro in ESC.ARO_MAP:
-        temp_dict=dict(aro.__dict__)
+        for k,v in aro.__dict__.items():
+            if k[0]!='_':temp_dict[k]=v
         for k,v in key_dict.items():
             if v in temp_dict:
                 temp=temp_dict[v]
@@ -67,4 +65,16 @@ def updateMapFile(mapname=''):
     with open('sim/'+ESC.SIM_NAME+'/map/'+mapname+'.py','w+') as map_fd:
         map_fd.truncate()
         map_fd.write(txt)
+    return
+
+def renameMapFile(mapname='',newname='NewMap'):
+    'Lv1: Rename map;'
+    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    ESC.saveSim()
+    if mapname=='': mapname=ESC.ARO_MAP_NAME
+    ESC.ARO_MAP_NAME=newname
+    ESC.MAP_LIST.remove(mapname)
+    ESC.MAP_LIST.append(newname)
+    os.rename('sim/'+ESC.SIM_NAME+'/map/'+mapname+'.py','sim/'+ESC.SIM_NAME+'/map/'+newname+'.py')
+    ESC.saveSim()
     return

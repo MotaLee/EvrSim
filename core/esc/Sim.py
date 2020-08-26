@@ -42,9 +42,9 @@ def openSim(simname):
     ESC.setSim(_locals['USER_SETTING'])
 
     # Map;
-    ESC.ARO_MAP_LIST=_locals['MAP_INDEX']
-    ESC.ARO_MAP_NAME=ESC.ARO_MAP_LIST[0]
-    ESC.loadMapFile(ESC.ARO_MAP_LIST[0])
+    ESC.MAP_LIST=_locals['MAP_INDEX']
+    ESC.ARO_MAP_NAME=ESC.MAP_LIST[0]
+    ESC.loadMapFile(ESC.MAP_LIST[0])
     # Models;
     for model in _locals['MODEL_INDEX']:
         ESC.loadModelFile((ESC.SIM_NAME,model))
@@ -95,13 +95,13 @@ def saveSim():
     simtxt+='AROCLASS_INDEX=[]\n'
     simtxt+='ACPCLASS_INDEX=[]\n'
     simtxt+='TOOL_INDEX=[]\n'
-    simtxt+='MAP_INDEX='+ESC.ARO_MAP_LIST.__str__()+'\n'
+    simtxt+='MAP_INDEX='+ESC.MAP_LIST.__str__()+'\n'
     model_index=[]
-    for model in ESC.ACP_MAP.keys():
+    for model in ESC.ACP_MODELS.keys():
         if model[0]==ESC.SIM_NAME:
             model_index.append(model[1])
     simtxt+='MODEL_INDEX='+model_index.__str__()+'\n'
-    simtxt+='COM_INDEX=["com"]\n'
+    simtxt+='COM_INDEX=[""]\n'
     ESC.SIM_FD.seek(0,0)
     ESC.SIM_FD.truncate()
     ESC.SIM_FD.write(simtxt)
@@ -126,5 +126,5 @@ def comSim():
     return
 
 def resetSim():
-    ESC.ACP_MAP=list(ESC.ARO_QUEUE[-1])
+    ESC.ACP_MODELS=list(ESC.MAP_QUEUE[-1])
     return

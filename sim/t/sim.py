@@ -1,9 +1,9 @@
 SIM_NAME="t"
-USER_SETTING={'MODEL_DISABLE': [('Dynamics', 'ug'), ('t', 'm1'), ('t', 'm2')]}
+USER_SETTING={'MODEL_DISABLE': [('t', 'm1'), ('t', 'm2'), ('t', 'test'), ('t', 'PM')]}
 MOD_INDEX=['AroCore', 'Dynamics']
 AROCLASS_INDEX=[]
 ACPCLASS_INDEX=[]
 TOOL_INDEX=[]
-MAP_INDEX=['init', 'map1']
-MODEL_INDEX=['m1', 'm2', 'New model']
-COM_INDEX=["com"]
+MAP_INDEX=['body3', 'PlanarMech']
+MODEL_INDEX=['test', 'PM']
+COM_INDEX=[""]

@@ -9,15 +9,28 @@
             "name": "Python: EST",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/est.py",
+            "program": "${workspaceFolder}/app/EST/EST.py",
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: Wx",
+            "name": "Python: Editor",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/EvrSimWx.py",
-            "console": "integratedTerminal"
+            "program": "${workspaceFolder}/app/EvrSimEditor/EvrSimEditor.py",
+            "console": "integratedTerminal",
+            "args": [
+                "Wx"
+            ]
+        },
+        {
+            "name": "Python: STS",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/app/SmartToeSleeve/SmartToeSleeve.py",
+            "console": "integratedTerminal",
+            "args": [
+                "Wx"
+            ]
         },
         {
             "name": "Python: 当前文件",

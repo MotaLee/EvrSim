@@ -17,3 +17,4 @@ deploy_key_rsa
 /.old
 /.vscode
 /__pycache__
+*.pdf

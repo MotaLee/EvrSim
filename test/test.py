@@ -20,8 +20,8 @@ def onClk(e):
     return
 wxmw=ESW()
 testui=esui.ScrolledPlc(wxmw,(100,100),(200,300))
-test_txt1=esui.btn(testui,(0,0),(100,50),'text')
-test_txt=esui.Stc(testui,(0,290),(100,50),'text')
+test_txt1=esui.Btn(testui,(0,0),(100,50),'text')
+test_txt=esui.StaticText(testui,(0,290),(100,50),'text')
 testui.updateVirtualSize()
 
 test_txt.Bind(wx.EVT_LEFT_DOWN,onClk)

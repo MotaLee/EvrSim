@@ -32,7 +32,7 @@ class DpMoment(ADP):
         super().__init__(aro)
         self.gl_type=gl.GL_TRIANGLES
         self.fix_size=True
-        self.VA,self.EA=esgl.importDPM('mod/Dynamics/DPM/moment.obj')
+        self.VA,self.EA=esgl.importDPM('mod/Dynamics/res/moment.obj')
         v=list(self.Aro.position)
         r1=glm.translate(glm.mat4(1.0),v)
         r2=esgl.rotateToVec((0,1,0),self.Aro.value)
@@ -46,7 +46,7 @@ class DpAxisConstraint(ADP):
 class DpGround(ADP):
     def __init__(self,aro):
         super().__init__(aro)
-        self.gl_type=gl.GL_TRIANGLES
+        self.gl_type=gl.GL_LINES
         ps=0.2
 
         VA=np.array([
@@ -55,7 +55,7 @@ class DpGround(ADP):
             [ps,-1*ps,ps/-1,     0.5,0.5,0.5,1],
             [ps/-1,-1*ps,ps/-1,     0.5,0.5,0.5,1]],dtype=np.float32)
         self.VA=VA
-        self.EA=np.array([[0,1,2],[0,2,3],[0,1,3],[1,2,3]],dtype=np.uint32)
+        self.EA=np.array([[0,1],[0,2],[0,3],[1,3],[2,3],[1,2]],dtype=np.uint32)
         v_p=list(self.Aro.position)
         self.trans=glm.translate(glm.mat4(1.0),v_p)
         return

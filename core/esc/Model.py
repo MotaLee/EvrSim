@@ -1,46 +1,51 @@
+import os
 from core import esc as ESC
-def getModelPath(acpmodel):
+def getModelPath(mdl_tuple):
     'Lv1: Get model path even not existed.'
-    if acpmodel[0]==ESC.SIM_NAME:
-        path='sim/'+acpmodel[0]+'/model/'+acpmodel[1]+'.py'
+    if mdl_tuple[0]==ESC.SIM_NAME:
+        path='sim/'+mdl_tuple[0]+'/model/'+mdl_tuple[1]+'.py'
     else:
-        path='mod/'+acpmodel[0]+'/model/'+acpmodel[1]+'.py'
+        path='mod/'+mdl_tuple[0]+'/model/'+mdl_tuple[1]+'.py'
     return path
 
-def newModelFile(modelname):
+def newModelFile(mdlname):
     'Lv2: Create a new model in opened sim.'
     if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
-    if modelname not in ESC.ACP_MAP:
-        ESC.ACP_MAP[(ESC.SIM_NAME,modelname)]=list()
-        ESC.ACPID_MAX[(ESC.SIM_NAME,modelname)]=0
+    model_tuple=(ESC.SIM_NAME,mdlname)
+    if model_tuple not in ESC.ACP_MODELS:
+        ESC.ACP_MODELS[model_tuple]=list()
+        ESC.ACPID_MAX[model_tuple]=0
     else:
         return ESC.bug('E: Model name already existed.')
     return
 
-def updateModelFile(acpmodel=None):
+def updateModelFile(mdl_tuple=None):
     ''' Lv2: Update model files by ESC.ACP_MAP.
 
-        Empty para acpmodel for all models;'''
+        Empty para mdl_tuple for all models;'''
     if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
-    if acpmodel is None:
-        models=list(ESC.ACP_MAP.keys())
-    else: models=[acpmodel]
+    if mdl_tuple is None:
+        models=list(ESC.ACP_MODELS.keys())
+    else: models=[mdl_tuple]
 
     for model in models:
         # Build index and key dict;
         acp_index=[]
         key_dict=dict()
-        for acp in ESC.ACP_MAP[model]:
+        for acp in ESC.ACP_MODELS[model]:
             acp_index.append(acp.AcpID)
             for k,v in acp.__dict__.items():
+                if k[0]=='_':continue
                 if k not in key_dict.values():
                     key_dict[len(key_dict)+1]=k
         # Complete building;
         txt='ACP_INDEX='+acp_index.__str__()+'\n'
         txt+='KEY_DICT='+key_dict.__str__()+'\n'
         # Replace key;
-        for acp in ESC.ACP_MAP[model]:
-            temp_dict=dict(acp.__dict__)
+        temp_dict=dict()
+        for acp in ESC.ACP_MODELS[model]:
+            for k,v in acp.__dict__.items():
+                if k[0]!='_':temp_dict[k]=v
             for k,v in key_dict.items():
                 if v in temp_dict:
                     temp=temp_dict[v]
@@ -54,10 +59,13 @@ def updateModelFile(acpmodel=None):
             model_fd.write(txt)
     return
 
-def loadModelFile(acpmodel):
+def loadModelFile(mdl_tuple):
     ''' Lv2: Load model from file;'''
     if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
-    path=ESC.getModelPath(acpmodel)
+    if mdl_tuple not in ESC.ACP_MODELS:
+        ESC.ACP_MODELS[mdl_tuple]=list()
+        ESC.ACPID_MAX[mdl_tuple]=0
+    path=ESC.getModelPath(mdl_tuple)
     with open(path,'r') as model_fd:
         content=model_fd.read()
     _locals=dict(locals())
@@ -71,5 +79,23 @@ def loadModelFile(acpmodel):
                 temp=acp[k]
                 del acp[k]
                 acp[v]=temp
-        ESC.initAcp(acp['AcpClass'],acp,acpmodel)
+        ESC.initAcp(acp['AcpClass'],acp,mdl_tuple)
+    return
+
+def renameModelFile(mdlname,newname):
+    'Rename model in sim.'
+    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    ESC.saveSim()
+    mdl_tuple=(ESC.SIM_NAME,mdlname)
+    new_tuple=(ESC.SIM_NAME,newname)
+    if mdl_tuple in ESC.MODEL_DISABLE:
+        disable_list=list(ESC.MODEL_DISABLE)
+        disable_list.append(new_tuple)
+        disable_list.remove(mdl_tuple)
+        ESC.setSim({'MODEL_DISABLE':disable_list})
+    tmp_value=ESC.ACP_MODELS[mdl_tuple]
+    ESC.ACP_MODELS[new_tuple]=tmp_value
+    del ESC.ACP_MODELS[mdl_tuple]
+    os.rename('sim/'+ESC.SIM_NAME+'/model/'+mdlname+'.py','sim/'+ESC.SIM_NAME+'/model/'+newname+'.py')
+    ESC.saveSim()
     return

@@ -1,8 +1,14 @@
 from core import ESC
 # Aro class defination;
 class Aro(object):
-    ''' Core Aro class;'''
+    ''' Core Aro class.
+
+        Variable started with '_' wont save to map.'''
     def __init__(self):
+        self._Arove_flag={
+            'invisible':['_Arove_flag','AroID','AroClass'],
+            'uneditable':['adp'],
+            'longdata':['desc']}
         # Preset Arove;
         self.AroID=0
         self.AroClass=self.__module__+'.'+type(self).__name__
@@ -34,17 +40,19 @@ class AroTree(Aro):
         Addition Arove: parent, children;'''
     def __init__(self):
         super().__init__()
+        self._Arove_flag['invisible']+=['parent','children']
         self.parent=None    # AroID;
         self.children=list()    # AroID list;
         return
     pass
 
-class AroTarget(Aro):
+class AroTargets(Aro):
     ''' Aro with targets.
 
         Addition Arove: targets;'''
     def __init__(self):
         super().__init__()
+        # self._Arove_flag['invisible'].append('targets')
         self.targets=list()     # AroID list;
         return
     pass
@@ -57,11 +65,21 @@ class AroPoint(Aro):
         return
     pass
 
+class AroImage(Aro):
+    def __init__(self):
+        super().__init__()
+        self.adp='mod.AroCore.AdpImage'
+        self.position=[0,0,0]
+        self.size=[0,0]
+        self.image=''
+        return
+    pass
+
 class AroSpace(AroTree):
     '''Addition Arove: space_set;'''
     def __init__(self):
         super().__init__()
-        self.data_type.update({'space_list':'AroID list'})
+        self._Arove_flag['invisible'].append('space_list')
         self.space_list=list()
         return
     pass
@@ -70,6 +88,7 @@ class AroGroup(AroTree):
     '''Addition Arove: link_dict;'''
     def __init__(self):
         super().__init__()
+        self._Arove_flag['invisible'].append('group_dict')
         self.group_dict=dict()  # {AroID:AroID list}
         return
 

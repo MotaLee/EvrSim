@@ -1,57 +1,67 @@
 # Libs;
 import wx
+from core import esui
+# Event type;
+ETYPE_COMMON_EVENT = wx.NewEventType()
+ETYPE_NEW_SIM = wx.NewEventType()
+ETYPE_OPEN_SIM = wx.NewEventType()
+ETYPE_SAVEAS_SIM = wx.NewEventType()
+ETYPE_RUN_SIM = wx.NewEventType()
+ETYPE_RESET_SIM = wx.NewEventType()
+ETYPE_CLOSE_SIM = wx.NewEventType()
+
+ETYPE_UPDATE_MAP = wx.NewEventType()
+ETYPE_UPDATE_MODEL = wx.NewEventType()
+
+ETYPE_LOAD_MOD = wx.NewEventType()
+
+ETYPE_SIM_CIRCLED = wx.NewEventType()
+ETYPE_KEY_DOWN = wx.NewEventType()
+
+ETYPE_OPEN_CMD = wx.NewEventType()
+ETYPE_CLOSE_CMD = wx.NewEventType()
+
+# Event binder;
+EVT_COMMON_EVENT = wx.PyEventBinder(ETYPE_COMMON_EVENT, 1)
+EVT_NEW_SIM = wx.PyEventBinder(ETYPE_NEW_SIM, 1)
+EVT_OPEN_SIM = wx.PyEventBinder(ETYPE_OPEN_SIM, 1)
+EVT_SAVEAS_SIM = wx.PyEventBinder(ETYPE_SAVEAS_SIM, 1)
+EVT_RUN_SIM = wx.PyEventBinder(ETYPE_RUN_SIM, 1)
+EVT_RESET_SIM = wx.PyEventBinder(ETYPE_RESET_SIM, 1)
+EVT_CLOSE_SIM = wx.PyEventBinder(ETYPE_CLOSE_SIM, 1)
+
+EVT_UPDATE_MAP =wx.PyEventBinder(ETYPE_UPDATE_MAP, 1)
+EVT_UPDATE_MODEL =wx.PyEventBinder(ETYPE_UPDATE_MODEL, 1)
+EVT_LOAD_MOD = wx.PyEventBinder(ETYPE_LOAD_MOD, 1)
+EVT_SIM_CIRCLED = wx.PyEventBinder(ETYPE_SIM_CIRCLED, 1)
+EVT_KEY_DOWN = wx.PyEventBinder(ETYPE_KEY_DOWN, 1)
 
 # EvrSim Custom event;
 class EvrSimEvent(wx.PyCommandEvent):
     def __init__(self,evtType,id):
         wx.PyCommandEvent.__init__(self,evtType,id)
-        self.eventArgs=""
+        self.eventArgs=None
         return
 
-    def GetEventArgs(self):
-        return self.eventArgs
+    def GetEventArgs(self,index=0):
+        if type(self.eventArgs)!=list:
+            out=self.eventArgs
+        else:out=self.eventArgs[index]
+        return out
 
     def SetEventArgs(self,args):
         self.eventArgs = args
         return
     pass
 
-# Event type;
-esEVT_COMMON_EVENT = wx.NewEventType()
-esEVT_NEW_SIM = wx.NewEventType()
-esEVT_OPEN_SIM = wx.NewEventType()
-esEVT_SAVEAS_SIM = wx.NewEventType()
-esEVT_RUN_SIM = wx.NewEventType()
-esEVT_RESET_SIM = wx.NewEventType()
-esEVT_CLOSE_SIM = wx.NewEventType()
-
-esEVT_UPDATE_MAP = wx.NewEventType()
-esEVT_UPDATE_MODEL = wx.NewEventType()
-
-esEVT_LOAD_MOD = wx.NewEventType()
-
-# Event binder;
-EVT_COMMON_EVENT = wx.PyEventBinder(esEVT_COMMON_EVENT, 1)
-EVT_NEW_SIM = wx.PyEventBinder(esEVT_NEW_SIM, 1)
-EVT_OPEN_SIM = wx.PyEventBinder(esEVT_OPEN_SIM, 1)
-EVT_SAVEAS_SIM = wx.PyEventBinder(esEVT_SAVEAS_SIM, 1)
-EVT_RUN_SIM = wx.PyEventBinder(esEVT_RUN_SIM, 1)
-EVT_RESET_SIM = wx.PyEventBinder(esEVT_RESET_SIM, 1)
-EVT_CLOSE_SIM = wx.PyEventBinder(esEVT_CLOSE_SIM, 1)
-
-EVT_UPDATE_MAP =wx.PyEventBinder(esEVT_UPDATE_MAP, 1)
-EVT_UPDATE_MODEL =wx.PyEventBinder(esEVT_UPDATE_MODEL, 1)
-EVT_LOAD_MOD = wx.PyEventBinder(esEVT_LOAD_MOD, 1)
 
 def sendEvent(etype,args=None,target=None):
     ''' Para target: None for wxmw main window;'''
     evt =EvrSimEvent(etype,-1)
     evt.SetEventArgs(args)
     if target is None:
-        wxmw=wx.Window.FindWindowByName('wxmw')
-        for plc in wxmw.Children:
+        esui.WXMW.GetEventHandler().ProcessEvent(evt)
+        for plc in esui.WXMW.Children:
             plc.GetEventHandler().ProcessEvent(evt)
-        wxmw.GetEventHandler().ProcessEvent(evt)
-    else:
-        target.GetEventHandler().ProcessEvent(evt)
+    else:target.ProcessEvent(evt)
     return

@@ -1,34 +1,34 @@
-'''
-EvrSim Core class.
+''' EvrSim Core class.
 
-Communicate with memory and files;
-'''
+    Communicate with memory and files;'''
+import os
 # Built-in importion;
 import mod
 from .Aro import getAro,addAro,delAro,initAro,setAro,getAroByName
 from .Acp import getAcp,addAcp,setAcp,delAcp,initAcp,connectAcp
-from .Map import newMapFile,loadMapFile,updateMapFile
-from .Model import newModelFile,loadModelFile,updateModelFile,getModelPath
+from .Map import newMapFile,loadMapFile,updateMapFile,renameMapFile
+from .Model import newModelFile,loadModelFile,updateModelFile,getModelPath,renameModelFile
 from .Running import runSim
 from .Sim import newSim,openSim,delSim,closeSim,setSim,saveSim,resetSim
 
+ES_PATH=os.getcwd()
 CORE_STAUS='READY'     # ['READY','BUSY','STOP','STEP']
 SIM_NAME=''
 SIM_FD=None
-MOD_LIST=[]
-USER_SETTING={}
+MOD_LIST=list()
+USER_SETTING=dict()
 # Core modified;
 TIME_RATE=1
-MODEL_DISABLE=[]
+MODEL_DISABLE=list()
 # Maps and models;
 AROID_MAX=0
-ARO_MAP=[]
-ARO_QUEUE=[]
+ARO_MAP=list()
+MAP_QUEUE=list()
 ARO_MAP_NAME=''
-ARO_MAP_LIST=[]
+MAP_LIST=list()
 
-ACPID_MAX={}
-ACP_MAP={}     # {'modName.modelName':[acplist...]} | {'simInModelName':[...]}
+ACPID_MAX=dict()    # {(modName,modelName):acpid, ...}
+ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[...]}
 
 # User changeable setting;
 SIM_REALTIME=True
@@ -46,23 +46,23 @@ SETTING_DICT={
 # Methods
 def initESC():
     global CORE_STAUS,SIM_NAME,SIM_FD,MOD_LIST,USER_SETTING,TIME_RATE
-    global MODEL_DISABLE,AROID_MAX,ARO_MAP,ARO_QUEUE,ARO_MAP_NAME
-    global ACPID_MAX,ACP_MAP,SIM_REALTIME,SIM_RECORD,SIM_QUEUE_LEN
-    global ACP_DEPTH,TIME_STEP,ARO_MAP_LIST
+    global MODEL_DISABLE,AROID_MAX,ARO_MAP,MAP_QUEUE,ARO_MAP_NAME
+    global ACPID_MAX,ACP_MODELS,SIM_REALTIME,SIM_RECORD,SIM_QUEUE_LEN
+    global ACP_DEPTH,TIME_STEP,MAP_LIST,MODEL_LIST
     CORE_STAUS='READY'
     SIM_NAME=''
     SIM_FD=None
-    MOD_LIST=[]
-    USER_SETTING={}
+    MOD_LIST=list()
+    USER_SETTING=dict()
     TIME_RATE=1
-    MODEL_DISABLE=[]
+    MODEL_DISABLE=list()
     AROID_MAX=0
-    ARO_MAP=[]
-    ARO_QUEUE=[]
+    ARO_MAP=list()
+    MAP_QUEUE=list()
     ARO_MAP_NAME=''
-    ARO_MAP_LIST=[]
-    ACPID_MAX={}
-    ACP_MAP={}
+    MAP_LIST=list()
+    ACPID_MAX=dict()
+    ACP_MODELS=dict()
     SIM_REALTIME=True
     SIM_RECORD=False
     SIM_QUEUE_LEN=1

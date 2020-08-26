@@ -1,10 +1,10 @@
 {
-    "python.pythonPath": "C:\\Users\\deminuit\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+    "python.pythonPath": "E:\\python\\python.exe",
     "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
-        "--ignore=F401,E225,E301,E231,E701,E305,E501,E226,E402,E302,E128,E241,E117",
+        "--ignore=F401,E225,E301,E231,E701,E305,E501,E226,E402,E302,E128,E241,E117,E272",
     ],
     "editor.renderWhitespace": "all",
     "editor.wordWrap": "on",
@@ -38,5 +38,10 @@
     "workbench.view.alwaysShowHeaderActions": true,
     "search.collapseResults": "alwaysCollapse",
     "workbench.tree.indent": 16,
+    "markdownlint.run": "onSave",
+    "markdownlint.config": {
+        "MD004":false,
+        "MD013": false
+    },
 
 }

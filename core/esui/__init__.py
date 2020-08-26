@@ -1,13 +1,16 @@
 # -*- coding: UTF-8 -*-
-'ESUI defination, base on wx;'
-
+'ESUI defination.'
+import wx
 # Globals variable;
-XU=0
-YU=0
+WXAPP=wx.App()
+cx,cy,cw,ch=wx.ClientDisplayRect()
+XU=cw/100
+YU=ch/100
+APPNAME=''
 WXMW=None
 HEAD_PLC=None
-MOD_PLC=None
-COM_PLC=None
+TOOL_PLC=None
+CMD_PLC=None
 ARO_PLC=None
 ACP_PLC=None
 SIDE_PLC=None
@@ -19,22 +22,26 @@ COLOR_TEXT='#ffffff'
 COLOR_SECOND='#555555'
 TEXT_FONT='Microsoft YaHei'
 
-# Text ctrl;
-from .textctrl import Stc
-from .textctrl import Ttc
-from .textctrl import Tcc
-from .textctrl import Mtc
-
+from .window import EsWindow
 # Panel container;
 from .plc import Plc
 from .plc import ScrolledPlc
-from .plc import AroTreePlc
 
-from .plc_HeadPlc import HeadPlc
-from .plc_ModPlc import ModPlc
-from .plc import ComPlc
-from .plc_AcpPlc import AcpPlc
-from .plc_SidePlc import SidePlc
+from .plc_Head import HeadPlc
+from .plc_Head import HeadBar
+from .plc import CmdPlc
+from .plc_Acp import AcpPlc
+from .plc_Side import SidePlc
+from .plc_tree import TreePlc
+from .plc_tree import MapTreePlc
+from .plc_tree import ModelTreePlc
+
+# Text ctrl;
+from .textctrl import StaticText
+from .textctrl import TransText
+from .textctrl import InputText
+from .textctrl import MultilineText
+from .textctrl import HintText
 
 # Popup;
 from .popup import MenuBtn
@@ -42,20 +49,18 @@ from .popup import BorderlessMenuBtn
 from .popup import SelectMenuBtn
 
 # EvrSim general dialog;
-from .esdialog import EsDialog
-from .esdialog import NewDialog
-from .esdialog import OpenDialog
-from .esdialog import SaveAsDialog
-from .esdialog import SettingDialog
-from .esdialog import ModDialog
+from .dialog import EsDialog
+from .dialog import NewDialog
+from .dialog import OpenDialog
+from .dialog import SaveAsDialog
+from .dialog import SettingDialog
+from .dialog import ModDialog
+from .dialog import MapDialog
+from .dialog import ModelDialog
 
 # Button;
-from .btn import btn
+from .btn import Btn
 from .btn import BorderlessBtn
 from .btn import SelectBtn
 from .btn import BlSelectBtn
 from .btn import TabBtn
-
-
-# Box;
-from .box import ListBox

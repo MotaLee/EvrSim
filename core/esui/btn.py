@@ -2,7 +2,7 @@ import wx
 from core import esui
 
 # Btn wx sub class;
-class btn(wx.Button):
+class Btn(wx.Button):
     def __init__(self,parent,p=wx.DefaultPosition,s=wx.DefaultSize,txt='',able=True,tip='',cn=''):
         wx.Button.__init__(self,parent,
             pos=p,
@@ -41,9 +41,9 @@ class btn(wx.Button):
         return
     pass
 
-class BorderlessBtn(btn):
+class BorderlessBtn(Btn):
     def __init__(self,parent,p,s,blbtnlabel,able=True,tip='',cn=''):
-        btn.__init__(self,parent,
+        Btn.__init__(self,parent,
             (int(p[0]+1),int(p[1]+1)),
             (int(s[0]-2),int(s[1]-2)),
             blbtnlabel,able,tip,cn)
@@ -69,8 +69,9 @@ class BorderlessBtn(btn):
 class SelectBtn(wx.ToggleButton):
     on_ctrl=False
     enable_ctrl=True
-    def __init__(self,parent,p,s,txt,tip='',select=False,enable=True,tsize=10):
+    def __init__(self,parent,p,s,txt,tip='',select=False,enable=True,tsize=10,cn=''):
         wx.ToggleButton.__init__(self,parent,
+            name=cn,
             pos=p,
             size=s,
             label=txt,
@@ -122,6 +123,7 @@ class SelectBtn(wx.ToggleButton):
     pass
 
 class BlSelectBtn(SelectBtn):
+    ''' Borderless Select Button.'''
     def onPaint(self,e):
         dc = wx.PaintDC(self)
         if self.GetValue():
@@ -142,11 +144,9 @@ class BlSelectBtn(SelectBtn):
         return
     pass
 
-# Tab btn wx sub class;
+# Tab Btn wx sub class;
 class TabBtn(wx.ToggleButton):
-    ''' Label of btn and its tab must be the same.
-
-        btn.cn is label_btn, while tab.cn is label_tab;'''
+    ''' Label of Btn and its tab must be the same.'''
     def __init__(self,parent,p,s,tablabel,cn=''):
         wx.ToggleButton.__init__(self,parent,
             pos=p,

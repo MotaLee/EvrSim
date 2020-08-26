@@ -6,12 +6,12 @@ from core import esevt
 from core import estool
 from .aro import RigidGroup
 
-class RGMenuTool(estool.SelectMenuTool):
-    def build(self,parent):
-        super().build(parent)
-        self.ctrl.Bind(esevt.EVT_UPDATE_MAP,self.onUpdateMap)
-        self.ctrl.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
-        esui.MOD_PLC.regToolEvent(self)
+class RGMenu(estool.SelectMenuTool):
+    def __init__(self,name,parent,p,s,label):
+        super().__init__(name,parent,p,s,label)
+        self.Bind(esevt.EVT_UPDATE_MAP,self.onUpdateMap)
+        self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        esui.TOOL_PLC.regToolEvent(self)
         return
 
     def onUpdateMap(self,e):
@@ -19,47 +19,47 @@ class RGMenuTool(estool.SelectMenuTool):
         for aro in ESC.ARO_MAP:
             if type(aro)==RigidGroup:
                 item_list.append(aro.AroName)
-        self.ctrl.setItems(item_list)
-        popup=self.ctrl.PopupControl
+        self.setItems(item_list)
+        popup=self.PopupControl
         if len(popup.items)!=0:
-            self.ctrl.SetLabel(popup.items[-1])
-        self.ctrl.Refresh()
+            self.SetLabel(popup.items[-1])
+        self.Refresh()
         return
 
     def onClk(self,e):
-        popup=self.ctrl.PopupControl
-        self.ctrl.SetLabel(popup.items[popup.ipos])
+        popup=self.PopupControl
+        self.SetLabel(popup.items[popup.ipos])
         e.Skip()
         return
     pass
 
-class NewRGTool(estool.ButtonTool):
-    def build(self,parent):
-        super().build(parent)
-        self.ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class NewRGBtn(estool.ButtonTool):
+    def __init__(self,name,parent,p,s,label):
+        super().__init__(name,parent,p,s,label)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
         ESC.initAro(RigidGroup,{'AroName':'New RG'})
-        esevt.sendEvent(esevt.esEVT_COMMON_EVENT,esevt.esEVT_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
         return
     pass
 
-class DelRGTool(estool.ButtonTool):
-    def build(self,parent):
-        super().build(parent)
-        self.ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class DelRGBtn(estool.ButtonTool):
+    def __init__(self,name,parent,p,s,label):
+        super().__init__(name,parent,p,s,label)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
-
+        'todo'
         return
     pass
 
-class ConnectRGTool(estool.ButtonTool):
-    def build(self,parent):
-        super().build(parent)
-        self.ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class ConnectRGBtn(estool.ButtonTool):
+    def __init__(self,name,parent,p,s,label):
+        super().__init__(name,parent,p,s,label)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
@@ -79,17 +79,17 @@ class ConnectRGTool(estool.ButtonTool):
             rg_dict[aro2.AroID].append(aro1.AroID)
 
         ESC.setAro(now_rg.AroID,{'group_dict':rg_dict})
-        esevt.sendEvent(esevt.esEVT_COMMON_EVENT,esevt.esEVT_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
         return
     pass
 
-class RemoveFromRGTool(estool.ButtonTool):
-    def build(self,parent):
-        super().build(parent)
-        self.ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class RemoveFromRGBtn(estool.ButtonTool):
+    def __init__(self,name,parent,p,s,label):
+        super().__init__(name,parent,p,s,label)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
-
+        'todo'
         return
     pass

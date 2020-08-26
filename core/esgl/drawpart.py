@@ -7,27 +7,33 @@ from core import esgl
 
 # OpenGL drawing part class;
 class DrawPart(object):
-    ''' Attr: dp_name, gl_type, VA, EA, trans, Aro, dim.
+    ''' Attr: dp_name, gl_type,
 
-        Para Aro: accept Aro or its AroID.;'''
+        VA, EA, trans, ftrans etc..'''
     def __init__(self):
         self.dp_name=''
-
         self.gl_type=gl.GL_POINTS
 
+        self.visible=True
+        self.highlight=False
         self.fix_position=False
         self.fix_size=False
         self.fix_orientation=False
-        self.highlight=False
+        self.update_data=True
 
         self.VA=np.array([],dtype=np.float32)
         self.EA=np.array([],dtype=np.uint32)
+        self.TA=''
+        self.VAO=-1
+        self.VBO=-1
+        self.EBO=-1
+        self.TAO=-1
         self.trans=glm.mat4(1.0)
         self.ftrans=glm.mat4(1.0)
 
         return
 
-    def transADP(self):
+    def transDP(self):
         ftrans=self.trans
         if self.fix_position:
             dpp=self.fix_position
@@ -47,22 +53,29 @@ class DrawPart(object):
             ftrans=esgl.getFixOriMat(ftrans)
         self.ftrans=ftrans
         return
+
+    def delDP(self):
+        gl.glDeleteVertexArrays(1,self.VAO)
+        gl.glDeleteBuffers(1,self.EBO)
+        gl.glDeleteBuffers(1,self.VBO)
+        return
     pass
 
 class AroDrawPart(DrawPart):
-    ''' Para Aro: accept Aro or its AroID.;'''
+    ''' Para Aro: accept Aro or AroID.;'''
     def __init__(self,aro=None):
         super().__init__()
         if type(aro)==int:aro=ESC.getAro(aro)
         self.Aro=aro
         if hasattr(aro,'position'):
-            self.ep_dis=np.linalg.norm(esgl.EP-aro.position)
+            # self.ep_dis=np.linalg.norm(esgl.EP-aro.position)
+            pass
         self.dp_name=aro.AroID
         return
     pass
 
 class ToolDrawPart(DrawPart):
-    ''' Para Aro: accept Aro or its AroID.;'''
+    ''' Para tool: accept tool.'''
     def __init__(self,tool):
         super().__init__()
         self.tool=tool

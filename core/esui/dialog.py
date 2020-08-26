@@ -1,10 +1,10 @@
 # Parent lib;
+import sys
 import os
 import wx
 from core import ESC
 from core import esui
 from core import esevt
-gmv=esui
 
 # Dialog wx sub class;
 class EsDialog(wx.Dialog):
@@ -15,11 +15,10 @@ class EsDialog(wx.Dialog):
             title=logtitle,
             style=wx.NO_BORDER)
         self.SetBackgroundColour(esui.COLOR_LBACK)
-        xu=esui.XU
         yu=esui.YU
-        self.conbtn=esui.btn(self,(60*xu-10*yu,55*yu),(4*yu,4*yu),'V')
-        self.canbtn=esui.btn(self,(60*xu-5*yu,55*yu),(4*yu,4*yu),'X')
-        self.dlgttl=esui.Stc(self,(yu,0),(10*xu,4*yu),logtitle,align='left')
+        self.conbtn=esui.Btn(self,(self.Size[0]-10*yu,self.Size[1]-5*yu),(4*yu,4*yu),'√')
+        self.canbtn=esui.Btn(self,(self.Size[0]-5*yu,self.Size[1]-5*yu),(4*yu,4*yu),'×')
+        self.dlgttl=esui.StaticText(self,(yu,0),(12*yu,4*yu),logtitle,align='left')
 
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.canbtn.Bind(wx.EVT_LEFT_DOWN,self.onCancel)
@@ -45,9 +44,9 @@ class NewDialog(EsDialog):
         xu=esui.XU
         yu=esui.YU
         self.dlgttl.SetLabel('New')
-        self.smstc=esui.Stc(self,(yu,4*yu,),(12*yu,4*yu),'Sim Name:',align='left')
-        self.nametcc=esui.Tcc(self,(12*yu,4*yu),(60*xu-14*yu,4*yu),tsize=1.5*yu)
-        self.warnstc=esui.Stc(self,(12*yu,8*yu),(20*xu,4*yu),'Sim existed.',align='left')
+        self.smstc=esui.StaticText(self,(yu,4*yu,),(12*yu,4*yu),'Sim Name:',align='left')
+        self.nametcc=esui.InputText(self,(12*yu,4*yu),(60*xu-14*yu,4*yu),tsize=1.5*yu)
+        self.warnstc=esui.StaticText(self,(12*yu,8*yu),(20*xu,4*yu),'Sim existed.',align='left')
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
         self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
         self.warnstc.Hide()
@@ -60,7 +59,9 @@ class NewDialog(EsDialog):
             if sim_name==f:
                 self.warnstc.Show()
                 return
-        esevt.sendEvent(esevt.esEVT_NEW_SIM,sim_name)
+        ESC.newSim(sim_name)
+        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_OPEN_SIM,sim_name])
+        self.EndModal(1)
         return
 
     def onClkNameTcc(self,e):
@@ -89,7 +90,8 @@ class OpenDialog(EsDialog):
                 sim_name=ctrl.GetLabel()
                 break
         if sim_name!='':
-            esevt.sendEvent(esevt.esEVT_OPEN_SIM,sim_name)
+            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_OPEN_SIM,sim_name])
+        self.EndModal(1)
         return
     pass
 
@@ -100,9 +102,9 @@ class SaveAsDialog(EsDialog):
         xu=esui.XU
         yu=esui.YU
         self.dlgttl.SetLabel('Save as')
-        self.smstc=esui.Stc(self,(yu,4*yu,),(12*yu,4*yu),'Sim Name:',align='left')
-        self.nametcc=esui.Tcc(self,(12*yu,4*yu),(60*xu-14*yu,4*yu),tsize=1.5*yu)
-        self.warnstc=esui.Stc(self,(12*yu,8*yu),(20*xu,4*yu),'Sim existed.',align='left')
+        self.smstc=esui.StaticText(self,(yu,4*yu,),(12*yu,4*yu),'Sim Name:',align='left')
+        self.nametcc=esui.InputText(self,(12*yu,4*yu),(60*xu-14*yu,4*yu),tsize=1.5*yu)
+        self.warnstc=esui.StaticText(self,(12*yu,8*yu),(20*xu,4*yu),'Sim existed.',align='left')
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
         self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
         self.warnstc.Hide()
@@ -115,7 +117,7 @@ class SaveAsDialog(EsDialog):
             if sim_name==f:
                 self.warnstc.Show()
                 return
-        esevt.sendEvent(esevt.esEVT_SAVEAS_SIM,sim_name)
+        ESC.newSim(sim_name,src=ESC.SIM_NAME)
         return
 
     def onClkNameTcc(self,e):
@@ -135,12 +137,12 @@ class SettingDialog(EsDialog):
         SP=self.setting_plc
         for desc,value in ESC.SETTING_DICT.items():
             # last_ctrl=
-            esui.Stc(SP,(yu,i*5*yu+yu),(24*yu,4*yu),desc+':',align='left')
+            esui.StaticText(SP,(yu,i*5*yu+yu),(24*yu,4*yu),desc+':',align='left')
             v_esc=ESC.__dict__[value]
             if type(v_esc)==bool:
                 esui.SelectBtn(SP,(24*yu,i*5*yu+yu),(4*yu,4*yu),'V',select=v_esc,tip=value)
             elif type(v_esc)==int or type(v_esc)==float:
-                esui.Tcc(SP,(24*yu,i*5*yu+yu),(8*yu,4*yu),hint=str(v_esc),tip=value)
+                esui.InputText(SP,(24*yu,i*5*yu+yu),(8*yu,4*yu),hint=str(v_esc),tip=value)
             i+=1
         # self.SIM_QUEUE_LEN=1
         # self.ACP_DEPTH=20
@@ -151,9 +153,9 @@ class SettingDialog(EsDialog):
     def onConfirm(self,e):
         setting_dict=dict()
         for ctrl in self.setting_plc.Children:
-            if type(ctrl)!=esui.Stc:
+            if type(ctrl)!=esui.StaticText:
                 pass
-        esevt.sendEvent(esevt.esEVT_SET_SIM,setting_dict)
+        esevt.sendEvent(esevt.ETYPE_SET_SIM,setting_dict)
         return
     pass
 
@@ -167,8 +169,8 @@ class ModDialog(EsDialog):
         xu=s[0]/60
         yu=s[1]/60
         # List view and tree view;
-        self.lvbtn=esui.btn(self,(yu,55*yu),(4*yu,4*yu),'Lv',able=False)
-        self.tibtn=esui.btn(self,(5*yu,55*yu),(4*yu,4*yu),'Tv')
+        self.lvbtn=esui.Btn(self,(yu,55*yu),(4*yu,4*yu),'Lv',able=False)
+        self.tibtn=esui.Btn(self,(5*yu,55*yu),(4*yu,4*yu),'Tv')
         self.dlgttl.SetLabel(loglabel)
         nowlist=list(self.Parent.WX_MOD_LIST)
         nowlist.remove('Self')
@@ -183,7 +185,7 @@ class ModDialog(EsDialog):
         for ctrl in clist:
             if ctrl.GetValue():
                 newlist.append(ctrl.GetLabel())
-        esevt.sendEvent(esevt.esEVT_LOAD_MOD,newlist)
+        esevt.sendEvent(esevt.ETYPE_LOAD_MOD,newlist)
         return
     pass
 
@@ -249,5 +251,92 @@ class ViewModPanel(wx.Panel):
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawLine(0,0,self.Size[0],0)
         dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
+        return
+    pass
+
+class MapDialog(EsDialog):
+    def __init__(self,parent,p,s,operation):
+        super().__init__(parent,p,s,operation+' Map')
+        xu=esui.XU
+        yu=esui.YU
+        self.operation=operation
+        self.dlgttl.SetLabel(operation+' Map:')
+        self.smstc=esui.StaticText(self,(yu,4*yu,),(12*yu,4*yu),'Name:',align='left')
+        self.nametcc=esui.InputText(self,(12*yu,4*yu),(self.Size[0]-13*yu,4*yu),tsize=1.5*yu)
+        self.warnstc=esui.StaticText(self,(12*yu,8*yu),(20*xu,4*yu),'Name existed.',align='left')
+        self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
+        self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
+        self.warnstc.Hide()
+        if operation!='New':
+            self.nametcc.SetValue(ESC.ARO_MAP_NAME)
+        return
+
+    def onConfirm(self,e):
+        map_name=self.nametcc.GetValue()
+        file_list=os.listdir('sim/'+ESC.SIM_NAME+'/map/')
+        for f in file_list:
+            if f[0:f.rfind('.')]==map_name:
+                self.warnstc.Show()
+                return
+        if self.operation=='New':
+            ESC.newMapFile(map_name)
+            esui.SIDE_PLC.loadMaps()
+            esui.SIDE_PLC.onClkWorkspace(call='ARO_PLC')
+        elif self.operation=='Rename':
+            ESC.renameMapFile(newname=map_name)
+            esui.SIDE_PLC.loadMaps()
+        elif self.operation=='Saveas':
+            pass
+        self.EndModal(1)
+        self.Destroy()
+        return
+
+    def onClkNameTcc(self,e):
+        self.warnstc.Hide()
+        e.Skip()
+        return
+    pass
+
+class ModelDialog(EsDialog):
+    def __init__(self,parent,p,s,operation):
+        super().__init__(parent,p,s,operation+' Model')
+        xu=esui.XU
+        yu=esui.YU
+        self.operation=operation
+        self.dlgttl.SetLabel(operation+' Model:')
+        self.smstc=esui.StaticText(self,(yu,4*yu,),(12*yu,4*yu),'Name:',align='left')
+        self.nametcc=esui.InputText(self,(12*yu,4*yu),(self.Size[0]-13*yu,4*yu),tsize=1.5*yu)
+        self.warnstc=esui.StaticText(self,(12*yu,8*yu),(20*xu,4*yu),'Name existed.',align='left')
+        self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
+        self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
+        self.warnstc.Hide()
+        if operation!='New':
+            self.nametcc.SetValue(esui.ACP_PLC.model_tuple[1])
+        return
+
+    def onConfirm(self,e):
+        model_name=self.nametcc.GetValue()
+        file_list=os.listdir('sim/'+ESC.SIM_NAME+'/model/')
+        for f in file_list:
+            if f[0:f.rfind('.')]==model_name:
+                self.warnstc.Show()
+                return
+        if self.operation=='New':
+            ESC.newModelFile(model_name)
+            esui.SIDE_PLC.loadModels()
+            esui.SIDE_PLC.onClkWorkspace(call='ACP_PLC')
+            esui.ACP_PLC.drawAcp((ESC.SIM_NAME,model_name))
+        elif self.operation=='Rename':
+            ESC.renameModelFile(mdlname=esui.ACP_PLC.model_tuple[1],newname=model_name)
+            esui.SIDE_PLC.loadModels()
+        elif self.operation=='Saveas':
+            pass
+        self.EndModal(1)
+        self.Destroy()
+        return
+
+    def onClkNameTcc(self,e):
+        self.warnstc.Hide()
+        e.Skip()
         return
     pass

@@ -9,7 +9,7 @@ def runSim(itorlist=['time']):
     # Collect providers and iterators;
     pvdrs=dict()
     itors=dict()
-    for model,acplist in ESC.ACP_MAP.items():
+    for model,acplist in ESC.ACP_MODELS.items():
         if model in ESC.MODEL_DISABLE:continue
         for acp in acplist:
             if isinstance(acp,mod.AroCore.AcpIterator) and acp.item in itorlist:
@@ -20,15 +20,17 @@ def runSim(itorlist=['time']):
                 pvdrs[model].append(acp)
 
     # Snapshot preparing;
-    ESC.ARO_QUEUE.append(list(ESC.ARO_MAP))
-    if len(ESC.ARO_QUEUE)>ESC.SIM_QUEUE_LEN:
-        ESC.ARO_QUEUE=ESC.ARO_QUEUE[1:]
+    ESC.MAP_QUEUE.append(list(ESC.ARO_MAP))
+    if len(ESC.MAP_QUEUE)>ESC.SIM_QUEUE_LEN:
+        ESC.MAP_QUEUE=ESC.MAP_QUEUE[1:]
 
-    if len(itors.values())==0:  # Static;
-        travesalPvdrs(pvdrs)
-        'todo: convergence check;'
+    # Static;
+    travesalPvdrs(pvdrs,static=True)
+    if len(itors.values())==0:
         ESC.CORE_STAUS='STOP'
-    elif len(itors.values())==1:    # Single dimension;
+        ESC.bug('I: Static running done.')
+    elif len(itors.values())==1:
+        # Single dimension;
         itor=list(itors.values())[0][0]
         if ESC.SIM_REALTIME:
             itor.iterate()
@@ -46,12 +48,17 @@ def runSim(itorlist=['time']):
 
     return
 
-def travesalPvdrs(pvdrs):
+def travesalPvdrs(pvdrs,static=False):
+    data=None
     for model,pvdrlist in pvdrs.items():
-        for pvdr in pvdrlist:
-            data=reqAcp(pvdr,model)
-            if ESC.CORE_STAUS=='STOP':
-                return None,None
+        if static:end=len(pvdrlist)
+        else:end=1
+        for i in range(0,end):
+            'todo: better convergence method;'
+            for pvdr in pvdrlist:
+                data=reqAcp(pvdr,model)
+                if ESC.CORE_STAUS=='STOP':
+                    return None,None
     return data
 
 def reqAcp(acp,acpmodel,paradict={}):
@@ -62,7 +69,7 @@ def reqAcp(acp,acpmodel,paradict={}):
         int for AcpID or Acp self;'''
     # Para check;
     if type(acp) is str:
-        for anl in ESC.ACP_MAP[acpmodel]:
+        for anl in ESC.ACP_MODELS[acpmodel]:
             if anl.AcpName==acp:
                 acp=anl
                 break
@@ -77,7 +84,7 @@ def reqAcp(acp,acpmodel,paradict={}):
     stack.append(acproot)
     datadict=dict()
     datadict.update(paradict)
-    if len(ESC.ARO_QUEUE)==0:ESC.ARO_QUEUE.append(list(ESC.ARO_MAP))
+    if len(ESC.MAP_QUEUE)==0:ESC.MAP_QUEUE.append(list(ESC.ARO_MAP))
 
     # Main travesal;
     while len(stack)!=0:
@@ -100,13 +107,18 @@ def reqAcp(acp,acpmodel,paradict={}):
         # Checked;
         if out_ready and in_ready:
             # All ready, post progress;
-            datadict.update(acp.postProgress(datadict))
+            try:ret=acp.postProgress(datadict)
+            except BaseException as e:
+                ESC.bug('E: Post progressing in '+acp.AcpName+' '+str(e))
+                ESC.CORE_STAUS='STOP'
+                return None,None
+            datadict.update(ret)
             stack.pop()
         elif in_ready:
             # Inport all ready, calculate Acp;
             try:ret=acp.AcpProgress(datadict)
             except BaseException as e:
-                ESC.bug('E: Acp progressing in'+acp.AcpName+' raised '+str(e))
+                ESC.bug('E: Acp progressing in '+acp.AcpName+' '+str(e))
                 ESC.CORE_STAUS='STOP'
                 return None,None
             datadict.update(ret)

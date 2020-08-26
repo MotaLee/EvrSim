@@ -16,7 +16,7 @@ class AroToolbarPlc(esui.Plc):
         # self.moving=False
 
         yu=esui.YU
-        self.head=esui.btn(self,(0,0),(4*yu,2*yu),'Aro')
+        self.head=esui.Btn(self,(0,0),(4*yu,2*yu),'Aro')
         self.btn_slct=esui.BlSelectBtn(self,(0,2*yu),(4*yu,4*yu),'Slt')
         self.btn_rslct=esui.BlSelectBtn(self,(0,6*yu),(4*yu,4*yu),'RS')
         self.del_btn=esui.BorderlessBtn(self,(0,10*yu),(4*yu,4*yu),'Del')
@@ -63,9 +63,10 @@ class AroToolbarPlc(esui.Plc):
 
     def onClkDeleteBtn(self,e):
         for aro in esui.ARO_PLC.aro_selection:
+            aro.adp.delDP()
             ESC.delAro(aro.AroID)
         esui.ARO_PLC.aro_selection=list()
-        esevt.sendEvent(esevt.esEVT_COMMON_EVENT,esevt.esEVT_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
         e.Skip()
         return
 
@@ -129,9 +130,8 @@ class AroToolbarPlc(esui.Plc):
 
     def onClkProjBtn(self,e):
         ppc=self.prj_btn.PopupControl
-        if ppc.ipos==0:esgl.VIEW_PERP=False
-        elif ppc.ipos==1:esgl.VIEW_PERP=True
-        esui.ARO_PLC.projMode()
+        if ppc.ipos==0:esgl.projMode(False)
+        elif ppc.ipos==1:esgl.projMode(False)
         esui.ARO_PLC.lookAt()
         e.Skip()
         return

@@ -34,6 +34,12 @@ Simulate everything with visual math models you built.
 
 ---
 
+## Update
+
+See [UpdateLog](res/log/UpdateLog.md).
+
+---
+
 ## Addition
 
 Arthor: Mota Lee

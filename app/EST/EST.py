@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-'EvrSim Core and Terminal;'
+'EvrSim Terminal;'
 # system libs;
 import sys
 # import os

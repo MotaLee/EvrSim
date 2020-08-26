@@ -2,120 +2,99 @@ import mod
 from core import ESC
 from core import esui
 from core import esgl
+from .tool_plc import ToolPlc
 
 def getToolByName(toolname,modname):
     # ''' Para mod: empty for self mod.;'''
     TOOL_INDEX=eval('mod.'+modname+'.TOOL_INDEX')
     if toolname in TOOL_INDEX:
-        return eval('mod.'+modname+'.'+toolname)
+        try:
+            tool=eval('mod.'+modname+'.'+toolname)
+            return tool
+        except BaseException:
+            ESC.bug('E: Tool not created.')
+            return None
     else:
         ESC.bug('E: Tool not found.')
-        return
+        return None
 
 class BaseTool(object):
     'Lv:1: Base tool class. Only build base var;'
-    def __init__(self,name,label='',p=(0,0),s=(0,0),host='MOD_PLC'):
+    def __init__(self,name):
         self.name=name
-        self.label=label
-        self.p=p
-        self.s=s
-        self.host=host  # 'MOD_PLC' default, or 'ARO_PLC';
-        self.ctrl=None
+        return
+    pass
+
+class GLTool(BaseTool):
+    def __init__(self,name):
+        super().__init__(name)
         self.tdp=None
         return
 
-    def build(self,parent):
-        # self.ctrl=None
-        return
-
-    pass
-
-class StaticDPTool(BaseTool):
-    def __init__(self,name):
-        super().__init__(name,host='ARO_PLC')
-        # self.tdp=TdpXyzAxis(self)
-        return
-
-    def build(self,parent):
+    def addToGL(self):
         esgl.TDP_LIST.append(self.tdp)
         return
     pass
 
-class CreateTool(BaseTool):
+class UIGLTool(GLTool,esui.Plc):
+    def __init__(self,name,p=(0,0),s=(0,0)):
+        GLTool.__init__(self,name)
+        esui.Plc.__init__(self,esui.ARO_PLC,p,s,name)
+        return
+    pass
+
+class CreateMenuTool(BaseTool,esui.MenuBtn):
     'Lv:2: Second tool class. Build MenuBtn ctrl;'
-    def __init__(self,name,label,p,s,items):
-        super().__init__(name,label,p,s)
+    def __init__(self,name,parent,p,s,label,items):
+        BaseTool.__init__(self,name)
+        esui.MenuBtn.__init__(self,parent,p,s,label,items)
         self.items=items
         return
-
-    def build(self,parent):
-        self.ctrl=esui.MenuBtn(parent,
-            self.p,self.s,
-            self.label,self.items)
-        self.ctrl.name=self.name
-        self.ctrl.shell=self
-        return
     pass
 
-class ToggleTool(BaseTool):
+class ToggleTool(BaseTool,esui.SelectBtn):
     'Lv:2: Second tool class. Build SelectBtn ctrl;'
-    def __init__(self,name,label,p,s,state=False,tip=''):
-        super().__init__(name,label,p,s)
-        self.state=state
-        self.tip=tip
-        return
-
-    def build(self,parent):
-        self.ctrl=esui.SelectBtn(parent,
-            self.p,self.s,
-            self.label,
-            select=self.state,
-            tip=self.tip,tsize=self.s[1]/2)
-        self.ctrl.name=self.name
-        self.ctrl.shell=self
+    def __init__(self,name,parent,p,s,label,select=False,tip=''):
+        BaseTool.__init__(self,name)
+        esui.SelectBtn.__init__(self,parent,p,s,label,tip,select=select,tsize=s[1]/2)
         return
     pass
 
-class TextTool(BaseTool):
+class TextTool(BaseTool,esui.StaticText):
     'Lv:2: Second tool class. Build SelectBtn ctrl;'
-    def __init__(self,name,label,p,s):
-        super().__init__(name,label,p,s)
-        return
-
-    def build(self,parent):
-        self.ctrl=esui.Stc(parent,self.p,self.s,
-            self.label,
-            tsize=self.s[1]/2)
-        self.ctrl.name=self.name
-        self.ctrl.shell=self
+    def __init__(self,name,parent,p,s,label):
+        BaseTool.__init__(self,name)
+        esui.StaticText.__init__(self,parent,p,s,label)
         return
     pass
 
-class ButtonTool(BaseTool):
+class ButtonTool(BaseTool,esui.Btn):
     'Lv:2: Second tool class. Build Btn ctrl;'
-    def __init__(self,name,label,p,s):
-        super().__init__(name,label,p,s)
-        return
-
-    def build(self,parent):
-        self.ctrl=esui.btn(parent,self.p,self.s,
-            self.label)
-        self.ctrl.name=self.name
-        self.ctrl.shell=self
+    def __init__(self,name,parent,p,s,label):
+        BaseTool.__init__(self,name)
+        esui.Btn.__init__(self,parent,p,s,label)
         return
     pass
 
-class SelectMenuTool(BaseTool):
-    def __init__(self,name,label,p,s,items=[]):
-        super().__init__(name,label,p,s)
+class SelectMenuTool(BaseTool,esui.SelectMenuBtn):
+    def __init__(self,name,parent,p,s,label,items=[]):
+        BaseTool.__init__(self,name)
+        esui.SelectMenuBtn.__init__(self,parent,p,s,label,items)
         self.items=items
         return
+    pass
 
-    def build(self,parent):
-        self.ctrl=esui.SelectMenuBtn(parent,
-            self.p,self.s,
-            self.label,self.items)
-        self.ctrl.name=self.name
-        self.ctrl.shell=self
+class BarTool(BaseTool,esui.Plc):
+    def __init__(self,name,parent,p,s):
+        BaseTool.__init__(self,name)
+        esui.Plc.__init__(self,parent,p,s)
+        self.SetBackgroundColour(esui.COLOR_FRONT)
+        return
+    pass
+
+class InputTool(BaseTool,esui.InputText):
+    def __init__(self,name,parent,p,s,label):
+        BaseTool.__init__(self,name)
+        esui.InputText.__init__(self,parent,p,s,hint=label)
         return
     pass

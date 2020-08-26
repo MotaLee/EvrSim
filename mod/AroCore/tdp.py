@@ -62,3 +62,12 @@ class TdpViewBall(TDP):
 
 class DpRatioRuler(TDP):
     pass
+
+class TdpTrack(TDP):
+    def __init__(self,tool):
+        super().__init__(tool)
+        self.gl_type=gl.GL_LINES
+        self.VA=np.array([],dtype=np.float32)
+        self.EA=np.array([],dtype=np.uint32)
+        return
+    pass

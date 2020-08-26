@@ -2,7 +2,7 @@ import mod
 from core import esc as ESC
 def getAcp(acpid,acpmodel):
     'Lv1: Get Acp by AcpID;'
-    for model,acplist in ESC.ACP_MAP.items():
+    for model,acplist in ESC.ACP_MODELS.items():
         if model==acpmodel:
             for acp in acplist:
                 if acp.AcpID==acpid: return acp
@@ -12,23 +12,26 @@ def addAcp(acpclass,acpmodel):
     'Lv1: Add an Acp into list. Return added Acp;'
     if type(acpclass)==str:acp=eval(acpclass+'()')
     else:acp=acpclass()
-    if acpmodel not in ESC.ACP_MAP:
-        ESC.ACP_MAP[acpmodel]=[]
-        ESC.ACPID_MAX[acpmodel]=0
     ESC.ACPID_MAX[acpmodel]+=1
     acp.AcpID=ESC.ACPID_MAX[acpmodel]
-    ESC.ACP_MAP[acpmodel].append(acp)
+    ESC.ACP_MODELS[acpmodel].append(acp)
     return acp
 
 def setAcp(acp,acpo,acpmodel):
     '''Lv2: Set Acp with acpo dict.
 
-        AcpID shouldnt be set manually;'''
+        AcpID shouldnt be set manually.
+
+        Para acp: Accept AcpID and Acp:'''
     if type(acp)==int:
         acp=getAcp(acp,acpmodel)
     elif type(acp)==str:
         pass
-    acp.__dict__.update(acpo)
+    ava_acpo=dict()
+    for k,v in acpo.items():
+        if k in acp.__dict__:
+            ava_acpo[k]=v
+    acp.__dict__.update(ava_acpo)
     if 'AcpID' in acpo:
         ESC.ACPID_MAX[acpmodel]=max(acpo['AcpID'],ESC.ACPID_MAX[acpmodel])
     return acp
@@ -49,7 +52,7 @@ def delAcp(acpid,acpmodel):
             port=op_tar[1]
             tar_acp=getAcp(acpid,acpmodel)
             tar_acp.inport[port]=None
-    ESC.ACP_MAP[acpmodel].remove(acp)
+    ESC.ACP_MODELS[acpmodel].remove(acp)
     return acp
 
 def initAcp(acpclass,acpo,acpmodel):

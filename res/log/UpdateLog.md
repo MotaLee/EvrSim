@@ -1,25 +1,20 @@
-# Update
+# Update Log
 
 ---
 
-## Note
+## Most recent
 
-'todo' in files
-map: save as/rename/delete
-model: save as/rename/delete
-sim: manager
-help: manual/about/read me
-edit: undo/redo/copy/cut/paste
-function to achieve: command panel/setting dialog
-acp limitor
-data record
-aroglc: scale ruler/toolbar optimize
-dynamics: point force/constraint solution/track/visualize
-0.0.5 goal: planar machine
+version: [0.0.6](#details)
+
+Date:2020/00/00
 
 ---
 
-## Log
+## Details
+
+0.0.6 - 2020/00/00:
+
+---
 
 0.0.5 - 2020/07/19:
 

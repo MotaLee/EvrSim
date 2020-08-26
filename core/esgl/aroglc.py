@@ -8,6 +8,7 @@ import interval
 import wx.glcanvas as wg
 import OpenGL.GL as gl
 import numpy as np
+
 # Built-in libs;
 from core import ESC
 from core import esui
@@ -17,7 +18,10 @@ from .AroToolPlc import AroToolbarPlc
 import mod
 
 class AroGlc(wg.GLCanvas):
-    def __init__(self,parent,p,s):
+    ''' Aro OpenGL Canvas.
+
+        Para accepts: `backgroundColor`: tuple4.'''
+    def __init__(self,parent,p,s,**argkw):
         wg.GLCanvas.__init__(self,parent,pos=p,size=s,
             style=wx.NO_BORDER | wg.WX_GL_RGBA | wg.WX_GL_DOUBLEBUFFER | wg.WX_GL_DEPTH_SIZE)
 
@@ -25,12 +29,16 @@ class AroGlc(wg.GLCanvas):
         esgl.PLC_W=self.Size[0]
         esgl.PLC_H=self.Size[1]
 
-        self.tool_dict=dict()
+        self.tool_list=list()
         self.spos=(0,0)     # Start cursor postion;
         self.aro_selection=[]
         self.shade_program=None
 
         self.toolbar=AroToolbarPlc(self,(0,0),(4*esui.YU,self.Size[1]))
+
+        if 'backgroundColor' in argkw:
+            self.bg=argkw['backgroundColor']
+        else:self.bg=(0,0,0,1)
 
         self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
         self.Bind(wx.EVT_PAINT, self.onPaint)
@@ -50,7 +58,7 @@ class AroGlc(wg.GLCanvas):
         self.context = wg.GLContext(self)
         self.SetCurrent(self.context)
 
-        gl.glEnable(gl.GL_DEPTH_TEST)   # 开启深度测试，实现遮挡关系
+        # gl.glEnable(gl.GL_DEPTH_TEST)   # 开启深度测试，实现遮挡关系
         gl.glEnable(gl.GL_BLEND)            # 开启混合
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)           # 设置混合函数
         # gl.glEnable(gl.GL_LINE_SMOOTH)  # 开启线段反走样
@@ -60,86 +68,73 @@ class AroGlc(wg.GLCanvas):
         # gl.glAlphaFunc(gl.GL_GREATER, 0.1)        # 设置Alpha测试条件为大于05则通过
         # glFrontFace(GL_CW)               # 设置逆时针索引为正面（GL_CCW/GL_CW）
         # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        gl.glClearColor(0,0,0,1)    # 设置画布背景色
+        gl.glClearColor(self.bg[0],self.bg[1],self.bg[2],self.bg[3])    # 设置画布背景色
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-        with open('core/esgl/vs.glsl','r') as fd:
-            vertexShaderSource=fd.read()
-        with open('core/esgl/fs.glsl','r') as fd:
-            fragmentShaderSource=fd.read()
-        vertexShader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
-        gl.glShaderSource(vertexShader, vertexShaderSource)
-        gl.glCompileShader(vertexShader)
-        fragmentShader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
-        gl.glShaderSource(fragmentShader, fragmentShaderSource)
-        gl.glCompileShader(fragmentShader)
-        self.shade_program = gl.glCreateProgram()
-        gl.glAttachShader(self.shade_program, vertexShader)
-        gl.glAttachShader(self.shade_program, fragmentShader)
-        gl.glLinkProgram(self.shade_program)
-        gl.glDeleteShader(vertexShader)
-        gl.glDeleteShader(fragmentShader)
-        gl.glUseProgram(self.shade_program)
+        self.shade_program = esgl.genGLProgram()
+        esgl.GL_PROGRAM=self.shade_program
 
-        self.projMode()
+        esgl.projMode()
         self.lookAt()
         return
 
     def drawGL(self):
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        # Draw libs;
-        for adp in esgl.TDP_LIST+esgl.ADP_LIST:
-            VAO=gl.glGenVertexArrays(1)
-            VBO,EBO=gl.glGenBuffers(2)
-            VA=adp.VA
-            EA=adp.EA
-            gl.glBindVertexArray(VAO)
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER,VBO)
-            gl.glBufferData(gl.GL_ARRAY_BUFFER,sys.getsizeof(VA),VA,gl.GL_STATIC_DRAW)
-            gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, EBO)
-            gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, sys.getsizeof(EA), EA, gl.GL_STATIC_DRAW)
+        for dp in esgl.TDP_LIST+esgl.ADP_LIST:
+            VA=dp.VA
+            EA=dp.EA
+            if not dp.visible or VA.size==0:continue
+            if dp.VAO==-1:
+                VAO,VBO,EBO=esgl.genGLO()
+                dp.VAO,dp.VBO,dp.EBO=VAO,VBO,EBO
+                esgl.bindGLO(VAO,VBO,EBO)
+            else:esgl.bindGLO(dp.VAO,dp.VBO,dp.EBO)
+            if dp.update_data:
+                esgl.bindBufferData(VA,EA)
+                dp.update_data=False
 
+            vertex_len=len(VA[0])
             pos_loc=gl.glGetAttribLocation(self.shade_program,'in_pos')
-            gl.glVertexAttribPointer(pos_loc,3, gl.GL_FLOAT, gl.GL_FALSE,28,ctypes.c_void_p(0))
+            gl.glVertexAttribPointer(pos_loc,3, gl.GL_FLOAT, gl.GL_FALSE,4*vertex_len,ctypes.c_void_p(0))
+            gl.glEnableVertexAttribArray(0)
             color_loc=gl.glGetAttribLocation(self.shade_program,'in_color')
-            gl.glVertexAttribPointer(color_loc,4,gl.GL_FLOAT,gl.GL_FALSE,28,ctypes.c_void_p(12))
+            gl.glVertexAttribPointer(color_loc,4,gl.GL_FLOAT,gl.GL_FALSE,4*vertex_len,ctypes.c_void_p(12))
+            gl.glEnableVertexAttribArray(1)
 
-            adp.transADP()
+            ht_loc=gl.glGetUniformLocation(self.shade_program,'has_texture')
+            if vertex_len>7:
+                gl.glUniform1iv(ht_loc,1,1)
+                tex_loc=gl.glGetAttribLocation(self.shade_program,'in_texture')
+                gl.glVertexAttribPointer(tex_loc,2,gl.GL_FLOAT,gl.GL_FALSE,4*vertex_len,ctypes.c_void_p(28))
+                gl.glEnableVertexAttribArray(2)
+                if dp.TAO==-1:dp.TAO=esgl.genGLTexture(dp.texture)
+                else:gl.glBindTexture(gl.GL_TEXTURE_2D,dp.TAO)
+            else:gl.glUniform1iv(ht_loc,1,0)
+
+            dp.transDP()
             trans_loc=gl.glGetUniformLocation(self.shade_program,'trans')
-            gl.glUniformMatrix4fv(trans_loc,1,gl.GL_FALSE,glm.value_ptr(adp.ftrans))
+            gl.glUniformMatrix4fv(trans_loc,1,gl.GL_FALSE,glm.value_ptr(dp.ftrans))
 
-            if adp.highlight:hl=1
+            if dp.highlight:hl=1
             else: hl=0
             hl_loc=gl.glGetUniformLocation(self.shade_program,'highlight')
             gl.glUniform1iv(hl_loc,1,hl)
 
-            gl.glEnableVertexAttribArray(0)
-            gl.glEnableVertexAttribArray(1)
-
-            if len(EA)!=0:gl.glDrawElements(adp.gl_type,EA.size,gl.GL_UNSIGNED_INT,None)
-            else:gl.glDrawArrays(adp.gl_type,0,VA.size)
+            if len(EA)!=0:gl.glDrawElements(dp.gl_type,EA.size,gl.GL_UNSIGNED_INT,None)
+            elif len(VA)>1:gl.glDrawArrays(dp.gl_type,0,VA.size)
         self.SwapBuffers()
 
         for ctrl in self.Children:
-            if type(ctrl)==esui.Ttc:ctrl.Refresh()
+            if type(ctrl)==esui.TransText:ctrl.Refresh()
         return
 
     def readMap(self):
         esgl.ADP_LIST=list()
         for aro in ESC.ARO_MAP:
             if aro.adp!='':
-                adp=esgl.initADP(aro)
-                esgl.ADP_LIST.append(adp)
+                adplist=esgl.initADP(aro)
+                esgl.ADP_LIST+=adplist
         self.drawGL()
-        return
-
-    def loadMod(self):
-        for modname in ESC.MOD_LIST:
-            TOOL_INDEX=eval('mod.'+modname+'.TOOL_INDEX')
-            for toolname in TOOL_INDEX:
-                tool=eval('mod.'+modname+'.'+toolname)
-                if tool.host=='ARO_PLC':
-                    tool.build(self)
         return
 
     def highlightADP(self,aroidlist=None):
@@ -147,24 +142,16 @@ class AroGlc(wg.GLCanvas):
             aroidlist=list()
             for aro in self.aro_selection:
                 aroidlist.append(aro.AroID)
+        elif type(aroidlist)!=list():
+            aroidlist=[aroidlist]
         for adp in esgl.ADP_LIST:
             if adp.Aro.AroID in aroidlist:adp.highlight=True
             else:adp.highlight=False
         self.drawGL()
         return
 
-    def projMode(self):
-        if esgl.VIEW_PERP:
-            esgl.MAT_PROJ=glm.perspective(glm.radians(45),esgl.ASPECT_RATIO,0.1,100)
-        else:
-            b=0.25*esgl.WHEEL_DIS+4
-            esgl.MAT_PROJ=glm.ortho(-1*esgl.ASPECT_RATIO*b,esgl.ASPECT_RATIO*b,-1*b,b,-100,100)
+    def lookAt(self,ep=None,ap=None,up=None):
 
-        proj_loc=gl.glGetUniformLocation(self.shade_program,'projection')
-        gl.glUniformMatrix4fv(proj_loc,1,gl.GL_FALSE,glm.value_ptr(esgl.MAT_PROJ))
-        return
-
-    def lookAt(self):
         esgl.MAT_VIEW=glm.lookAt(
             glm.vec3(esgl.EP.tolist()),
             glm.vec3(esgl.AP.tolist()),
@@ -179,15 +166,25 @@ class AroGlc(wg.GLCanvas):
         py=1-2*p[1]/self.Size[1]
         return (px,py)
 
+    def regToolEvent(self,tool):
+        if tool not in self.tool_list:
+            self.tool_list.append(tool)
+            tool.SetExtraStyle(wx.WS_EX_BLOCK_EVENTS)
+        else:
+            self.tool_list.remove(tool)
+        return
+
     def onComEvt(self,e):
         etype=e.GetEventArgs()
-        if etype==esevt.esEVT_UPDATE_MAP:
+        if etype==esevt.ETYPE_UPDATE_MAP:
             self.readMap()
-        elif etype==esevt.esEVT_LOAD_MOD:
-            self.loadMod()
-        elif etype==esevt.esEVT_RESET_SIM:
+        elif etype==esevt.ETYPE_OPEN_SIM:
+            self.Show()
+        elif etype==esevt.ETYPE_RESET_SIM:
             ESC.loadMapFile()
             self.readMap()
+        for tool in self.tool_list:
+            esevt.sendEvent(etype,target=tool)
         return
 
     def onPaint(self,e):
@@ -257,7 +254,7 @@ class AroGlc(wg.GLCanvas):
 
     def onDClk(self,e):
         if len(self.aro_selection)==1:
-            esui.SIDE_PLC.showArove(self.aro_selection[0].AroID)
+            esui.SIDE_PLC.showDetail(self.aro_selection[0].AroID)
 
         return
 
@@ -279,7 +276,7 @@ class AroGlc(wg.GLCanvas):
         esgl.AP=esgl.AP+t*v_ac-t/esgl.ZS*z1
         esgl.EP=esgl.EP+t*v_ac-t/esgl.ZS*z1
         esgl.WHEEL_DIS-=t
-        self.projMode()
+        esgl.projMode()
         self.lookAt()
         e.Skip()
         return
