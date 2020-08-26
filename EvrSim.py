@@ -14,11 +14,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
 
 # EvrSim global variable;
-ES_VER='0.0.5'
+ES_VER='0.0.6'
 EST_VER = '0.0.3'
 ES_UPDATE=20200627
-ES_PY='3.8.3'
-ES_MOUDLES=['AroCore','Dynamics']
+ES_PY='3.8.4'
+ES_MOUDLES=['AroCore','Dynamics','AroPlot','STS']
 # Pip installation;
 ES_LIBRARYS=[
     'wxpython',
@@ -27,4 +27,5 @@ ES_LIBRARYS=[
     'pyglm==1.99.1',
     'interval',
     'assimp',
-    'matplotlib']
+    'matplotlib',
+    'pillow']
