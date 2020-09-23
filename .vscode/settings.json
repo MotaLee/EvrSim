@@ -4,7 +4,7 @@
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
-        "--ignore=F401,E225,E301,E231,E701,E305,E501,E226,E402,E302,E128,E241,E117,E272",
+        "--ignore=F401,E225,E301,E231,E701,E305,E501,E226,E402,E302,E128,E241,E117,E272,E401,W503",
     ],
     "editor.renderWhitespace": "all",
     "editor.wordWrap": "on",
@@ -42,6 +42,9 @@
     "markdownlint.config": {
         "MD004":false,
         "MD013": false
+    },
+    "files.associations": {
+        "memory": "cpp"
     },
 
 }

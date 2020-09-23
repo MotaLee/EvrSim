@@ -2,6 +2,8 @@ import wx
 from core import ESC
 from core import esui
 from core import esevt
+xu=esui.XU
+yu=esui.YU
 
 class HeadBar(esui.Plc):
     ''' Base Head Bar.
@@ -10,7 +12,6 @@ class HeadBar(esui.Plc):
 
         `title`: Title text displaying in head.;'''
     def __init__(self,parent,p='default',s='default',**argkw):
-        yu=esui.YU
         if p=='default':p=(0,0)
         if s=='default':s=(parent.Size.x,4*yu)
         super().__init__(parent,p,s)
@@ -61,7 +62,6 @@ class HeadPlc(HeadBar):
 
         Para argkw accepts: None;'''
     def __init__(self,parent,p='default',s='default',**argkw):
-        yu=esui.YU
         ctrl_h=4*yu-1
         super().__init__(parent,p,s)
 
@@ -89,11 +89,11 @@ class HeadPlc(HeadBar):
         return
 
     def onComEvt(self,e):
-        # etype=e.GetEventArgs()
-        # if etype==esevt.ETYPE_OPEN_CMD:
-        #     self.btn_es.SetValue(True)
-        # elif etype==esevt.ETYPE_CLOSE_CMD:
-        #     self.btn_es.SetValue(False)
+        etype=e.GetEventArgs()
+        if etype==esevt.ETYPE_OPEN_CMD:
+            self.btn_es.SetValue(True)
+        elif etype==esevt.ETYPE_CLOSE_CMD:
+            self.btn_es.SetValue(False)
         e.Skip()
         return
 
@@ -103,7 +103,6 @@ class HeadPlc(HeadBar):
             esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_CLOSE_CMD)
         else:
             esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_OPEN_CMD)
-        e.Skip()
         return
 
     def onClkSim(self,e):
@@ -191,8 +190,8 @@ class HeadPlc(HeadBar):
             operation='Rename'
         elif pc.ipos==2:    # Save as;
             operation='Saveas'
-        xu=esui.XU
-        yu=esui.YU
+        elif pc.ipos==3:
+            operation='Delete'
         wxmw=self.Parent
         wxmw.dlgw=esui.ModelDialog(wxmw,(30*xu,40*yu),(40*xu,20*yu),operation)
         wxmw.dlgw.ShowModal()

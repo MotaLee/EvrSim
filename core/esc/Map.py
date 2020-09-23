@@ -1,5 +1,8 @@
 import os
+import math
 from core import esc as ESC
+inf=math.inf
+
 def newMapFile(mapname):
     if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
     if mapname not in ESC.MAP_LIST:
@@ -51,8 +54,8 @@ def updateMapFile(mapname=''):
     txt='ARO_INDEX='+aro_index.__str__()+'\n'
     txt+='KEY_DICT='+key_dict.__str__()+'\n'
     # Replace key;
-    temp_dict=dict()
     for aro in ESC.ARO_MAP:
+        temp_dict=dict()
         for k,v in aro.__dict__.items():
             if k[0]!='_':temp_dict[k]=v
         for k,v in key_dict.items():

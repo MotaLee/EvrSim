@@ -10,6 +10,8 @@ class EsWindow(wx.Frame):
         if s is None:s=(cw,ch)
         super().__init__(None,pos=p,size=s,title=title,style=wx.NO_BORDER | wx.ICON_HAND)
         self.SetBackgroundColour(esui.COLOR_LBACK)
+        self.icon = wx.Icon('res/img/evrsim.ico', wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.icon)
 
         self.dialog=None
         self.gl_timer=wx.Timer(self)

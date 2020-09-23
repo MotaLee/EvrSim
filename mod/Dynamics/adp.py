@@ -40,7 +40,26 @@ class DpMoment(ADP):
         return
     pass
 
-class DpAxisConstraint(ADP):
+class DpConstraint(ADP):
+    def __init__(self,aro):
+        super().__init__(aro)
+        self.gl_type=gl.GL_LINES
+        self.fix_size=True
+        self.VA=np.array([
+            [.1,.1,.1,1,1,1,1],
+            [.1,-0.1,.1,1,1,1,1],
+            [-0.1,.1,.1,1,1,1,1],
+            [-0.1,-0.1,.1,1,1,1,1],
+            [.1,.1,-0.1,1,1,1,1],
+            [.1,-0.1,-0.1,1,1,1,1],
+            [-0.1,.1,-0.1,1,1,1,1],
+            [-0.1,-0.1,-0.1,1,1,1,1]],dtype=np.float32)
+        self.EA=np.array([
+            [0,1],[1,3],[3,2],[2,0],
+            [4,5],[5,7],[7,6],[6,4]],dtype=np.uint32)
+        v_p=list(self.Aro.position)
+        self.trans=glm.translate(glm.mat4(1.0),v_p)
+        return
     pass
 
 class DpGround(ADP):

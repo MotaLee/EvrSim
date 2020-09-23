@@ -6,13 +6,32 @@
 
 version: [0.0.6](#details)
 
-Date:2020/00/00
+Date:2020/08/26
 
 ---
 
 ## Details
 
-0.0.6 - 2020/08/26:
+### 0.0.7 - 2020/09/00
+
+1. App:
+    * SmartToeSleeve: Optimized some details;
+    * Editor: Added a splash;
+2. Mod:
+    * AroPlot: Optimized variables and the redrawing method;
+    * AroCore: Added a new acp 'AcpExecutor';
+    * Dynamics: Added a new acp 'IPE' form AcpExecutor and achieved simple constrainted planar machines;
+3. esui:
+    * Added an icon of EvrSim to EsWindow control;
+    * Added a global class 'ESFont' to simplify calling a font;
+4. esmdl:
+    * Added a new core module from 'plc_Acp';
+    * Fixed lots of operating bugs;
+5. esc:
+    * Massively optimized running performance;
+    * Added lots of performance relavant variables;
+
+### 0.0.6 - 2020/08/26
 
 1. Mods:
     * AroCore: Added tracks of the point display as a tool;
@@ -72,7 +91,7 @@ Date:2020/00/00
 
 ---
 
-0.0.5 - 2020/07/19:
+### 0.0.5 - 2020/07/19
 
 1. Manual document added;
 2. language pack added; [1]
@@ -125,20 +144,28 @@ Date:2020/00/00
     * PyGLM: upgraded to 1.99.1, and fixed bugs with numpy;
 12. Update logs moved form 'README.md' to 'UpdateLog.md';
 
-0.0.4 - 2020/06/27:
+---
+
+### 0.0.4 - 2020/06/27
 
 1. Universal gravity model finished;
 2. Lots of Acp bugs fixed;
 
-0.0.3 - 2020/06/22:
+---
+
+### 0.0.3 - 2020/06/22
 
 1. Base frame finished;
 
-0.0.2 - 2020/05/18:
+---
+
+### 0.0.2 - 2020/05/18
 
 1. UpdateLog created;
 
-0.0.1 - 2020/04/01:
+---
+
+### 0.0.1 - 2020/04/01
 
 1. First initilization;
 

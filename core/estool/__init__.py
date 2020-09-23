@@ -39,7 +39,7 @@ class GLTool(BaseTool):
 class UIGLTool(GLTool,esui.Plc):
     def __init__(self,name,p=(0,0),s=(0,0)):
         GLTool.__init__(self,name)
-        esui.Plc.__init__(self,esui.ARO_PLC,p,s,name)
+        esui.Plc.__init__(self,esui.ARO_PLC,p,s,cn=name)
         return
     pass
 

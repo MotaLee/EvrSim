@@ -1,4 +1,3 @@
-
 'Copyright 2020 Mota Lee'
 ''' This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,13 +13,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
 
 # EvrSim global variable;
-ES_VER='0.0.6'
+ES_VER='0.0.7'
 EST_VER = '0.0.3'
-ES_UPDATE=20200627
-ES_PY='3.8.4'
-ES_MOUDLES=['AroCore','Dynamics','AroPlot','STS']
+ES_UPDATE=202009
+ES_PY_VER='3.8.4'
+ES_MOD=['AroCore','Dynamics','AroPlot','STS']
 # Pip installation;
-ES_LIBRARYS=[
+ES_RELIABILITIES=[
     'wxpython',
     'numpy',
     'pyopengl',

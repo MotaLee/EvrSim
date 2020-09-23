@@ -23,6 +23,7 @@ class Acp(object):
 
         self.AcpName=''
         self.desc=''
+        self.static=False
         return
 
     def preProgress(self,datadict):
@@ -82,7 +83,7 @@ class AcpSelector(Acp):
                 reqlist=datadict[kturple]
         slctdict=dict()
         for SELF_AROID in reqlist:
-            SELF_ARO=ESC.getAro(SELF_AROID)
+            SELF_ARO=ESC.getAro(SELF_AROID,queue=-1)
             selfdict={SELF_AROID:list()}
             for ARO in ESC.MAP_QUEUE[-1]:
                 # Keyword defination;
@@ -102,6 +103,7 @@ class AcpSelector(Acp):
             for aroid,vlist in selfdict.items():
                 if len(vlist)==0:selfdict[aroid].append(self.default)
             slctdict.update(selfdict)
+            if len(list(slctdict.values())[0])==0:ESC.bug('W: Selector '+self.AcpName+' matched nothing.')
         return {(self.AcpID,1):slctdict}
     pass
 
@@ -210,6 +212,15 @@ class AcpMCU(Acp):
         return
     pass
 
+class AcpExecutor(Acp):
+    def __init__(self):
+        super().__init__()
+        self._acpo_flag['longdata'].append('script')
+        self.script=''
+        self.fixIO='Neither'
+        return
+    pass
+
 # Operator;
 class AcpLimitor(Acp):
     ''' Addition: up/low/up_trigger/low_trigger.
@@ -298,6 +309,7 @@ class AcpVector3(Acp):
         xdict=datadict[self.inport[1]]
         ydict=datadict[self.inport[2]]
         zdict=datadict[self.inport[3]]
+
         vec3_dict=dict()
         for aroid,xlist in xdict.items():
             for i in range(0,len(xlist)):
@@ -350,7 +362,15 @@ class AcpConst(Acp):
         return
 
     def AcpProgress(self,datadict):
-        return {(self.AcpID,1):{self.item:[self.value]}}
+        if type(self.value)!=list:out=[self.value]
+        else:out=self.value
+        for kturple in datadict.keys():
+            if 'REQ' in kturple:
+                reqlist=datadict[kturple]
+        outdict=dict()
+        for aroid in reqlist:
+            outdict[aroid]=[out]
+        return {(self.AcpID,1):outdict}
     pass
 
 class AcpNorm(Acp):

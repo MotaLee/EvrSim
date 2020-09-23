@@ -1,18 +1,17 @@
 # Acp panel relavant;
-import copy
-import interval
-import wx
+import copy,interval,wx
 import numpy as np
-from core import ESC
-from core import esui
-from core import esevt
+from core import ESC,esui,esevt
+from .node import AcpNode
+from .toolbar import AcpToolPlc
+from .detail import DetailDialog
+yu=esui.YU
 
 class AcpPlc(esui.Plc):
     def __init__(self,parent,p,s):
         super().__init__(parent,p,s)
         self.SetBackgroundColour(esui.COLOR_LBACK)
         self.Hide()
-        yu=esui.YU
 
         self.model_tuple=tuple()
         self.toolpl=AcpToolPlc(self,(0,0),(4*yu,self.Size[1]))
@@ -37,47 +36,7 @@ class AcpPlc(esui.Plc):
             self.Hide()
     pass
 
-class AcpToolPlc(esui.Plc):
-    def __init__(self,parent,p,s):
-        super().__init__(parent,p,s)
-        self.SetBackgroundColour(esui.COLOR_LBACK)
-        yu=esui.YU
-        # self.canvaspl=self.Parent.canvaspl
-        self.head=esui.Btn(self,(0,0),(4*yu,2*yu),'Acp')
-        self.move_btn=esui.BlSelectBtn(self,(0,2*yu),(4*yu,4*yu),'Mv')
-        self.remove_btn=esui.BorderlessBtn(self,(0,6*yu),(4*yu,4*yu),'Rm')
-        self.attach_btn=esui.BlSelectBtn(self,(0,self.Size[1]-4*yu),(4*yu,4*yu),'Att')
-
-        self.move_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkMove)
-        self.remove_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkRemove)
-        self.attach_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkAttach)
-        # self.mv_btn.Bind(wx.EVT_LEFT_UP,self.onRlsMv)
-        # self.mv_btn.Bind(wx.EVT_MOTION,self.onMoveMv)
-        return
-
-    def onClkRemove(self,e):
-        self.Parent.canvaspl.rmAcpNodes()
-        return
-
-    def onClkMove(self,e):
-        if self.Parent.canvaspl.acp_moving:
-            self.Parent.canvaspl.acp_moving=False
-        else:
-            self.Parent.canvaspl.acp_moving=True
-        e.Skip()
-        return
-
-    def onClkAttach(self,e):
-        if self.Parent.canvaspl.attaching:
-            self.Parent.canvaspl.attaching=False
-        else:
-            self.Parent.canvaspl.attaching=True
-        e.Skip()
-        return
-    pass
-
 class AcpCanvasPlc(wx.ScrolledCanvas):
-
     def __init__(self,parent,p,s):
         super().__init__(parent,pos=p,size=s)
         self.rx=0
@@ -85,23 +44,25 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         self.zoom_rate=1
         self.spos=[0,0]
         self.snap=10*esui.YU*self.zoom_rate
-        self.canvas_size=200*esui.YU
+        self.canvas_width=20*esui.YU+1684
+        self.canvas_height=20*esui.YU+1190
 
-        self.acp_adding=''
+        self.acp_adding=''  # AcpClass name;
         self.acp_pasting=list()
         self.clip_list=list()
         self.acpnode_selection=list()
 
         self.acp_moving=False
         self.attaching=False
-        self.rect_selecting=False
+        # self.rect_selecting=False
 
+        self.start_evtobj=self
         self.first_id=None
         self.first_port=None
-        self.bg_bitmap=wx.Bitmap(self.canvas_size,self.canvas_size)
+        self.bg_bitmap=wx.Bitmap(self.canvas_width,self.canvas_height)
 
         self.SetBackgroundColour(esui.COLOR_BACK)
-        self.SetVirtualSize(self.canvas_size,self.canvas_size)
+        self.SetVirtualSize(self.canvas_width,self.canvas_height)
         self.SetScrollRate(1,1)
         self.ShowScrollbars(wx.SHOW_SB_NEVER,wx.SHOW_SB_NEVER)
 
@@ -126,12 +87,14 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         if MT not in ESC.ACP_MODELS:return
 
         drawed_list=list()
-        if refresh:self.DestroyChildren()
-        for node in self.Children:
-            if node.acp not in ESC.ACP_MODELS[MT]:node.Destroy()
-            else:drawed_list.append(node.acp)
+        # if refresh:self.DestroyChildren()
+        self.DestroyChildren()
+        # for node in self.Children:
+        #     if node.acp not in ESC.ACP_MODELS[MT]:node.Destroy()
+        #     else:drawed_list.append(node.acp)
         for acp in ESC.ACP_MODELS[MT]:
-            if acp not in drawed_list:AcpNode(self,acp)
+            # if acp not in drawed_list:
+            AcpNode(self,acp)
 
         for node in self.Children:
             node.Refresh()
@@ -140,8 +103,6 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         self.drawConnection()
         self.Parent.stc_left.SetLabel('Model: '+str(MT))
         self.Parent.stc_right.SetLabel('Count: '+str(len(ESC.ACP_MODELS[MT])))
-        # self.Parent.stc_left.Refresh()
-        # self.Parent.stc_right.Refresh()
         return
 
     def drawConnection(self):
@@ -154,13 +115,18 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         xdc=wx.ClientDC(self)
         dc=wx.BufferedDC(xdc,buffer=self.bg_bitmap)
         dc.Clear()
-        dc.SetPen(wx.Pen(esui.COLOR_SECOND))
-        for i in range(1,int(self.canvas_size/snap)):
-            lines.append([snap*i+offx,offy,snap*i+offx,self.canvas_size*self.zoom_rate+offy])
-            lines.append([offx,snap*i+offy,self.canvas_size*self.zoom_rate+offx,snap*i+offy])
+        dc.SetPen(wx.Pen(esui.COLOR_ACTIVE))
+        for i in range(1,int(self.canvas_width/snap)):
+            lines.append([snap*i+offx,offy,snap*i+offx,self.canvas_width*self.zoom_rate+offy])
+            lines.append([offx,snap*i+offy,self.canvas_width*self.zoom_rate+offx,snap*i+offy])
         dc.DrawLineList(lines)
 
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))
+        dc.SetBrush(wx.TRANSPARENT_BRUSH)
+        dc.DrawRectangle(10*yu*self.zoom_rate+offx,
+            10*yu*self.zoom_rate+offy,
+            1684*self.zoom_rate,
+            1190*self.zoom_rate)
         lines=list()
         io_points=list()
         for node in self.Children:
@@ -211,12 +177,7 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
                 (p[2]-yu,p[3]),
                 (p[2],p[3]+0.5*yu),
                 (p[2],p[3]-0.5*yu)])
-        # if len(self.Parent.model_tuple)!=0:
-        #     dc.SetTextForeground(esui.COLOR_TEXT)
-        #     dc.DrawText('Model: '+self.Parent.model_tuple[1],0,0)
-        #     r_txt='Count: '+str(len(ESC.ACP_MODELS[self.Parent.model_tuple]))
-        #     tsize=dc.GetTextExtent(r_txt)
-        #     dc.DrawText(r_txt,self.Size[0]-tsize[0],0)
+
         return
 
     def addAcpNode(self,acpclass):
@@ -228,7 +189,7 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         ''' Return Acps list of removed AcpNodes;'''
         rmed_acp=list()
         for node in self.acpnode_selection:
-            acp=ESC.delAcp(node.acp.AcpID,self.Parent.model_tuple)
+            acp=ESC.delAcp(node.acp.AcpID,self.Parent.model_tuple,rmlink=False)
             rmed_acp.append(acp)
             node.Destroy()
         esui.SIDE_PLC.clearDetail()
@@ -251,17 +212,24 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         return
 
     def onClk(self,e):
+        self.start_evtobj=self
         MT=esui.ACP_PLC.model_tuple
         self.spos=e.GetPosition()
         if self.acp_adding:
             acp=ESC.addAcp(self.acp_adding,MT)
             ESC.setAcp(acp,
-                {'AcpName':'Acp','position':[self.spos[0]+self.rx,self.spos[1]+self.ry]},
+                {'AcpName':'Acp_'+str(acp.AcpID),'position':[
+                    self.spos[0]/self.zoom_rate+self.rx,
+                    self.spos[1]/self.zoom_rate+self.ry]},
                 MT)
             self.acp_adding=''
             self.drawAcp()
         elif len(self.acp_pasting)!=0:
-            p_f=self.acp_pasting[0].position
+            p_f=[5000,5000]
+            for acp in self.acp_pasting:
+                p_f[0]=min(p_f[0],acp.position[0])
+                p_f[1]=min(p_f[1],acp.position[1])
+
             acpid_table=dict()
             for acp in self.acp_pasting:
                 new_acp=ESC.addAcp(acp.AcpClass,MT)
@@ -287,8 +255,7 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
                 ESC.setAcp(acp.AcpID,acp.__dict__,MT)
             self.acp_pasting=list()
             self.drawAcp()
-        else:
-            self.rect_selecting=True
+        else:   # Empty click;
             self.acpnode_selection=list()
             for node in self.Children:
                 node.on_clk=False
@@ -296,25 +263,30 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         return
 
     def onRls(self,e):
-        cpos=e.GetPosition()
-        if self.acp_moving:
-            pass
-        else:   # Rect selecting;
-            self.rect_selecting=False
-            for node in self.Children:
-                cx=node.Position[0] in interval.Interval(cpos[0],self.spos[0])
-                cy=node.Position[1] in interval.Interval(cpos[1],self.spos[1])
-                if cx and cy:
-                    self.acpnode_selection.append(node)
-                    node.on_clk=True
-                elif node.on_clk:
-                    node.on_clk=False
-                node.Refresh()
+        eo=e.EventObject
+        if eo==self:cpos=e.GetPosition()
+        else:
+            ep=e.GetPosition()
+            cpos=(eo.Position[0]+ep[0],eo.Position[1]+ep[1])
+        # Rect selecting;
+        for node in self.Children:
+            cx=node.Position[0] in interval.Interval(cpos[0],self.spos[0])
+            cy=node.Position[1] in interval.Interval(cpos[1],self.spos[1])
+            if cx and cy:
+                self.acpnode_selection.append(node)
+                node.on_clk=True
+            elif node.on_clk:
+                node.on_clk=False
+            node.Refresh()
         self.drawConnection()
         return
 
     def onMove(self,e):
-        cpos=e.GetPosition()
+        eo=e.EventObject
+        if eo==self:cpos=e.GetPosition()
+        else:
+            ep=e.GetPosition()
+            cpos=(eo.Position[0]+ep[0],eo.Position[1]+ep[1])
         dx=(cpos[0]-self.spos[0])
         dy=(cpos[1]-self.spos[1])
         if self.acp_adding!='' or len(self.acp_pasting)!=0:
@@ -329,10 +301,14 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
             self.spos=cpos
             self.rx-=dx
             self.ry-=dy
+            endx=self.canvas_width-self.Size.x/self.zoom_rate
+            endy=self.canvas_height-self.Size.y/self.zoom_rate
+            if endx<0:endx=0
+            if endy<0:endy=0
             if self.rx<0:self.rx=0
-            elif self.rx>200*self.canvas_size:self.rx=200*self.canvas_size
+            elif self.rx>endx:self.rx=endx
             if self.ry<0:self.ry=0
-            elif self.ry>200*self.canvas_size:self.ry=200*self.canvas_size
+            elif self.ry>endy:self.ry=endy
             self.Scroll(self.rx,self.ry)
         elif e.leftIsDown:  # Rect selecting;
             self.drawConnection()
@@ -351,140 +327,20 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
         self.zoom_rate+=t/10*ZS
         self.snap=10*esui.YU*self.zoom_rate
         self.drawAcp(refresh=True)
-        self.SetVirtualSize(self.canvas_size*self.zoom_rate,self.canvas_size*self.zoom_rate)
+        self.SetVirtualSize(self.canvas_width*self.zoom_rate,self.canvas_width*self.zoom_rate)
         return
 
     def onClkWhl(self,e):
-        self.spos=e.GetPosition()
+        eo=e.EventObject
+        if eo==self:cpos=e.GetPosition()
+        else:
+            ep=e.GetPosition()
+            cpos=(eo.Position[0]+ep[0],eo.Position[1]+ep[1])
+        self.spos=cpos
         e.Skip()
         return
 
     def onRlsWhl(self,e):
         self.Parent.drawConnection()
-        return
-    pass
-
-class AcpNode(esui.Plc):
-    def __init__(self,parent,acp):
-        super().__init__(parent,(2000,0),(100,100))
-        self.SetBackgroundColour(esui.COLOR_BACK)
-        zr=self.Parent.zoom_rate
-        yu=esui.YU*zr
-        p=[(acp.position[0]-self.Parent.rx)*zr,(acp.position[1]-self.Parent.ry)*zr]
-        width=10*esui.YU*zr
-        height=3*yu*(1+max(len(acp.inport),len(acp.outport)))+5*yu
-        self.SetSize(width,height)
-        self.SetPosition(p)
-
-        self.acp=acp
-        self.clk_mv=False
-        self.on_clk=False
-
-        acpclass=acp.AcpClass[acp.AcpClass.rfind('.'):]
-        self.mv_btn=esui.BorderlessBtn(self,(width-2.5*yu,0.5*yu),(2*yu,2*yu),'=')
-        self.nametxt=esui.StaticText(self,(0.5*yu,0.5*yu),(width-2*yu,3*yu),acp.AcpName,tsize=int(10*zr),align='left')
-        self.classtxt=esui.StaticText(self,(0.5*yu,3.5*yu),(width-2*yu,2*yu),acpclass,tsize=int(8*zr),align='left')
-        i=2
-        for k in acp.inport.keys():
-            inbtn=esui.SelectBtn(self,(width-2.5*yu,0.5*yu+i*3*yu),(2*yu,2*yu),'<',tsize=8,tip=acp.port[k])
-            inbtn.portid=k
-            inbtn.Bind(wx.EVT_LEFT_DOWN,self.onClkIOBtn)
-            i+=1
-        i=2
-        for k in acp.outport.keys():
-            outbtn=esui.SelectBtn(self,(0.5*yu,0.5*yu+i*3*yu),(2*yu,2*yu),'<',tsize=8,tip=acp.port[k])
-            outbtn.portid=k
-            outbtn.Bind(wx.EVT_LEFT_DOWN,self.onClkIOBtn)
-            i+=1
-
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
-        self.Bind(wx.EVT_LEFT_DCLICK,self.onDClk)
-        self.Bind(wx.EVT_LEFT_UP,self.onRls)
-        self.Bind(wx.EVT_MOTION,self.onMove)
-        return
-
-    def onPaint(self,e):
-        dc=wx.PaintDC(self)
-        if self.on_clk:
-            dc.SetPen(wx.Pen(esui.COLOR_TEXT,width=5))
-        else:
-            dc.SetPen(wx.Pen(esui.COLOR_FRONT,width=1))
-        dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
-        dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
-
-        return
-
-    def onClk(self,e):
-        self.on_clk=True
-        node_cpos=e.GetPosition()
-        self.Parent.spos=[self.Position[0]+node_cpos[0],self.Position[1]+node_cpos[1]]
-        if not e.controlDown:
-            self.Parent.acpnode_selection=[self]
-
-            for node in self.Parent.Children:
-                if node!=self:
-                    node.on_clk=False
-                    node.Refresh()
-        else:
-            self.Parent.acpnode_selection.append(self)
-        self.Refresh()
-        e.Skip()
-        return
-
-    def onDClk(self,e):
-        esui.SIDE_PLC.showDetail(self.acp,mode='Acp')
-        return
-
-    def onClkIOBtn(self,e):
-        cid=self.acp.AcpID
-        cport=e.EventObject.portid
-
-        if self.Parent.first_id is None:
-            self.Parent.first_id=cid
-            self.Parent.first_port=cport
-        else:
-            ESC.connectAcp(self.Parent.first_id,self.Parent.first_port,cid,cport,esui.ACP_PLC.model_tuple)
-            self.Parent.first_id=None
-            self.Parent.first_port=None
-            self.Parent.drawConnection()
-
-        # e.Skip()
-        return
-
-    def onRls(self,e):
-        zr=self.Parent.zoom_rate
-        px=self.Position[0]
-        py=self.Position[1]
-        rx=self.Parent.rx
-        ry=self.Parent.ry
-        mx,my=px,py
-        snap=self.Parent.snap
-        if self.Parent.acp_moving:
-            if self.Parent.attaching:
-                if (px+rx)*zr % int(snap)<20:
-                    mx=int(round((px+rx)*zr/snap)*snap)-rx
-                if (py+ry)*zr % int(snap)<10:
-                    my=int(round((py+ry)*zr/snap)*snap)-ry
-                self.Move(mx,my)
-            for node in self.Parent.acpnode_selection:
-                node.Refresh()
-                p=[(px+rx)//zr,(py+ry)//zr]
-                ESC.setAcp(node.acp.AcpID,{'position':p},esui.ACP_PLC.model_tuple)
-        self.Parent.drawConnection()
-        return
-
-    def onMove(self,e):
-        node_cpos=e.GetPosition()
-        cpos=[self.Position[0]+node_cpos[0],self.Position[1]+node_cpos[1]]
-        dx=(cpos[0]-self.Parent.spos[0])
-        dy=(cpos[1]-self.Parent.spos[1])
-        if self.Parent.acp_moving and e.leftIsDown:
-            self.Parent.spos=cpos
-            for node in self.Parent.acpnode_selection:
-                mx=dx+node.Position[0]
-                my=dy+node.Position[1]
-
-                node.Move(mx,my)
         return
     pass

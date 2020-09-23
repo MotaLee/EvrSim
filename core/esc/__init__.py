@@ -29,6 +29,9 @@ MAP_LIST=list()
 
 ACPID_MAX=dict()    # {(modName,modelName):acpid, ...}
 ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[...]}
+STATIC_DICT=dict()      # {(modname,mdlname,acpid):datadict, ...}
+STATIC_PREPARED=False
+ACPS_PREPARED={'Providers':dict(),'Executors':dict(),'Iterators':dict()}
 
 # User changeable setting;
 SIM_REALTIME=True

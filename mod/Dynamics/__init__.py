@@ -3,16 +3,16 @@ from core import ESC
 from core import esui
 # Mod-in import;
 from mod.AroCore.tool import AroMenu,AcpMenu
-from .adp import DpRigidGroup,DpMoment,DpAxisConstraint,DpGround
-from .aro import MassPoint,RigidGroup,Moment,AxisConstraint,Ground,PointForce
-from .acp import InstanceCenter
+from .adp import DpRigidGroup,DpMoment,DpConstraint,DpGround
+from .aro import MassPoint,RigidGroup,Moment,Constraint,Ground,PointForce
 from .tool import RGMenu,NewRGBtn,DelRGBtn,ConnectRGBtn,RemoveFromRGBtn
+from .acp import IPE
 # MOD INDEX
 MOD_NAME='Dynamics'
 MOD_VER='0.0.2'
 MOD_SETTING={}
-ARO_INDEX=['MassPoint','PointForce','Moment','Ground']
-ACP_INDEX=['InstanceCenter']
+ARO_INDEX=['MassPoint','PointForce','Moment','Ground','Constraint']
+ACP_INDEX=[]
 TOOL_INDEX=['new_obj','new_acp','rg_menu','new_rg','del_rg','connect_rg','remove_rg']
 MODEL_INDEX=['ug']
 

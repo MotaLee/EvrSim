@@ -28,6 +28,7 @@ class TreeItemPlc(esui.Plc):
         self.clk_timer=wx.Timer(self)
         self.Bind(wx.EVT_TIMER,self.onClkTimer,self.clk_timer)
         self.Bind(wx.EVT_PAINT,self.onPaint)
+        self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
@@ -94,7 +95,8 @@ class TreeItemPlc(esui.Plc):
 
 class TreePlc(esui.ScrolledPlc):
     def __init__(self,parent,p,s,cn=''):
-        super().__init__(parent,p,s,cn,axis='Y')
+        super().__init__(parent,p,s,cn=cn,axis='Y')
+        self.SetBackgroundColour(esui.COLOR_BACK)
         self.item_list=list()
         self.tree_item=TreeItem
         self.plc=TreeItemPlc

@@ -10,14 +10,15 @@ class StaticText(wx.StaticText):
             pos=(p[0]+1,p[1]+1),
             size=(s[0]-2,s[1]-2),label=txt,style=wx.NO_BORDER)
         self.align_type=align
-        self.txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,esui.TEXT_FONT)
+        self.txtfont=esui.ESFont(size=tsize)
         self.SetFont(self.txtfont)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
+        self.Refresh()
         return
 
     def onPaint(self,e):
-        dc = wx.BufferedPaintDC(self)
+        dc = wx.PaintDC(self)
         bg=self.Parent.GetBackgroundColour()
         dc.SetBrush(wx.Brush(bg))
         dc.SetPen(wx.Pen(bg))
@@ -39,8 +40,8 @@ class TransText(wx.StaticText):
         super().__init__(parent,pos=p,size=s,label=txt,
             style=wx.NO_BORDER | wx.TRANSPARENT_WINDOW)
         self.align=align
-        txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,esui.TEXT_FONT)
-        self.SetFont(txtfont)
+        self.txtfont=esui.ESFont(size=tsize)
+        self.SetFont(self.txtfont)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         return
 
@@ -59,7 +60,7 @@ class TransText(wx.StaticText):
 class InputText(esui.Plc):
     ''' Para argkw: hint, tsize, tip, exstl.'''
     def __init__(self,parent,p,s,cn='',**argkw):
-        super().__init__(parent,p,s,cn)
+        super().__init__(parent,p,s,cn=cn)
         hint=argkw.get('hint','')
         tsize=argkw.get('tsize',s[1]/2)
         tip=argkw.get('tip','')
@@ -70,7 +71,7 @@ class InputText(esui.Plc):
         self.SetToolTip(tip)
         self.input.SetBackgroundColour(esui.COLOR_BACK)
         self.input.SetForegroundColour(esui.COLOR_TEXT)
-        txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,esui.TEXT_FONT)
+        txtfont=esui.ESFont(size=tsize)
         self.input.SetFont(txtfont)
         self.input.SetValue(hint)
 
@@ -93,7 +94,7 @@ class InputText(esui.Plc):
         return
 
     def onEnter(self,e):
-        self.input.SetBackgroundColour(esui.COLOR_SECOND)
+        self.input.SetBackgroundColour(esui.COLOR_ACTIVE)
         e.Skip()
         return
 
@@ -105,7 +106,7 @@ class InputText(esui.Plc):
 # Multiline text ctrl;
 class MultilineText(esui.ScrolledPlc):
     def __init__(self,parent,p,s,hint='',tsize=12,cn='',exstl=0):
-        super().__init__(parent,p,s,cn)
+        super().__init__(parent,p,s,cn=cn)
         self.mtc=wx.TextCtrl(self,
             pos=(1,1),
             size=(s[0]-2,s[1]-2),
@@ -113,7 +114,7 @@ class MultilineText(esui.ScrolledPlc):
             style=wx.NO_BORDER | wx.TE_MULTILINE | wx.TE_NO_VSCROLL| exstl)
         self.mtc.SetBackgroundColour(esui.COLOR_BACK)
         self.mtc.SetForegroundColour(esui.COLOR_TEXT)
-        txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,esui.TEXT_FONT)
+        txtfont=esui.ESFont(size=tsize)
         self.mtc.SetFont(txtfont)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.mtc.Bind(wx.EVT_MOUSEWHEEL,self.onMtcRoWhl)

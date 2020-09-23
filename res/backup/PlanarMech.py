@@ -1,0 +1,12 @@
+ARO_INDEX=[7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
+KEY_DICT={1: 'AroID', 2: 'AroClass', 3: 'adp', 4: 'AroName', 5: 'desc', 6: 'enable', 7: 'visable', 8: 'position', 9: 'velocity', 10: 'force', 11: 'mass', 12: 'parent', 13: 'children', 14: 'group_dict', 15: 'agl_v', 16: 'moment', 17: 'LCS', 18: 'inertia', 19: 'targets', 20: 'value', 21: 'color', 22: 'tag', 23: 'UXYZ', 24: 'RXYZ', 25: 'master', 26: 'servant', 27: 'm_target', 28: 's_target'}
+Aro_7={1: 7, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: 'm1', 5: '', 6: True, 7: True, 8: [0, 0.0, 0.0], 9: [0, 0, 0], 10: [0, 0, 0], 11: 10}
+Aro_8={1: 8, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: 'm2', 5: '', 6: True, 7: True, 8: [0, 1.0, 0.0], 9: [0, 0, 0], 10: [-0.3, 0.3, 0.0], 11: 20}
+Aro_9={1: 9, 2: 'mod.Dynamics.aro.RigidGroup', 3: 'DpRigidGroup', 4: 'RG1', 5: '', 6: True, 7: True, 8: [0, 0, 0.0], 9: [0, 0, 0.0], 10: [-0.3, 0.3, 0.0], 11: 30, 12: None, 13: [8, 7], 14: {8: [7], 7: [8]}, 15: [0.0, 0.0, 0], 16: [0.0, 0.0, 0.3], 17: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 18: [0.01, 0.01, 20.0]}
+Aro_10={1: 10, 2: 'mod.Dynamics.aro.Ground', 3: 'DpGround', 4: 'GND', 5: '', 6: True, 7: True, 8: [0, 0, 0], 9: [0.0, 0.0, 0.0], 11: inf, 15: [0.0, 0.0, 0.0], 18: [inf, inf, inf]}
+Aro_11={1: 11, 2: 'mod.Dynamics.aro.PointForce', 3: 'mod.AroCore.AdpArrow', 4: 'F1', 5: '', 6: True, 7: True, 8: [0, 1, 0.0], 19: [8], 20: [-0.3, 0.3, 0], 21: [1, 0, 0, 1], 22: 'force'}
+Aro_13={1: 13, 2: 'mod.Dynamics.aro.Constraint', 3: 'DpConstraint', 4: 'J1', 5: '', 6: True, 7: True, 8: [0, 0, 0], 23: [0, 0, 0], 24: [0, 0, 1], 25: 10, 26: 9, 27: 10, 28: 7}
+Aro_14={1: 14, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: 'm3', 5: '', 6: True, 7: True, 8: [0.0, 1.0, 0.0], 9: [0, 0, 0], 10: [0, 0, 0], 11: 10}
+Aro_15={1: 15, 2: 'mod.Dynamics.aro.MassPoint', 3: 'mod.AroCore.AdpPoint', 4: 'm4', 5: '', 6: True, 7: True, 8: [1.0, 1.0, 0.0], 9: [0, 0, 0], 10: [0, 0, 0], 11: 20}
+Aro_16={1: 16, 2: 'mod.Dynamics.aro.RigidGroup', 3: 'DpRigidGroup', 4: 'RG2', 5: '', 6: True, 7: True, 8: [0, 0, 0], 9: [0, 0, 0.0], 10: [0, 0, 0], 11: 20, 12: None, 13: [15, 14], 14: {15: [14], 14: [15]}, 15: [0.0, 0.0, 0], 16: [0.0, 0.0, 0.0], 17: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 18: [0.01, 0.01, 0]}
+Aro_17={1: 17, 2: 'mod.Dynamics.aro.Constraint', 3: 'DpConstraint', 4: 'J2', 5: '', 6: True, 7: True, 8: [0, 1, 0], 23: [0, 0, 0], 24: [0, 0, 1], 25: 9, 26: 16, 27: 8, 28: 14}

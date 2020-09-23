@@ -136,7 +136,7 @@ class ALibsBtn(estool.ButtonTool):
         if self.show_lib:return
         else:self.show_lib=True
         self.tab=esui.SIDE_PLC.getTab('ALibs')
-        self.tab.SetBackgroundColour(esui.COLOR_LBACK)
+        # self.tab.SetBackgroundColour(esui.COLOR_LBACK)
         tx=self.tab.Size.x
         ty=self.tab.Size.y
         self.tab.txt_alibs=esui.StaticText(self.tab,(yu,yu),(8*yu,4*yu),'ALibs:',align='left')
@@ -145,7 +145,7 @@ class ALibsBtn(estool.ButtonTool):
         self.tab.btn_search=esui.Btn(self.tab,(tx-9*yu,6*yu),(8*yu,4*yu),'Search')
         self.tab.tree=ALibsTreePlc(self.tab,(yu,11*yu),(tx-2*yu,50*yu))
         self.tab.tree.buildTree()
-        self.tab.txt_alibs.Refresh()
+        self.tab.Show()
         self.tab.btn_add.Bind(wx.EVT_LEFT_DOWN,self.onClkAdd)
         return
 

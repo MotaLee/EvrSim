@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 # App variable;
-ESWX_VER='0.0.5'
+EDITOR_VER='0.0.7'
 ES_EDITOR_TITLE='EvrSimEditor'
 # Outer libs;
 import sys
@@ -10,9 +10,7 @@ sys.path.append(os.getcwd())
 # EvrSim libs;
 from core import ESC
 from core import esui
-from core import esevt
-from core import esgl
-from core import estool
+from core import esevt,esmdl,esgl,estool,estab
 xu=esui.XU
 yu=esui.YU
 # Editor main window;
@@ -24,9 +22,9 @@ class EvrSimEditor(esui.EsWindow):
         esui.TOOL_PLC=estool.ToolPlc(self,(0,4*yu),(75*xu,21*yu))
         esui.CMD_PLC=esui.CmdPlc(self,(0,4*yu),(75*xu,21*yu))
         esui.ARO_PLC=esgl.AroGlc(self,(0,25*yu),(75*xu,75*yu))
-        esui.ACP_PLC=esui.AcpPlc(self,(0,25*yu),(75*xu,75*yu))
-        esui.SIDE_PLC=esui.SidePlc(self,(75*xu,4*yu),(25*xu,96*yu))
-        self.wel_plc=WelPlc(self,(0,4*yu),(100*xu,96*yu))
+        esui.ACP_PLC=esmdl.AcpPlc(self,(0,25*yu),(75*xu,75*yu))
+        esui.SIDE_PLC=estab.SidePlc(self,(75*xu,4*yu),(25*xu,96*yu))
+        self.wel_plc=WelPlc(self,(self.Size.x/2-360,self.Size.y/2-225),(720,450))
 
         self.Show()
         return
@@ -35,10 +33,12 @@ class EvrSimEditor(esui.EsWindow):
 class WelPlc(esui.Plc):
     def __init__(self,parent,p,s):
         super().__init__(parent,p,s)
-        self.weltt=esui.TransText(self,(0,15*yu),(100*xu,10*yu),
-            'E v r S i m  E d i t o r',tsize=int(4*yu))
-        self.vertt=esui.TransText(self,(0,25*yu),(100*xu,4*yu),
-            ESWX_VER,tsize=int(2*yu))
+        self.weltt=esui.TransText(self,(0,30*yu),(20*xu,4*yu),
+            'EvrSim Editor')
+        self.vertt=esui.TransText(self,(0,35*yu),(20*xu,4*yu),
+            EDITOR_VER)
+        img=wx.Image('res/img/splash.png',type=wx.BITMAP_TYPE_PNG).ConvertToBitmap()
+        self.bg=wx.StaticBitmap(self,bitmap=img)
         self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
         return
 

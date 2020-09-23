@@ -15,6 +15,7 @@ def addAcp(acpclass,acpmodel):
     ESC.ACPID_MAX[acpmodel]+=1
     acp.AcpID=ESC.ACPID_MAX[acpmodel]
     ESC.ACP_MODELS[acpmodel].append(acp)
+    ESC.ACPS_PREPARED['Providers']=dict()
     return acp
 
 def setAcp(acp,acpo,acpmodel):
@@ -36,23 +37,25 @@ def setAcp(acp,acpo,acpmodel):
         ESC.ACPID_MAX[acpmodel]=max(acpo['AcpID'],ESC.ACPID_MAX[acpmodel])
     return acp
 
-def delAcp(acpid,acpmodel):
+def delAcp(acpid,acpmodel,rmlink=True):
     'Lv2: Deleted an Acp. Return deleted Acp;'
     acp=getAcp(acpid,acpmodel)
-    for ip,ip_tar in acp.inport.items():
-        if ip_tar is None:continue
-        acpid=ip_tar[0]
-        port=ip_tar[1]
-        tar_acp=getAcp(acpid,acpmodel)
-        tar_acp.outport[port].remove((acp.AcpID,ip))
-    for op,op_tar_list in acp.outport.items():
-        if op_tar_list==[]:continue
-        for op_tar in op_tar_list:
-            acpid=op_tar[0]
-            port=op_tar[1]
+    if rmlink:
+        for ip,ip_tar in acp.inport.items():
+            if ip_tar is None:continue
+            acpid=ip_tar[0]
+            port=ip_tar[1]
             tar_acp=getAcp(acpid,acpmodel)
-            tar_acp.inport[port]=None
+            tar_acp.outport[port].remove((acp.AcpID,ip))
+        for op,op_tar_list in acp.outport.items():
+            if op_tar_list==[]:continue
+            for op_tar in op_tar_list:
+                acpid=op_tar[0]
+                port=op_tar[1]
+                tar_acp=getAcp(acpid,acpmodel)
+                tar_acp.inport[port]=None
     ESC.ACP_MODELS[acpmodel].remove(acp)
+    ESC.ACPS_PREPARED['Providers']=dict()
     return acp
 
 def initAcp(acpclass,acpo,acpmodel):

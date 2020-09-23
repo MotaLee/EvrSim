@@ -33,16 +33,17 @@ class AdpArrow(ADP):
         self.gl_type=gl.GL_LINES
         self.value=getattr(self.Aro,'value',[0,1,0])
         self.color=getattr(self.Aro,'color',[1,1,1,1])
+        self.fix_size=True
         length=np.linalg.norm(self.value)
-        ps=0.1
+        ps=0.05
 
         ca=np.array([self.color],dtype=np.float32)
         ca=np.tile(ca,(5,1))
         VA=np.array([
             [0,length,0],
-            [0,length-1*ps,ps],
-            [ps,length-1*ps,-1*ps],
-            [-1*ps,length-1*ps,-1*ps],
+            [0,length-2*ps,ps],
+            [ps,length-2*ps,-1*ps],
+            [-1*ps,length-2*ps,-1*ps],
             [0,0,0]],dtype=np.float32)
         self.VA=np.hstack((VA,ca))
         self.EA=np.array([[0,4],[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],dtype=np.uint32)

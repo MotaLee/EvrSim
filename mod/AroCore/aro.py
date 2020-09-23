@@ -6,9 +6,10 @@ class Aro(object):
         Variable started with '_' wont save to map.'''
     def __init__(self):
         self._Arove_flag={
-            'invisible':['_Arove_flag','AroID','AroClass'],
-            'uneditable':['adp'],
-            'longdata':['desc']}
+            'invisible':['_Arove_flag','AroID'],
+            'uneditable':['adp','AroClass'],
+            'longdata':['desc'],
+            'target':[]}
         # Preset Arove;
         self.AroID=0
         self.AroClass=self.__module__+'.'+type(self).__name__
@@ -18,6 +19,15 @@ class Aro(object):
         self.desc=''
         self.enable=True
         self.visable=True
+        return
+
+    def onInit(self,arove={}):
+        ''' This method will be called in ESC.initAro'''
+        new_arove=dict(arove)
+        for k,v in arove.items():
+            if k not in self.__dict__:
+                del new_arove[k]
+        self.__dict__.update(new_arove)
         return
 
     def onSet(self,arove={}):
@@ -52,7 +62,7 @@ class AroTargets(Aro):
         Addition Arove: targets;'''
     def __init__(self):
         super().__init__()
-        # self._Arove_flag['invisible'].append('targets')
+        self._Arove_flag['target'].append('targets')
         self.targets=list()     # AroID list;
         return
     pass

@@ -181,6 +181,7 @@ class AroGlc(wg.GLCanvas):
         elif etype==esevt.ETYPE_OPEN_SIM:
             self.Show()
         elif etype==esevt.ETYPE_RESET_SIM:
+            ESC.resetSim()
             ESC.loadMapFile()
             self.readMap()
         for tool in self.tool_list:

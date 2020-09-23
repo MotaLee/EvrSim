@@ -1,23 +1,32 @@
+import time
 from core import esc as ESC
 import mod
-def runSim(itorlist=['time']):
+def runSim(itoritems=['time']):
+    # s=time.time()
     'Lv1: Run Sim with iterators, time default;'
     if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
     if ESC.CORE_STAUS=='BUSY':return ESC.bug('E: Core busy.')
     ESC.CORE_STAUS='BUSY'
 
     # Collect providers and iterators;
-    pvdrs=dict()
-    itors=dict()
-    for model,acplist in ESC.ACP_MODELS.items():
-        if model in ESC.MODEL_DISABLE:continue
-        for acp in acplist:
-            if isinstance(acp,mod.AroCore.AcpIterator) and acp.item in itorlist:
-                if model not in itors:itors[model]=list()
-                if acp not in itors[model]:itors[model].append(acp)
-            elif isinstance(acp,mod.AroCore.AcpProvider):
-                if model not in pvdrs:pvdrs[model]=list()
-                pvdrs[model].append(acp)
+    if len(ESC.ACPS_PREPARED['Providers'])==0:
+        for model,acplist in ESC.ACP_MODELS.items():
+            if model in ESC.MODEL_DISABLE:continue
+            for acp in acplist:
+                if isinstance(acp,mod.AroCore.AcpIterator) and acp.item in itoritems:
+                    if acp.item not in ESC.ACPS_PREPARED['Iterators']:
+                        ESC.ACPS_PREPARED['Iterators'][acp.item]=list()
+                    if acp not in ESC.ACPS_PREPARED['Iterators'][acp.item]:
+                        ESC.ACPS_PREPARED['Iterators'][acp.item].append(acp)
+                elif isinstance(acp,mod.AroCore.AcpProvider):
+                    if model not in ESC.ACPS_PREPARED['Providers']:ESC.ACPS_PREPARED['Providers'][model]=list()
+                    ESC.ACPS_PREPARED['Providers'][model].append(acp)
+                elif isinstance(acp,mod.AroCore.AcpExecutor):
+                    if model not in ESC.ACPS_PREPARED['Executors']:ESC.ACPS_PREPARED['Executors'][model]=list()
+                    ESC.ACPS_PREPARED['Executors'][model].append(acp)
+    itors=ESC.ACPS_PREPARED['Iterators']
+    pvdrs=ESC.ACPS_PREPARED['Providers']
+    excrs=ESC.ACPS_PREPARED['Executors']
 
     # Snapshot preparing;
     ESC.MAP_QUEUE.append(list(ESC.ARO_MAP))
@@ -25,41 +34,42 @@ def runSim(itorlist=['time']):
         ESC.MAP_QUEUE=ESC.MAP_QUEUE[1:]
 
     # Static;
-    travesalPvdrs(pvdrs,static=True)
-    if len(itors.values())==0:
+    if not ESC.STATIC_PREPARED:
+        travesalAcps(pvdrs,static=True)
+        ESC.STATIC_PREPARED=True
+    if len(itors.keys())==0:
         ESC.CORE_STAUS='STOP'
         ESC.bug('I: Static running done.')
-    elif len(itors.values())==1:
+    elif len(itors.keys())==1:
         # Single dimension;
-        itor=list(itors.values())[0][0]
         if ESC.SIM_REALTIME:
-            itor.iterate()
-            travesalPvdrs(pvdrs)
+            for itor in list(itors.values())[0]:
+                itor.iterate()
+            travesalAcps(pvdrs)
+            travesalAcps(excrs)
             if ESC.CORE_STAUS!='STOP':
                 ESC.CORE_STAUS='READY'
         else:
             'todo: not realtime simulation;'
             while not itor.iterate():
-                travesalPvdrs(pvdrs)
+                travesalAcps(pvdrs)
+                travesalAcps(excrs)
             ESC.CORE_STAUS='STOP'
     else:
         # Multi-dimension;
         'todo: multi-dimension simulation;'
+    # print(s-time.time())
 
     return
 
-def travesalPvdrs(pvdrs,static=False):
-    data=None
-    for model,pvdrlist in pvdrs.items():
-        if static:end=len(pvdrlist)
-        else:end=1
-        for i in range(0,end):
-            'todo: better convergence method;'
-            for pvdr in pvdrlist:
-                data=reqAcp(pvdr,model)
+def travesalAcps(acps,static=False):
+    for model,acplist in acps.items():
+        for acp in acplist:
+            if (static and acp.static) or not acp.static:
+                reqAcp(acp,model)
                 if ESC.CORE_STAUS=='STOP':
-                    return None,None
-    return data
+                    return
+    return
 
 def reqAcp(acp,acpmodel,paradict={}):
     ''' Lv2: Request Acp.
@@ -68,15 +78,15 @@ def reqAcp(acp,acpmodel,paradict={}):
 
         int for AcpID or Acp self;'''
     # Para check;
-    if type(acp) is str:
-        for anl in ESC.ACP_MODELS[acpmodel]:
-            if anl.AcpName==acp:
-                acp=anl
-                break
-        if type(acp) is str:return ESC.bug('E: AcpName not existed.')
-    elif type(acp) is int:
-        acp=ESC.getAcp(acp,acpmodel)
-        if type(acp) is str:return ESC.bug(acp)
+    # if type(acp) is str:
+    #     for anl in ESC.ACP_MODELS[acpmodel]:
+    #         if anl.AcpName==acp:
+    #             acp=anl
+    #             break
+    #     if type(acp) is str:return ESC.bug('E: AcpName not existed.')
+    # elif type(acp) is int:
+    #     acp=ESC.getAcp(acp,acpmodel)
+    #     if type(acp) is str:return ESC.bug(acp)
 
     # Needed var;
     acproot=acp
@@ -90,6 +100,11 @@ def reqAcp(acp,acpmodel,paradict={}):
     while len(stack)!=0:
         if len(stack)>ESC.ACP_DEPTH:return ESC.bug('E: Acp too deep.')
         acp=stack[-1]
+        if acp.static and (acpmodel[0],acpmodel[1],acp.AcpID) in ESC.STATIC_DICT:
+            datadict.update(ESC.STATIC_DICT[acpmodel+(acp.AcpID)])
+            stack.pop()
+            continue
+
         # Requesting check;
         datadict.update(acp.preProgress(datadict))
         # IOports check;
@@ -122,6 +137,8 @@ def reqAcp(acp,acpmodel,paradict={}):
                 ESC.CORE_STAUS='STOP'
                 return None,None
             datadict.update(ret)
+            if acp.static:
+                ESC.STATIC_DICT[(acpmodel[0],acpmodel[1],acp.AcpID)]=ret
         continue
 
     return datadict

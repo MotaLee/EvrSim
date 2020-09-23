@@ -66,7 +66,7 @@ class ConnectRGBtn(estool.ButtonTool):
         if len(esui.ARO_PLC.aro_selection)!=2:return
         aro1=esui.ARO_PLC.aro_selection[0]
         aro2=esui.ARO_PLC.aro_selection[1]
-        rg_menu=self.getToolCtrlByName('rg_menu')
+        rg_menu=estool.getToolByName('rg_menu','Dynamics')
         now_rg=ESC.getAroByName(rg_menu.Label)
         rg_dict=dict(now_rg.group_dict)
         if aro1.AroID not in rg_dict:
@@ -91,5 +91,15 @@ class RemoveFromRGBtn(estool.ButtonTool):
 
     def onClk(self,e):
         'todo'
+        rg_menu=estool.getToolByName('rg_menu','Dynamics')
+        now_rg=ESC.getAroByName(rg_menu.Label)
+        rg_dict=dict(now_rg.group_dict)
+        for aro in esui.ARO_PLC.aro_selection:
+            if aro.AroID in rg_dict:
+                for aroid in rg_dict[aro.AroID]:
+                    rg_dict[aroid].remove(aro.AroID)
+                del rg_dict[aro.AroID]
+        ESC.setAro(now_rg.AroID,{'group_dict':rg_dict})
+        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
         return
     pass

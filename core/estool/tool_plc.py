@@ -64,7 +64,7 @@ class ToolPlc(esui.Plc):
 
 class ModTab(esui.ScrolledPlc):
     def __init__(self,parent,p,s,label,cn=''):
-        super().__init__(parent,p,s,cn,axis='X')
+        super().__init__(parent,p,s,cn=cn,axis='X')
         self.Hide()
         self.SetLabel(label)
         self.SetBackgroundColour(esui.COLOR_BACK)

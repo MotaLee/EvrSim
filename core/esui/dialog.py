@@ -5,17 +5,13 @@ import wx
 from core import ESC
 from core import esui
 from core import esevt
-
+xu=esui.XU
+yu=esui.YU
 # Dialog wx sub class;
 class EsDialog(wx.Dialog):
     def __init__(self,parent,p,s,logtitle):
-        wx.Dialog.__init__(self,parent,-1,
-            pos=p,
-            size=s,
-            title=logtitle,
-            style=wx.NO_BORDER)
+        super().__init__(parent,pos=p,size=s,title=logtitle,style=wx.NO_BORDER)
         self.SetBackgroundColour(esui.COLOR_LBACK)
-        yu=esui.YU
         self.conbtn=esui.Btn(self,(self.Size[0]-10*yu,self.Size[1]-5*yu),(4*yu,4*yu),'√')
         self.canbtn=esui.Btn(self,(self.Size[0]-5*yu,self.Size[1]-5*yu),(4*yu,4*yu),'×')
         self.dlgttl=esui.StaticText(self,(yu,0),(12*yu,4*yu),logtitle,align='left')
@@ -41,9 +37,6 @@ class EsDialog(wx.Dialog):
 class NewDialog(EsDialog):
     def __init__(self,parent,p,s):
         super().__init__(parent,p,s,'New')
-        xu=esui.XU
-        yu=esui.YU
-        self.dlgttl.SetLabel('New')
         self.smstc=esui.StaticText(self,(yu,4*yu,),(12*yu,4*yu),'Sim Name:',align='left')
         self.nametcc=esui.InputText(self,(12*yu,4*yu),(60*xu-14*yu,4*yu),tsize=1.5*yu)
         self.warnstc=esui.StaticText(self,(12*yu,8*yu),(20*xu,4*yu),'Sim existed.',align='left')
@@ -74,9 +67,6 @@ class NewDialog(EsDialog):
 class OpenDialog(EsDialog):
     def __init__(self,parent,p,s):
         super().__init__(parent,p,s,'Open')
-        xu=esui.XU
-        yu=esui.YU
-        self.dlgttl.SetLabel('Open')
         self.vspl=ViewSimPlc(self,(1*yu,4*yu),(60*xu-2*yu,50*yu))
 
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
@@ -140,7 +130,7 @@ class SettingDialog(EsDialog):
             esui.StaticText(SP,(yu,i*5*yu+yu),(24*yu,4*yu),desc+':',align='left')
             v_esc=ESC.__dict__[value]
             if type(v_esc)==bool:
-                esui.SelectBtn(SP,(24*yu,i*5*yu+yu),(4*yu,4*yu),'V',select=v_esc,tip=value)
+                esui.SelectBtn(SP,(24*yu,i*5*yu+yu),(3*yu,3*yu),'√',select=v_esc,tip=value)
             elif type(v_esc)==int or type(v_esc)==float:
                 esui.InputText(SP,(24*yu,i*5*yu+yu),(8*yu,4*yu),hint=str(v_esc),tip=value)
             i+=1
@@ -208,7 +198,7 @@ class ViewSimPlc(esui.Plc):
     def onPaint(self,e):
         dc=wx.PaintDC(self)
         dc.SetBrush(wx.Brush(esui.COLOR_BACK))
-        dc.SetPen(wx.Pen(esui.COLOR_SECOND))
+        dc.SetPen(wx.Pen(esui.COLOR_ACTIVE))
         dc.DrawRectangle((0,0),self.Size)
         return
     pass

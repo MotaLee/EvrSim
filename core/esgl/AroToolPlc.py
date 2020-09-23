@@ -63,7 +63,7 @@ class AroToolbarPlc(esui.Plc):
 
     def onClkDeleteBtn(self,e):
         for aro in esui.ARO_PLC.aro_selection:
-            aro.adp.delDP()
+            # aro.adp.delDP()
             ESC.delAro(aro.AroID)
         esui.ARO_PLC.aro_selection=list()
         esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)

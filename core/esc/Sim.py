@@ -126,5 +126,7 @@ def comSim():
     return
 
 def resetSim():
-    ESC.ACP_MODELS=list(ESC.MAP_QUEUE[-1])
+    # ESC.ACP_MODELS=list(ESC.MAP_QUEUE[-1])
+    ESC.STATIC_PREPARED=False
+    ESC.ACPS_PREPARED['Providers']=dict()
     return

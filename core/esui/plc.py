@@ -4,18 +4,21 @@ import interval
 from core import ESC
 from core import esui
 from core import esevt
+yu=esui.YU
 # Panel container wx sub class;
 class Plc(wx.Panel):
-    '''Base container.
+    ''' Base container.
+
+        Para argkw: cn/bgcolor/border.
 
         Ctrl in Plc can only call other TopPlc;'''
-    def __init__(self,parent,p,s,cn=''):
-        super().__init__(parent,
-            pos=p,
-            size=s,
-            name=cn,
-            style=wx.NO_BORDER)
-        self.SetBackgroundColour(esui.COLOR_LBACK)
+    def __init__(self,parent,p,s,**argkw):
+        super().__init__(parent,pos=p,size=s,style=wx.NO_BORDER)
+        cn=argkw.get('cn','')
+        bgcolor=argkw.get('bgcolor',esui.COLOR_LBACK)
+        self.border=argkw.get('border',{'all':None})
+        self.SetName(cn)
+        self.SetBackgroundColour(bgcolor)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         return
@@ -26,24 +29,46 @@ class Plc(wx.Panel):
         dc.SetPen(wx.Pen(bg))
         dc.SetBrush(wx.Brush(bg))
         dc.DrawRectangle((0,0),self.Size)
+        if 'all' in self.border:
+            if self.border['all'] is None:return
+            dc.SetPen(wx.Pen(self.border['all']))
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.DrawRectangle((0,0),self.Size)
+        if 'up' in self.border:
+            dc.SetPen(wx.Pen(self.border['up']))
+            dc.DrawLine(0,1,self.Size.x,1)
+        if 'bottom' in self.border:
+            dc.SetPen(wx.Pen(self.border['bottom']))
+            dc.DrawLine(0,self.Size.y-1,self.Size.x,self.Size.y-1)
+        if 'left' in self.border:
+            dc.SetPen(wx.Pen(self.border['left']))
+            dc.DrawLine(1,0,1,self.Size.y)
+        if 'right' in self.border:
+            dc.SetPen(wx.Pen(self.border['right']))
+            dc.DrawLine(self.Size.x-1,0,self.Size.x-1,self.Size.y)
         return
     pass
 
 class ScrolledPlc(wx.ScrolledWindow):
-    def __init__(self,parent,p,s,cn='',axis='Y'):
-        ''' Para axis: Y default for vertical scroll;
+    ''' Para argkw: cn/bgcolor/border/axis.
 
-            Y for horizontal scroll;'''
-        super().__init__(parent,pos=p,size=s,name=cn)
-        self.axis=axis
+        `axis`: Y default for vertical scroll, X for horizontal scroll.'''
+    def __init__(self,parent,p,s,**argkw):
+        super().__init__(parent,pos=p,size=s)
+        cn=argkw.get('cn','')
         self.rx=0
         self.ry=0
-        self.SetBackgroundColour(esui.COLOR_BACK)
+        self.axis=argkw.get('axis','Y')
+        self.border=argkw.get('border',{'all':None})
+        self.SetName(cn)
+        bgcolor=argkw.get('bgcolor',esui.COLOR_LBACK)
+        self.SetBackgroundColour(bgcolor)
         self.SetScrollRate(int(esui.YU),int(esui.YU))
         self.ShowScrollbars(wx.SHOW_SB_NEVER,wx.SHOW_SB_NEVER)
         self.Bind(wx.EVT_MOUSEWHEEL,self.onRotateWheel)
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
+        self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         return
 
     def updateVirtualSize(self):
@@ -59,14 +84,31 @@ class ScrolledPlc(wx.ScrolledWindow):
         return
 
     def onPaint(self,e):
-        dc=wx.BufferedPaintDC(self)
-        dc.SetPen(wx.Pen(self.GetBackgroundColour()))
-        dc.SetBrush(wx.Brush(self.GetBackgroundColour()))
+        dc=wx.PaintDC(self)
+        bg=self.GetBackgroundColour()
+        dc.SetPen(wx.Pen(bg))
+        dc.SetBrush(wx.Brush(bg))
         dc.DrawRectangle((0,0),self.Size)
+        if 'all' in self.border:
+            if self.border['all'] is None:return
+            dc.SetPen(wx.Pen(self.border['all']))
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.DrawRectangle((0,0),self.Size)
+        if 'up' in self.border:
+            dc.SetPen(wx.Pen(self.border['up']))
+            dc.DrawLine(0,1,self.Size.x,1)
+        if 'bottom' in self.border:
+            dc.SetPen(wx.Pen(self.border['bottom']))
+            dc.DrawLine(0,self.Size.y-1,self.Size.x,self.Size.y-1)
+        if 'left' in self.border:
+            dc.SetPen(wx.Pen(self.border['left']))
+            dc.DrawLine(1,0,1,self.Size.y)
+        if 'right' in self.border:
+            dc.SetPen(wx.Pen(self.border['right']))
+            dc.DrawLine(self.Size.x-1,0,self.Size.x-1,self.Size.y)
         return
 
     def onRotateWheel(self,e):
-        yu=esui.YU
         t=-1*np.sign(e.WheelRotation)
 
         if self.axis=='X':
@@ -96,8 +138,6 @@ class ScrolledPlc(wx.ScrolledWindow):
         return
 
     def onLeave(self,e):
-        # dc=wx.ClientDC(self)
-        # dc.Clear(eraseBackground=False)
         self.Refresh(eraseBackground=False)
     pass
 

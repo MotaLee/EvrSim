@@ -101,7 +101,7 @@ class MenuBtn(wx.ComboCtrl):
         if self.click_ctrl:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+            dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))
@@ -144,7 +144,7 @@ class BorderlessMenuBtn(MenuBtn):
         if self.click_ctrl:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+            dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_LBACK))
         dc.SetPen(wx.TRANSPARENT_PEN)
@@ -184,7 +184,7 @@ class SelectMenuBtn(MenuBtn):
         if self.click_ctrl:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self.on_ctrl:
-            dc.SetBrush(wx.Brush(esui.COLOR_SECOND))
+            dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))

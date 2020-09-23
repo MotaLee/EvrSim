@@ -1,4 +1,4 @@
-// #version 330 core
+#version 330 core
 uniform int has_texture;
 uniform int highlight;
 uniform sampler2D texture_id;

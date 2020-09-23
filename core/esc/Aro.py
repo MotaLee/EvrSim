@@ -1,8 +1,12 @@
+import math
 import mod
+import numpy as np
 from core import esc as ESC
-def getAro(aroid):
+def getAro(aroid,queue=0):
     'Lv1: Get Aro by ID. Return Aro if succeed, None if failed;'
-    for aro in ESC.ARO_MAP:
+    if queue==0:aromap=ESC.ARO_MAP
+    else:aromap=ESC.MAP_QUEUE[queue]
+    for aro in aromap:
         if aro.AroID==aroid:return aro
     return
 
@@ -27,21 +31,41 @@ def addAro(aroclass):
 def delAro(aroid):
     'Lv2: Return deleted Aro if succeed;'
     aro=ESC.getAro(aroid)
+    aro.onDel()
     ESC.ARO_MAP.remove(aro)
     return aro
 
 def initAro(aroclass,arove):
     'Lv3: Add an Aro with initilization;'
+    for k,v in arove.items():
+        if v=='inf':arove[k]=math.inf
+        if type(v)==list:
+            temp=list()
+            for ve in v:
+                if ve=='inf':temp.append(math.inf)
+                else:temp.append(ve)
+            arove[k]=temp
     aro=addAro(aroclass)
-    setAro(aro.AroID,arove)
+    aro.onInit(arove)
+    if 'AroID' in arove:
+        ESC.AROID_MAX=max(arove['AroID'],ESC.AROID_MAX)
     return aro
 
 def setAro(aroid,arove):
     ''' Lv2: Set Arove with Arove dict.
 
         AroID, AroClass shouldnt be set;'''
+    for k,v in arove.items():
+        if type(v)==str:
+            if v=='inf':arove[k]=math.inf
+        elif type(v)==list:
+            temp=list()
+            for ve in v:
+                if ve=='inf':temp.append(math.inf)
+                else:temp.append(ve)
+            arove[k]=temp
+        elif type(v)==np.array:
+            arove[k]=v.tolist()
     aro=getAro(aroid)
     aro.onSet(arove)
-    if 'AroID' in arove:
-        ESC.AROID_MAX=max(arove['AroID'],ESC.AROID_MAX)
     return

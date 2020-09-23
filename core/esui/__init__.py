@@ -19,7 +19,8 @@ COLOR_BLACK='#000000'
 COLOR_BACK='#222222'
 COLOR_LBACK='#333333'
 COLOR_TEXT='#ffffff'
-COLOR_SECOND='#555555'
+COLOR_ACTIVE='#555555'
+COLOR_DECRO='#996600'
 TEXT_FONT='Microsoft YaHei'
 
 from .window import EsWindow
@@ -30,8 +31,6 @@ from .plc import ScrolledPlc
 from .plc_Head import HeadPlc
 from .plc_Head import HeadBar
 from .plc import CmdPlc
-from .plc_Acp import AcpPlc
-from .plc_Side import SidePlc
 from .plc_tree import TreePlc
 from .plc_tree import MapTreePlc
 from .plc_tree import ModelTreePlc
@@ -64,3 +63,12 @@ from .btn import BorderlessBtn
 from .btn import SelectBtn
 from .btn import BlSelectBtn
 from .btn import TabBtn
+
+class ESFont(wx.Font):
+    ''' Simple font class.
+
+        Para argkw: size.'''
+    def __init__(self,**argkw):
+        size=argkw.get('size',12)
+        super().__init__(int(size),wx.MODERN,wx.NORMAL,wx.NORMAL,False,TEXT_FONT)
+    pass

@@ -2,11 +2,6 @@
 
 ---
 
-+ Last update: 2020/07/05.
-+ Leatest version: 0.0.5.
-
----
-
 ## Contents
 
 1. Introdution
