@@ -66,21 +66,23 @@ class BorderlessBtn(Btn):
 
 # Select button wx sub class;
 class SelectBtn(wx.ToggleButton):
-    on_ctrl=False
-    enable_ctrl=True
-    def __init__(self,parent,p,s,txt,tip='',select=False,enable=True,tsize=10,cn=''):
-        wx.ToggleButton.__init__(self,parent,
-            name=cn,
-            pos=p,
-            size=s,
-            label=txt,
-            style=wx.NO_BORDER)
-        self.enable_ctrl=enable
+    ''' Para argkw: tip/enable/select/cn/tsize'''
+    def __init__(self,parent,p,s,txt,**argkw):
+        super().__init__(parent,pos=p,size=s,style=wx.NO_BORDER)
+        enable=argkw.get('enable',True)
+        select=argkw.get('select',False)
+        cn=argkw.get('cn','')
+        tip=argkw.get('tip','')
+        tsize=argkw.get('tsize',10)
 
+        self.on_ctrl=False
+        self.enable_ctrl=enable
         self.SetToolTip(tip)
-        self.txtfont=wx.Font(int(tsize),wx.MODERN,wx.NORMAL,wx.NORMAL,False,'Microsoft YaHei')
+        self.txtfont=esui.ESFont(size=tsize)
         self.SetFont(self.txtfont)
         self.SetValue(select)
+        self.SetLabel(txt)
+        self.SetName(cn)
 
         self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
@@ -113,11 +115,13 @@ class SelectBtn(wx.ToggleButton):
     def onEnter(self,e):
         if not self.enable_ctrl: return
         self.on_ctrl=True
+        e.Skip()
         return
 
     def onLeave(self,e):
         if not self.enable_ctrl: return
         self.on_ctrl=False
+        e.Skip()
         return
     pass
 

@@ -1,5 +1,6 @@
 import os
 from core import esc as ESC
+import mod
 def getModelPath(mdl_tuple):
     'Lv1: Get model path even not existed.'
     if mdl_tuple[0]==ESC.SIM_NAME:

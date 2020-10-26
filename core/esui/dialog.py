@@ -17,7 +17,7 @@ class EsDialog(wx.Dialog):
         self.dlgttl=esui.StaticText(self,(yu,0),(12*yu,4*yu),logtitle,align='left')
 
         self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.canbtn.Bind(wx.EVT_LEFT_DOWN,self.onCancel)
+        self.canbtn.Bind(wx.EVT_LEFT_UP,self.onCancel)
         return
 
     def onPaint(self,e):
@@ -53,7 +53,7 @@ class NewDialog(EsDialog):
                 self.warnstc.Show()
                 return
         ESC.newSim(sim_name)
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_OPEN_SIM,sim_name])
+        esevt.sendEvent(esevt.ETYPE_COMEVT,[esevt.ETYPE_OPEN_SIM,sim_name])
         self.EndModal(1)
         return
 
@@ -80,7 +80,7 @@ class OpenDialog(EsDialog):
                 sim_name=ctrl.GetLabel()
                 break
         if sim_name!='':
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_OPEN_SIM,sim_name])
+            esevt.sendEvent(esevt.ETYPE_COMEVT,[esevt.ETYPE_OPEN_SIM,sim_name])
         self.EndModal(1)
         return
     pass
@@ -151,31 +151,37 @@ class SettingDialog(EsDialog):
 
 # Mod Dialog wx sub class;
 class ModDialog(EsDialog):
-    def __init__(self,parent,p,s,loglabel,exstl=0):
-        esui.EsDialog.__init__(self,parent,
-            (p[0],p[1]),
-            (s[0],s[1]),
-            loglabel,exstl)
-        xu=s[0]/60
-        yu=s[1]/60
-        # List view and tree view;
-        self.lvbtn=esui.Btn(self,(yu,55*yu),(4*yu,4*yu),'Lv',able=False)
-        self.tibtn=esui.Btn(self,(5*yu,55*yu),(4*yu,4*yu),'Tv')
-        self.dlgttl.SetLabel(loglabel)
-        nowlist=list(self.Parent.WX_MOD_LIST)
-        nowlist.remove('Self')
-        self.vmpl=ViewModPanel(self,(1*yu,4*yu),(60*xu-2*yu,50*yu),nowlist)
-
+    def __init__(self,parent,p,s):
+        esui.EsDialog.__init__(self,parent,p,s,'Mod Manager')
+        self.lvbtn=esui.Btn(self,(yu,55*yu),(4*yu,4*yu),'Ls',able=False)
+        self.tibtn=esui.Btn(self,(6*yu,55*yu),(4*yu,4*yu),'Tr')
+        self.plc_mod=esui.Plc(self,(yu,4*yu),(self.Size.x-2*yu,self.Size.y-10*yu),
+            border={'all':esui.COLOR_ACTIVE})
+        self.loadMod()
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
         return
 
     def onConfirm(self,e):
-        clist=self.vmpl.Children
+        clist=self.plc_mod.Children
         newlist=list()
         for ctrl in clist:
             if ctrl.GetValue():
                 newlist.append(ctrl.GetLabel())
-        esevt.sendEvent(esevt.ETYPE_LOAD_MOD,newlist)
+        ESC.loadMod(newlist,unload=True)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_LOAD_MOD)
+        self.EndModal(1)
+        return
+
+    def loadMod(self):
+        fl=os.listdir('mod/')
+        bw=self.plc_mod.Size.x/6
+        bh=self.plc_mod.Size.y/3
+        for i in range(0,len(fl)):
+            if fl[i][0]=='_':continue
+            bx=(i %6)*bw+bw//3
+            by=(i//6)*bh+bh//3
+            esui.SelectBtn(self.plc_mod,(bx,by),(bw//1.5,bh//1.5),fl[i],
+                select=fl[i] in ESC.MOD_LIST)
         return
     pass
 
@@ -200,47 +206,6 @@ class ViewSimPlc(esui.Plc):
         dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         dc.SetPen(wx.Pen(esui.COLOR_ACTIVE))
         dc.DrawRectangle((0,0),self.Size)
-        return
-    pass
-
-# View mod panel sub class;
-class ViewModPanel(wx.Panel):
-    def __init__(self,parent,p,s,nowlist,exstl=0):
-        wx.Panel.__init__(self,parent,-1,
-            pos=p,
-            size=s,
-            style=wx.NO_BORDER | exstl)
-        self.now_list=nowlist
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.loadMod()
-        return
-
-    def loadMod(self):
-        'Update MOD_SET via Mods Manager;'
-        self.DestroyChildren()
-        fl=os.listdir('mod/')
-        nf=[]
-        for f in fl:
-            if f[0]!='_':
-                nf.append(f[0:f.find('.')])
-        bw=self.Size[0]//4
-        bh=self.Size[1]//3
-        for i in range(0,len(nf)):
-            bx=(i %4)*bw+bw//6
-            by=(i//4)*bh+bh//6
-            esui.SelectBtn(self,(bx,by),(bw//1.5,bw//1.5),nf[i],
-                select=nf[i] in self.now_list,
-                enable=not nf[i] in self.now_list)
-        return
-
-    def onPaint(self,e):
-        dc=wx.PaintDC(self)
-        dc.SetBrush(wx.Brush(esui.COLOR_BACK))
-        dc.SetPen(wx.TRANSPARENT_PEN)
-        dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
-        dc.SetPen(wx.Pen(esui.COLOR_FRONT))
-        dc.DrawLine(0,0,self.Size[0],0)
-        dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
         return
     pass
 

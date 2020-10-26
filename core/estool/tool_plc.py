@@ -33,6 +33,8 @@ class ToolPlc(esui.Plc):
             self.Show()
         elif etype==esevt.ETYPE_OPEN_SIM:
             self.Show()
+        elif etype==esevt.ETYPE_LOAD_MOD:
+            self.Show()
         # else:
         for tool in self.tool_list:
             esevt.sendEvent(etype,target=tool)

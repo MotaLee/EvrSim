@@ -33,7 +33,15 @@ class DrawPart(object):
 
         return
 
-    def transDP(self):
+    def updateDP(self,aro=None):
+        ''' Specificate by ADP;'''
+        if aro is not None:
+            self.Aro=aro
+            v_p=list(self.Aro.position)
+            self.trans=glm.translate(glm.mat4(1.0),v_p)
+        return
+
+    def viewDP(self):
         ftrans=self.trans
         if self.fix_position:
             dpp=self.fix_position
@@ -63,14 +71,10 @@ class DrawPart(object):
 
 class AroDrawPart(DrawPart):
     ''' Para Aro: accept Aro or AroID.;'''
-    def __init__(self,aro=None):
+    def __init__(self,aroid=None):
         super().__init__()
-        if type(aro)==int:aro=ESC.getAro(aro)
-        self.Aro=aro
-        if hasattr(aro,'position'):
-            # self.ep_dis=np.linalg.norm(esgl.EP-aro.position)
-            pass
-        self.dp_name=aro.AroID
+        self.Aro=ESC.getAro(aroid)
+        self.dp_name=self.Aro.AroID
         return
     pass
 

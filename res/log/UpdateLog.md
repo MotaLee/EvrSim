@@ -12,7 +12,31 @@ Date:2020/08/26
 
 ## Details
 
-### 0.0.7 - 2020/09/00
+### 0.0.8 - 2020/10/26
+
+1. Mod:
+    * Moved some tools from AroCore to AroPlot;
+    * Added a real-time clock text tool in AroCore;
+2. esui:
+    * Cancelled the multi-threading of EsWindow;
+    * Added mod manager to load new mod in Headbar;
+3. esmdl:
+    * Fixed the bug that acps would be selected when dismissing the detail dialog;
+4. esc:
+    * Added a global variable 'ARO_ORDER';
+    * Delete a global variable 'AROID_MAX', and its function was replaced by 'ARO_ORDER';
+    * Added new methods 'sortAro' and 'sortAroMap';
+    * Added new methods 'runCompiledSim' and 'compileModel' to boost performance, not fully completed yet but working;
+5. esgl:
+    * Optimized the performance of 'drawGL' method;
+    * Moved toolbar to AroCore;
+6. estab:
+    * Fixed some bugs with MapTreePlc;
+    * Added the icon to items of the tree plc;
+    * Achieved dragging sorting of MapTreePlc;
+    * Added relavant controls of picking Aroes in detail tab;
+
+### 0.0.7 - 2020/09/26
 
 1. App:
     * SmartToeSleeve: Optimized some details;

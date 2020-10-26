@@ -115,9 +115,9 @@ class AcpNode(esui.Plc):
         if self.Parent.acp_moving:
             if self.Parent.attaching:
                 if (px+rx)*zr % int(snap)<20:
-                    mx=int(round((px+rx)*zr/snap)*snap)-rx
+                    mx=round((px+rx)*zr/snap)*snap-rx*zr
                 if (py+ry)*zr % int(snap)<20:
-                    my=int(round((py+ry)*zr/snap)*snap)-ry
+                    my=round((py+ry)*zr/snap)*snap-ry*zr
                 self.Move(mx,my)
             for node in self.Parent.acpnode_selection:
                 node.Refresh()

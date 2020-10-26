@@ -71,7 +71,7 @@ class MapBlock(esui.Plc):
         self.map_menu.SetLabel(aromap)
         self.map_menu.Refresh()
         ESC.loadMapFile(aromap)
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
         if e is not None:e.Skip()
         return
     pass
@@ -106,6 +106,7 @@ class ModelBlock(esui.Plc):
         else:
             disable_list.remove(acpmodel)
         ESC.setSim({'MODEL_DISABLE':disable_list})
+        self.model_tree.DestroyChildren()
         self.model_tree.drawTree()
         e.Skip()
         return

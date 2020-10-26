@@ -78,33 +78,29 @@ class AcpSelector(Acp):
 
     def AcpProgress(self,datadict):
         'ESC.ARO_QUEUE[-1] needed.'
-        for kturple in datadict.keys():
-            if 'REQ' in kturple:
-                reqlist=datadict[kturple]
+        reqlist=datadict['REQ']
         slctdict=dict()
+        resdict=dict()
         for SELF_AROID in reqlist:
-            SELF_ARO=ESC.getAro(SELF_AROID,queue=-1)
-            selfdict={SELF_AROID:list()}
-            for ARO in ESC.MAP_QUEUE[-1]:
-                # Keyword defination;
+            SELF_ARO=ESC.getAro(SELF_AROID,queue=0)
+            slctdict[SELF_AROID]=list()
+            resdict[SELF_AROID]=list()
+            for ARO in ESC.MAP_QUEUE[0].values():
                 AROVE=ARO.__dict__
-                AROCLASS_ABBR=AROVE['AroClass'][AROVE['AroClass'].rfind('.')+1:]
+                ABBRCLASS=ARO.AroClass[ARO.AroClass.rfind('.')+1:]
                 try:ev=eval(self.expression)
                 except BaseException:ev=False
                 if ev:
-                    if self.item=='':
-                        data=[SELF_ARO]
-                    elif type(AROVE[self.item])!=list:
+                    if not isinstance(AROVE[self.item],list):
                         # Convert single int to vec1;
                         data=[AROVE[self.item]]
                     else:
                         data=AROVE[self.item]
-                    selfdict[SELF_AROID].append(data)
-            for aroid,vlist in selfdict.items():
-                if len(vlist)==0:selfdict[aroid].append(self.default)
-            slctdict.update(selfdict)
-            if len(list(slctdict.values())[0])==0:ESC.bug('W: Selector '+self.AcpName+' matched nothing.')
-        return {(self.AcpID,1):slctdict}
+                    resdict[SELF_AROID].append(ARO.AroID)
+                    slctdict[SELF_AROID].append(data)
+            if len(slctdict[SELF_AROID])==0:slctdict[SELF_AROID]=[self.default]
+        if len(list(slctdict.values())[0])==0:ESC.bug('W: Selector '+self.AcpName+' matched nothing.')
+        return {(self.AcpID,1):slctdict,(self.AcpID,'RES'):resdict}
     pass
 
 class AcpProvider(Acp):
@@ -123,22 +119,17 @@ class AcpProvider(Acp):
         return
 
     def preProgress(self,datadict):
-        datakey=(self.AcpID,'REQ')
-        if datakey in datadict: return {}
-        reqdict={datakey:list()}
         arolist=list()
-        for ARO in ESC.ARO_MAP:
-            # Keyword defination;
+        for ARO in ESC.ARO_MAP.values():
+            ABBRCLASS=ARO.AroClass[ARO.AroClass.rfind('.')+1:]
             AROVE=ARO.__dict__
-            AROCLASS_ABBR=AROVE['AroClass'][AROVE['AroClass'].rfind('.')+1:]
-            target=eval(self.expression.__str__())
+            target=eval(self.expression)
             if target: arolist.append(ARO.AroID)
-        reqdict[datakey]=arolist
-        return reqdict
+        return {'REQ':arolist}
 
     def postProgress(self,datadict):
         indict=datadict[self.inport[1]]
-        reqlist=datadict[(self.AcpID,'REQ')]
+        reqlist=datadict['REQ']
         for aroid,itemvalue in indict.items():
             if aroid in reqlist:
                 if len(itemvalue)!=1:return ESC.bug('E: Provide too more')
@@ -365,7 +356,7 @@ class AcpConst(Acp):
         if type(self.value)!=list:out=[self.value]
         else:out=self.value
         for kturple in datadict.keys():
-            if 'REQ' in kturple:
+            if kturple=='REQ':
                 reqlist=datadict[kturple]
         outdict=dict()
         for aroid in reqlist:
@@ -410,7 +401,8 @@ class AcpSum(Acp):
         out_dict=dict()
         for aroid,dlist in in_dict.items():
             # darr=np.array(dlist)
-            out_dict[aroid]=[np.sum(dlist,axis=0).tolist()]
+            nparr=np.sum(dlist,axis=0)
+            out_dict[aroid]=[nparr.tolist()]
         return {(self.AcpID,2):out_dict}
     pass
 

@@ -34,6 +34,7 @@ class AcpPlc(esui.Plc):
             if self.IsShown():self.onKeyDown(e.GetEventArgs(1))
         elif etype==esevt.ETYPE_OPEN_SIM:
             self.Hide()
+        return
     pass
 
 class AcpCanvasPlc(wx.ScrolledCanvas):

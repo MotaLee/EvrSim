@@ -56,7 +56,7 @@ class ToggleTool(BaseTool,esui.SelectBtn):
     'Lv:2: Second tool class. Build SelectBtn ctrl;'
     def __init__(self,name,parent,p,s,label,select=False,tip=''):
         BaseTool.__init__(self,name)
-        esui.SelectBtn.__init__(self,parent,p,s,label,tip,select=select,tsize=s[1]/2)
+        esui.SelectBtn.__init__(self,parent,p,s,label,tip=tip,select=select,tsize=s[1]/2)
         return
     pass
 

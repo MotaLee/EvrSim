@@ -28,13 +28,6 @@ from .window import EsWindow
 from .plc import Plc
 from .plc import ScrolledPlc
 
-from .plc_Head import HeadPlc
-from .plc_Head import HeadBar
-from .plc import CmdPlc
-from .plc_tree import TreePlc
-from .plc_tree import MapTreePlc
-from .plc_tree import ModelTreePlc
-
 # Text ctrl;
 from .textctrl import StaticText
 from .textctrl import TransText
@@ -63,6 +56,13 @@ from .btn import BorderlessBtn
 from .btn import SelectBtn
 from .btn import BlSelectBtn
 from .btn import TabBtn
+
+from .plc_Head import HeadPlc
+from .plc_Head import HeadBar
+from .plc import CmdPlc
+from .plc_tree import TreePlc
+from .plc_tree import MapTreePlc
+from .plc_tree import ModelTreePlc
 
 class ESFont(wx.Font):
     ''' Simple font class.

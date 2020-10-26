@@ -1,23 +1,23 @@
 import wx
 from core import ESC,esui,esevt
 yu=esui.YU
-class DetailTab(esui.Plc):
-    def __init__(self,parent,p,s,tablabel):
-        super().__init__(parent,p,s)
-        yu=esui.YU
-
-        self.ori_s=s
-        self.aobj=None
-        self.SetLabel(tablabel)
-        self.SetBackgroundColour(esui.COLOR_LBACK)
-
-        self.btn_con=esui.Btn(self,(self.Size[0]-10*yu,yu),(4*yu,4*yu),label='√')
-        self.btn_can=esui.Btn(self,(self.Size[0]-5*yu,yu),(4*yu,4*yu),label='×')
-        self.plc_detail=esui.ScrolledPlc(self,(0,6*yu),(self.Size[0],self.Size[1]-6*yu))
-        self.btn_con.Bind(wx.EVT_LEFT_DOWN,self.onClkConfirm)
+class DetailDialog(esui.EsDialog):
+    def __init__(self,parent,p,s,aro):
+        super().__init__(parent,p,s,'Aro Detail: '+aro.AroName)
+        self.conbtn.Bind(wx.EVT_LEFT_UP,self.onConfirm)
+        self.plc_detail=esui.ScrolledPlc(self,(yu,6*yu),
+            (self.Size.x/2-1.5*yu,self.Size[1]-12*yu),
+            border={'all':esui.COLOR_ACTIVE})
+        self.plc_port=esui.ScrolledPlc(self,(self.Size.x/2+0.5*yu,6*yu),
+            (self.Size.x/2-1.5*yu,self.Size[1]-12*yu),
+            border={'all':esui.COLOR_ACTIVE})
+        self.btn_move=esui.BorderlessBtn(self,(self.Size.x-5*yu,yu),(yu,yu),'=')
+        if type(aro)==int:aro=ESC.getAcp(aro)
+        self.aro=aro
+        self.showDetail()
         return
 
-    def onClkConfirm(self,e):
+    def onConfirm(self,e):
         set_dict=dict()
         for ctrl in self.plc_detail.Children:
             if isinstance(ctrl,(esui.InputText,esui.MultilineText)):
@@ -32,19 +32,16 @@ class DetailTab(esui.Plc):
             set_dict[ctrl.Name]=v_eval
         ESC.setAro(self.aro.AroID,set_dict)
         esui.ARO_PLC.readMap()
-        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
-        esui.HintText(self,(self.Size[0]-14*yu,yu),(8*yu,4*yu),txt='Updated!')
+        self.EndModal(1)
         return
 
-    def showDetail(self,aro=None):
+    def showDetail(self):
         DP=self.plc_detail
         DP.DestroyChildren()
-        esui.SIDE_PLC.toggleTab('Detail')
-        if aro is None:aro=esui.ARO_PLC.aro_selection[0]
-        elif type(aro)==int:aro=ESC.getAro(aro)
+        aro=self.aro
 
-        esui.StaticText(self,(yu,0),(8*yu,4*yu),aro.AroName+' Detail:',align='left')
-        i=0
+        esui.StaticText(DP,(yu,0),(8*yu,4*yu),'General:',align='left')
+        i=1
         for k,v in aro.__dict__.items():
             if k in aro._Arove_flag['invisible']:continue
             esui.StaticText(DP,(yu,i*4*yu),(12*yu,4*yu),k+':',align='left')
@@ -72,26 +69,17 @@ class DetailTab(esui.Plc):
                 esui.InputText(DP,(14*yu,(i*4+0.5)*yu),
                     (DP.Size[0]-15*yu,3.5*yu),hint=str(v),cn=k,exstl=stl)
             i+=1
+
         DP.updateVirtualSize()
         return
 
-    def clearDetail(self):
-        self.plc_detail.DestroyChildren()
-        return
-
     def onChangeTarget(self,e):
-        'todo: better picking'
-        host=e.EventObject.host
-        aro=esui.ARO_PLC.aro_selection[0]
-        host.value=aro.AroID
-        host.SetLabel(aro.AroName)
-        host.Refresh()
+        'todo'
         return
 
     def onRemoveTarget(self,e):
         host=e.EventObject.host
         host.value=None
         host.SetLabel('')
-        host.Refresh()
         return
     pass

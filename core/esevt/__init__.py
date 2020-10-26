@@ -2,7 +2,7 @@
 import wx
 from core import esui
 # Event type;
-ETYPE_COMMON_EVENT = wx.NewEventType()
+ETYPE_COMEVT = wx.NewEventType()
 ETYPE_NEW_SIM = wx.NewEventType()
 ETYPE_OPEN_SIM = wx.NewEventType()
 ETYPE_SAVEAS_SIM = wx.NewEventType()
@@ -22,7 +22,7 @@ ETYPE_OPEN_CMD = wx.NewEventType()
 ETYPE_CLOSE_CMD = wx.NewEventType()
 
 # Event binder;
-EVT_COMMON_EVENT = wx.PyEventBinder(ETYPE_COMMON_EVENT, 1)
+EVT_COMMON_EVENT = wx.PyEventBinder(ETYPE_COMEVT, 1)
 EVT_NEW_SIM = wx.PyEventBinder(ETYPE_NEW_SIM, 1)
 EVT_OPEN_SIM = wx.PyEventBinder(ETYPE_OPEN_SIM, 1)
 EVT_SAVEAS_SIM = wx.PyEventBinder(ETYPE_SAVEAS_SIM, 1)

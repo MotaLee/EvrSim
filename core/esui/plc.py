@@ -165,7 +165,7 @@ class CmdPlc(Plc):
 
     def bug(self,bugstr,report=False):
         # self._bug(bugstr,report)
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_OPEN_CMD)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_OPEN_CMD)
         self.histxt.AppendText(bugstr+'\n')
         return
 
@@ -193,7 +193,7 @@ class CmdPlc(Plc):
 
     def onKeyDown(self,e):
         if e.GetKeyCode()==wx.WXK_ESCAPE:
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_CLOSE_CMD)
+            esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_CMD)
         e.Skip()
         return
     pass

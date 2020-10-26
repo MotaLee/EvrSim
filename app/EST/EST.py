@@ -3,11 +3,13 @@
 'EvrSim Terminal;'
 # system libs;
 import sys
-# import os
+import os
+sys.path.append(os.getcwd())
 # import re
 # import shutil
 from core import ESC
 from EvrSim import EST_VER
+ESC.ES_APP='EST'
 
 # Terminal needed variable;
 EST_EXIT=False

@@ -76,7 +76,7 @@ class EvrSimSTS(esui.EsWindow):
 
 # Main enterance;
 wxmw=EvrSimSTS()
-esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_OPEN_SIM,'STS'])
+esevt.sendEvent(esevt.ETYPE_COMEVT,[esevt.ETYPE_OPEN_SIM,'STS'])
 ESC.loadMapFile('init')
 esui.ARO_PLC.readMap()
 esui.ARO_PLC.toolbar.Hide()

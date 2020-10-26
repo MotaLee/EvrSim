@@ -74,7 +74,7 @@ class HeadPlc(HeadBar):
         self.menu_model=esui.BorderlessMenuBtn(self,(28*yu,0),(8*yu,ctrl_h),
             'Model',['New..','Rename..','Save as..','Delete'])
         self.menu_mod=esui.BorderlessMenuBtn(self,(36*yu,0),(8*yu,ctrl_h),
-            'Mod',['Load','Unload','Pack'])
+            'Mod',['Manager','Pack'])
         self.menu_help=esui.BorderlessMenuBtn(self,(44*yu,0),(8*yu,ctrl_h),
             'Help',['Help..','Read me..','About..'])
 
@@ -100,9 +100,9 @@ class HeadPlc(HeadBar):
     def onClkES(self,e):
         if ESC.SIM_NAME=='':return
         if e.EventObject.GetValue():
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_CLOSE_CMD)
+            esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_CMD)
         else:
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_OPEN_CMD)
+            esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_OPEN_CMD)
         return
 
     def onClkSim(self,e):
@@ -199,11 +199,13 @@ class HeadPlc(HeadBar):
         return
 
     def onClkMod(self,e):
+        if not ESC.SIM_NAME:return
         DlgType=None
-        fc=self.menu_sim.GetPopupControl()
+        fc=self.menu_mod.GetPopupControl()
         if fc.ipos==0:  # Load;
-            if ESC.SIM_NAME!='':pass
-        elif fc.ipos==1:    # Unload;
+            DlgType=esui.ModDialog
+            pass
+        elif fc.ipos==1:    # Pack;
             pass
 
         if DlgType is not None:

@@ -8,11 +8,11 @@ import numpy        as np
 import assimp       as ai
 import PIL.Image    as pil
 import mod
-from core import esui
-
+from core import ESC,esui
+from .detail import DetailDialog
 # Esgl global variable;
 TDP_LIST=list()
-ADP_LIST=list()
+ADP_DICT=dict()
 ASPECT_RATIO=1
 VIEW_RATIO=1
 WHEEL_DIS=0
@@ -175,5 +175,18 @@ def lookAt(ep=None,ap=None,up=None):
         glm.vec3(UP.tolist()))
     view_loc=gl.glGetUniformLocation(GL_PROGRAM,'view')
     gl.glUniformMatrix4fv(view_loc,1,gl.GL_FALSE,glm.value_ptr(MAT_VIEW))
+    for adplist in ADP_DICT.values():
+        if not isinstance(adplist,list):adplist=[adplist]
+        for adp in adplist:
+            adp.viewDP()
     esui.ARO_PLC.drawGL()
     return
+
+def drawGL():
+    esui.ARO_PLC.drawGL()
+    return
+
+def normPos(p):
+    px=2*p[0]/esui.ARO_PLC.Size.x-1
+    py=1-2*p[1]/esui.ARO_PLC.Size.y
+    return (px,py)

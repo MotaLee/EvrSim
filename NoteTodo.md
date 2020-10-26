@@ -5,35 +5,40 @@ map/model: save as
 help: manual/about/read me
 edit: undo/redo
 function to achieve: command panel/setting dialog
-data record
-aroglc: scale ruler/toolbar optimize
+aroglc: scale ruler/toolbar optimize/__better selecting__
 acpplc: comment acp
-arocore: visualization
-detail tab: __pick aro__/quick view
-esc: multi-thread acp
-next goal:
+aroplot: visualization
+detail tab: quick view/arospace folder
+esc: data record
+next goal: multi-thread acp/compiled models running
 
 ---
 
 ## Next Update
 
-### 0.0.7 - 2020/09/00
+### 0.0.8 - 2020/10/00
 
 1. App:
-    * SmartToeSleeve: Optimized some details;
-    * Editor: Added a splash;
 2. Mod:
-    * AroPlot: Optimized variables and the redrawing method;
-    * AroCore: Added a new acp 'AcpExecutor';
-    * Dynamics: Added a new acp 'IPE' form AcpExecutor and achieved simple constrainted planar machines;
+    * Moved some tools from AroCore to AroPlot;
+    * Added a real-time clock text tool in AroCore;
 3. esui:
-    * Added an icon of EvrSim to EsWindow control;
-    * Added a global class 'ESFont' to simplify calling a font;
+    * Cancelled the multi-threading of EsWindow;
+    * Added mod manager to load new mod in Headbar;
 4. esmdl:
-    * Added a new core module from 'plc_Acp';
-    * Fixed lots of operating bugs;
+    * Fixed the bug that acps would be selected when dismissing the detail dialog;
 5. esc:
-    * Massively optimized running performance;
-    * Added lots of performance relavant variables;
+    * Added a global variable 'ARO_ORDER';
+    * Delete a global variable 'AROID_MAX', and its function was replaced by 'ARO_ORDER';
+    * Added new methods 'sortAro' and 'sortAroMap';
+    * Added new methods 'runCompiledSim' and 'compileModel' to boost performance, not fully completed yet but working;
+6. esgl:
+    * Optimized the performance of 'drawGL' method;
+    * Moved toolbar to AroCore;
+7. estab:
+    * Fixed some bugs with MapTreePlc;
+    * Added the icon to items of the tree plc;
+    * Achieved dragging sorting of MapTreePlc;
+    * Added relavant controls of picking Aroes in detail tab;
 
 ---

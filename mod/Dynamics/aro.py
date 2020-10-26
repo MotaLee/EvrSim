@@ -53,6 +53,7 @@ class Moment(AroTargets):
 class Constraint(Aro):
     def __init__(self):
         super().__init__()
+        self._Arove_flag['target']+=['master','servant','m_target','s_target']
         self.adp='DpConstraint'
         self.position=[0,0,0]
         self.UXYZ=[0,0,0]

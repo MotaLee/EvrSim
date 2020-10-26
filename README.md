@@ -2,8 +2,8 @@
 
 ---
 
-+ Latest version: 0.0.7;
-+ Latest update: 2020/09/23;
++ Latest version: 0.0.8;
++ Latest update: 2020/10/26;
 
 ---
 
@@ -19,6 +19,12 @@ Simulate everything with visual math models you built.
 
 ---
 
+## Update
+
+See [UpdateLog](res/log/UpdateLog.md).
+
+---
+
 ## Todo
 
 1. Infinite iteration and depart;
@@ -26,18 +32,15 @@ Simulate everything with visual math models you built.
 3. Auto model/equation translation;
 4. Standalone sim packing;
 5. Help manual and language support;
-6. ~~Mod API improving~~;
-7. Custom Aro/Acp;
-8. Limitator and constraint;
-9. More mod;
-10. ~~Open source support~~;
-11. Todo;
+6. Custom Aro/Acp;
+7. More mod;
+8. Todo;
 
 ---
 
-## Update
+## Manual
 
-See [UpdateLog](res/log/UpdateLog.md).
+See [Manual](res/doc/manual.md).
 
 ---
 

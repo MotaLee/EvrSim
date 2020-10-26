@@ -4,14 +4,15 @@
 import os
 # Built-in importion;
 import mod
-from .Aro import getAro,addAro,delAro,initAro,setAro,getAroByName
+from .Aro import getAro,addAro,delAro,initAro,setAro,getAroByName,sortAro
 from .Acp import getAcp,addAcp,setAcp,delAcp,initAcp,connectAcp
-from .Map import newMapFile,loadMapFile,updateMapFile,renameMapFile
+from .Map import newMapFile,loadMapFile,updateMapFile,renameMapFile,sortAroMap
 from .Model import newModelFile,loadModelFile,updateModelFile,getModelPath,renameModelFile
-from .Running import runSim
+from .Running import runSim,reqAcp,runCompiledSim,compileModel
 from .Sim import newSim,openSim,delSim,closeSim,setSim,saveSim,resetSim
 
 ES_PATH=os.getcwd()
+ES_APP=''
 CORE_STAUS='READY'     # ['READY','BUSY','STOP','STEP']
 SIM_NAME=''
 SIM_FD=None
@@ -21,8 +22,8 @@ USER_SETTING=dict()
 TIME_RATE=1
 MODEL_DISABLE=list()
 # Maps and models;
-AROID_MAX=0
-ARO_MAP=list()
+ARO_ORDER=list()
+ARO_MAP=dict()
 MAP_QUEUE=list()
 ARO_MAP_NAME=''
 MAP_LIST=list()
@@ -32,6 +33,8 @@ ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[
 STATIC_DICT=dict()      # {(modname,mdlname,acpid):datadict, ...}
 STATIC_PREPARED=False
 ACPS_PREPARED={'Providers':dict(),'Executors':dict(),'Iterators':dict()}
+DATADICT=dict()
+COMPILED_MODEL=None
 
 # User changeable setting;
 SIM_REALTIME=True
@@ -49,7 +52,7 @@ SETTING_DICT={
 # Methods
 def initESC():
     global CORE_STAUS,SIM_NAME,SIM_FD,MOD_LIST,USER_SETTING,TIME_RATE
-    global MODEL_DISABLE,AROID_MAX,ARO_MAP,MAP_QUEUE,ARO_MAP_NAME
+    global MODEL_DISABLE,ARO_MAP,MAP_QUEUE,ARO_MAP_NAME
     global ACPID_MAX,ACP_MODELS,SIM_REALTIME,SIM_RECORD,SIM_QUEUE_LEN
     global ACP_DEPTH,TIME_STEP,MAP_LIST,MODEL_LIST
     CORE_STAUS='READY'
@@ -59,7 +62,6 @@ def initESC():
     USER_SETTING=dict()
     TIME_RATE=1
     MODEL_DISABLE=list()
-    AROID_MAX=0
     ARO_MAP=list()
     MAP_QUEUE=list()
     ARO_MAP_NAME=''
@@ -79,7 +81,7 @@ def bug(bugstr,report=False):
     print(bugstr)
     return bugstr
 
-def loadMod(modlist):
+def loadMod(modlist,unload=False):
     ''' Lv1: Load Mod from MOD_LIST.
 
         Include models and setting;'''
@@ -94,4 +96,7 @@ def loadMod(modlist):
         model_index=eval('mod.'+m+'.MODEL_INDEX')
         for model in model_index:
             loadModelFile((m,model))
+    if unload:
+        for m in MOD_LIST:
+            'todo: unload mods'
     return

@@ -6,8 +6,8 @@ from core import esui
 from core import esgl
 ADP=esgl.AroDrawPart
 class AdpPoint(ADP):
-    def __init__(self,aro):
-        super().__init__(aro=aro)
+    def __init__(self,aroid):
+        super().__init__(aroid=aroid)
         self.gl_type=gl.GL_LINES
         self.fix_size=True
         self.fix_orientation=True
@@ -21,15 +21,19 @@ class AdpPoint(ADP):
         VA[3][1]-=ps
         self.VA=VA
         self.EA=np.array([[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],dtype=np.uint32)
+        self.updateDP(self.Aro)
+        return
+
+    def updateDP(self,aro):
+        self.Aro=aro
         v_p=list(self.Aro.position)
-        # v_p=glm.vec3()
         self.trans=glm.translate(glm.mat4(1.0),v_p)
         return
     pass
 
 class AdpArrow(ADP):
-    def __init__(self,aro):
-        super().__init__(aro=aro)
+    def __init__(self,aroid):
+        super().__init__(aroid=aroid)
         self.gl_type=gl.GL_LINES
         self.value=getattr(self.Aro,'value',[0,1,0])
         self.color=getattr(self.Aro,'color',[1,1,1,1])
@@ -47,14 +51,19 @@ class AdpArrow(ADP):
             [0,0,0]],dtype=np.float32)
         self.VA=np.hstack((VA,ca))
         self.EA=np.array([[0,4],[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],dtype=np.uint32)
+        self.updateDP(self.Aro)
+        return
+
+    def updateDP(self,aro):
+        self.Aro=aro
         v_p=list(self.Aro.position)
         self.trans=glm.translate(glm.mat4(1.0),v_p)*esgl.rotateToVec(glm.vec3([0,1,0]),glm.vec3(self.value))
         return
     pass
 
 class AdpImage(ADP):
-    def __init__(self,aro):
-        super().__init__(aro=aro)
+    def __init__(self,aroid):
+        super().__init__(aroid=aroid)
         self.gl_type=gl.GL_TRIANGLES
         self.texture=self.Aro.image
         w=self.Aro.size[0]/100

@@ -32,11 +32,6 @@ class Aro(object):
 
     def onSet(self,arove={}):
         ''' This method will be called in ESC.setAro'''
-        new_arove=dict(arove)
-        for k,v in arove.items():
-            if k not in self.__dict__:
-                del new_arove[k]
-        self.__dict__.update(new_arove)
         return
 
     def onDel(self):

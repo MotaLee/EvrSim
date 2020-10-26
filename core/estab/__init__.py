@@ -12,7 +12,7 @@ class SidePlc(esui.Plc):
 
         self.map_list=list()
         self.model_list=list()
-        self.tab_list=['Manager','Detail']
+        self.tab_list=['Manager']
 
         tab_pos=(2,8*yu)
         tab_size=(s[0],88*yu)
@@ -99,4 +99,5 @@ class SidePlc(esui.Plc):
             if ctrl.GetLabel()==tablabel:
                 ctrl.DestroyLater()
         return
+
     pass

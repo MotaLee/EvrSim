@@ -6,7 +6,7 @@ from mod.Dynamics import Constraint
 class IPE(AcpExecutor):
     def postProgress(self,datadict):
         joints=list()
-        for aro in ESC.MAP_QUEUE[-1]:
+        for aro in ESC.MAP_QUEUE[0].values():
             if type(aro)==Constraint:
                 joints.append(aro)
 

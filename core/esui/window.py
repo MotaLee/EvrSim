@@ -1,4 +1,5 @@
 import threading
+import time
 import wx
 from core import ESC
 from core import esui
@@ -15,7 +16,6 @@ class EsWindow(wx.Frame):
 
         self.dialog=None
         self.gl_timer=wx.Timer(self)
-        self.esc_thread=ESCThread()
         self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
         self.Bind(esevt.EVT_RUN_SIM, self.onRunSim)
         self.Bind(wx.EVT_CHAR_HOOK,self.onKeyDown)
@@ -46,10 +46,10 @@ class EsWindow(wx.Frame):
             return
         elif ESC.CORE_STAUS=='READY':
             esui.ARO_PLC.readMap()
-            if not self.esc_thread.is_alive():
-                self.esc_thread=ESCThread()
-                self.esc_thread.start()
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_SIM_CIRCLED)
+            # s=time.time()
+            ESC.runCompiledSim()
+            esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_SIM_CIRCLED)
+            # print(time.time()-s)
         return
 
     def onOpenSim(self,e):
@@ -58,12 +58,12 @@ class EsWindow(wx.Frame):
             return
         sim_name=e.GetEventArgs(1)
         ESC.openSim(sim_name)
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_LOAD_MOD)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_LOAD_MOD)
         return
 
     def onKeyDown(self,e):
         if not isinstance(e.EventObject,wx.TextCtrl):
-            esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,[esevt.ETYPE_KEY_DOWN,e])
+            esevt.sendEvent(esevt.ETYPE_COMEVT,[esevt.ETYPE_KEY_DOWN,e])
         e.Skip()
         return
     pass
@@ -75,5 +75,6 @@ class ESCThread(threading.Thread):
 
     def run(self):
         ESC.runSim()
+        # ESC.runCompiledSim()
         return
     pass

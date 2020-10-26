@@ -16,7 +16,7 @@ class RGMenu(estool.SelectMenuTool):
 
     def onUpdateMap(self,e):
         item_list=list()
-        for aro in ESC.ARO_MAP:
+        for aro in ESC.ARO_MAP.values():
             if type(aro)==RigidGroup:
                 item_list.append(aro.AroName)
         self.setItems(item_list)
@@ -41,7 +41,7 @@ class NewRGBtn(estool.ButtonTool):
 
     def onClk(self,e):
         ESC.initAro(RigidGroup,{'AroName':'New RG'})
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
         return
     pass
 
@@ -79,7 +79,7 @@ class ConnectRGBtn(estool.ButtonTool):
             rg_dict[aro2.AroID].append(aro1.AroID)
 
         ESC.setAro(now_rg.AroID,{'group_dict':rg_dict})
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
         return
     pass
 
@@ -100,6 +100,6 @@ class RemoveFromRGBtn(estool.ButtonTool):
                     rg_dict[aroid].remove(aro.AroID)
                 del rg_dict[aro.AroID]
         ESC.setAro(now_rg.AroID,{'group_dict':rg_dict})
-        esevt.sendEvent(esevt.ETYPE_COMMON_EVENT,esevt.ETYPE_UPDATE_MAP)
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
         return
     pass
