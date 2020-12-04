@@ -45,7 +45,7 @@ class CanvasPlc(esui.Plc):
         self.figure.set_figwidth(self.Size[0]/100)
         self.figure.set_figheight(self.Size[1]/100)
         self.axes = self.figure.add_subplot(111)
-        self.axes.axis([0,5,-3,1])
+        self.axes.axis([0,10,-3,1])
         self.axes.set_title(self.title)
         self.axes.grid(True)
         self.axes.set_xlabel(self.xlabel)

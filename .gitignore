@@ -18,3 +18,5 @@ deploy_key_rsa
 /.vscode
 /__pycache__
 *.pdf
+NoteTodo.md
+.gitignore

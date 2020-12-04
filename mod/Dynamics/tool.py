@@ -1,16 +1,13 @@
 import wx
 import numpy as np
-from core import ESC
-from core import esui
-from core import esevt
-from core import estool
+from core import ESC,esui,esgl,esevt,estool
 from .aro import RigidGroup
 
 class RGMenu(estool.SelectMenuTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(esevt.EVT_UPDATE_MAP,self.onUpdateMap)
-        self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        # self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         esui.TOOL_PLC.regToolEvent(self)
         return
 
@@ -26,11 +23,11 @@ class RGMenu(estool.SelectMenuTool):
         self.Refresh()
         return
 
-    def onClk(self,e):
-        popup=self.PopupControl
-        self.SetLabel(popup.items[popup.ipos])
-        e.Skip()
-        return
+    # def onClk(self,e):
+    #     popup=self.PopupControl
+    #     self.SetLabel(popup.items[popup.ipos])
+    #     e.Skip()
+    #     return
     pass
 
 class NewRGBtn(estool.ButtonTool):
@@ -63,9 +60,9 @@ class ConnectRGBtn(estool.ButtonTool):
         return
 
     def onClk(self,e):
-        if len(esui.ARO_PLC.aro_selection)!=2:return
-        aro1=esui.ARO_PLC.aro_selection[0]
-        aro2=esui.ARO_PLC.aro_selection[1]
+        if len(esgl.ARO_SELECTION)!=2:return
+        aro1=esgl.ARO_SELECTION[0]
+        aro2=esgl.ARO_SELECTION[1]
         rg_menu=estool.getToolByName('rg_menu','Dynamics')
         now_rg=ESC.getAroByName(rg_menu.Label)
         rg_dict=dict(now_rg.group_dict)
@@ -94,7 +91,7 @@ class RemoveFromRGBtn(estool.ButtonTool):
         rg_menu=estool.getToolByName('rg_menu','Dynamics')
         now_rg=ESC.getAroByName(rg_menu.Label)
         rg_dict=dict(now_rg.group_dict)
-        for aro in esui.ARO_PLC.aro_selection:
+        for aro in esgl.ARO_SELECTION:
             if aro.AroID in rg_dict:
                 for aroid in rg_dict[aro.AroID]:
                     rg_dict[aroid].remove(aro.AroID)

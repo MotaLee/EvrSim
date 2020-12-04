@@ -1,13 +1,12 @@
 import wx
-from core import ESC,esui,esevt
+from core import ESC,esui,esevt,esgl
 yu=esui.YU
 class DetailTab(esui.Plc):
     def __init__(self,parent,p,s,tablabel):
         super().__init__(parent,p,s)
-        yu=esui.YU
 
         self.ori_s=s
-        self.aobj=None
+        self.aro=None
         self.SetLabel(tablabel)
         self.SetBackgroundColour(esui.COLOR_LBACK)
 
@@ -40,12 +39,13 @@ class DetailTab(esui.Plc):
         DP=self.plc_detail
         DP.DestroyChildren()
         esui.SIDE_PLC.toggleTab('Detail')
-        if aro is None:aro=esui.ARO_PLC.aro_selection[0]
+        if aro is None:aro=esgl.ARO_SELECTION[0]
         elif type(aro)==int:aro=ESC.getAro(aro)
-
+        self.aro=aro
         esui.StaticText(self,(yu,0),(8*yu,4*yu),aro.AroName+' Detail:',align='left')
         i=0
         for k,v in aro.__dict__.items():
+            if k[0]=='_':continue
             if k in aro._Arove_flag['invisible']:continue
             esui.StaticText(DP,(yu,i*4*yu),(12*yu,4*yu),k+':',align='left')
             if k not in aro._Arove_flag['uneditable']:stl=0
@@ -82,7 +82,7 @@ class DetailTab(esui.Plc):
     def onChangeTarget(self,e):
         'todo: better picking'
         host=e.EventObject.host
-        aro=esui.ARO_PLC.aro_selection[0]
+        aro=esgl.ARO_SELECTION[0]
         host.value=aro.AroID
         host.SetLabel(aro.AroName)
         host.Refresh()

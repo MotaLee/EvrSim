@@ -103,7 +103,7 @@ class TreePlc(esui.ScrolledPlc):
         return
 
     def buildTree(self):
-        'Need to be overrided;'
+        'Need to be overrided, fill item_list with instances of TreeItem;'
         return
 
     def drawTree(self):
@@ -140,6 +140,34 @@ class TreePlc(esui.ScrolledPlc):
         return item_selection
     pass
 
+class SimTreePlc(TreePlc):
+    def __init__(self,parent,p,s):
+        super().__init__(parent,p,s)
+        return
+    def buildTree(self):
+        if ESC.SIM_NAME=='':return
+        self.item_list=list()
+        self.item_list+=[TreeItem(tid=0,label=ESC.SIM_NAME,children=['Setting','Map'])]
+        self.item_list+=[TreeItem(tid=len(self.item_list),label='Setting',depth=1)]
+        self.item_list+=[TreeItem(tid=len(self.item_list),
+            label='Map',depth=1,children=ESC.MAP_LIST)]
+        for mapname in ESC.MAP_LIST:
+            self.item_list+=[TreeItem(tid=len(self.item_list),label=mapname,depth=2)]
+        self.item_list+=[TreeItem(tid=len(self.item_list),label='Model',depth=1,children=list())]
+        for mdl in ESC.ACP_MODELS.keys():
+            if mdl[0]==ESC.SIM_NAME:
+                self.item_list+=[TreeItem(tid=len(self.item_list),label=mdl[1],depth=2)]
+        self.item_list+=[TreeItem(tid=len(self.item_list),label='Mod',depth=1,children=list())]
+        for modname in ESC.MOD_LIST:
+            self.item_list+=[TreeItem(tid=len(self.item_list),label=modname,depth=2)]
+
+        # self.item_list+=[TreeItem(tid=len(self.item_list),label='AroClass',depth=1)]
+        # self.item_list+=[TreeItem(tid=len(self.item_list),label='AcpClass',depth=1)]
+
+        self.drawTree()
+        return
+    pass
+
 # Maps;
 class MapItemPlc(TreeItemPlc):
     def __init__(self,parent,p,s,item):
@@ -156,7 +184,7 @@ class MapItemPlc(TreeItemPlc):
         aro_selection=list()
         for item in items:
             aro_selection.append(ESC.getAro(item.tid))
-        esui.ARO_PLC.highlightADP(aro_selection)
+        esgl.highlight(aro_selection)
         return
 
     def onDClkItem(self,e):
@@ -171,7 +199,7 @@ class MapItemPlc(TreeItemPlc):
         e.Skip()
         if e.leftIsDown:
             self_aro=ESC.getAro(self.item.tid)
-            if self_aro not in esui.ARO_PLC.aro_selection:
+            if self_aro not in esgl.ARO_SELECTION:
                 self.Parent.SetCursor(self.Parent.cursor_rEnter)
                 self.Parent.dragging_item=True
         return
@@ -181,7 +209,7 @@ class MapItemPlc(TreeItemPlc):
         self.Parent.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
         if self.Parent.dragging_item:
             self.Parent.dragging_item=False
-            ESC.sortAro(esui.ARO_PLC.aro_selection,ESC.getAro(self.item.tid))
+            ESC.sortAro(esgl.ARO_SELECTION,ESC.getAro(self.item.tid))
             self.Parent.build_timer.StartOnce(100)
         return
     pass
@@ -285,6 +313,7 @@ class ModelTreePlc(TreePlc):
     def buildTree(self):
         self.item_list=list()
         mdl_src_list=list()
+        self.DestroyChildren()
         for mdl_tuple in ESC.ACP_MODELS.keys():
             if mdl_tuple[0] not in mdl_src_list:
                 mdl_src_list.append(mdl_tuple[0])

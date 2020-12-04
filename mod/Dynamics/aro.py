@@ -1,4 +1,4 @@
-from mod.AroCore import Aro,AroPoint,AroGroup,AroTargets
+from mod.AroCore import Aro,AroPoint,AroGroup,AroTargets,AroField
 from mod.Dynamics import DpRigidGroup
 # Aro class defination;
 class MassPoint(AroPoint):
@@ -13,10 +13,9 @@ class MassPoint(AroPoint):
         return
     pass
 
-class RigidGroup(AroGroup):
+class RigidBody(Aro):
     def __init__(self):
         super().__init__()
-        self.adp='DpRigidGroup'
         self.mass=0
         self.position=[0,0,0]   # Also Mass center;
         self.velocity=[0,0,0]
@@ -25,6 +24,16 @@ class RigidGroup(AroGroup):
         self.moment=[0,0,0]
         self.LCS=[[1,0,0],[0,1,0],[0,0,1]]
         self.inertia=[0,0,0]
+        self.size=[1,1,1]
+        return
+    pass
+
+class RigidGroup(AroGroup,RigidBody):
+    def __init__(self):
+        AroGroup.__init__(self)
+        RigidBody.__init__(self)
+        self.adp='DpRigidGroup'
+
         return
 
     pass
@@ -74,5 +83,30 @@ class Ground(Aro):
         self.inertia=['inf','inf','inf']
         self.velocity=[0,0,0]
         self.agl_v=[0,0,0]
+        return
+    pass
+
+class PlaneGnd(Ground,RigidBody):
+    def __init__(self):
+        # super().__init__()
+        RigidBody.__init__(self)
+        Ground.__init__(self)
+        self.adp='mod.AroCore.AdpPlane'
+        self.size=[5,5]
+        return
+    pass
+
+class ForceField(AroField):
+    def __init__(self):
+        super().__init__()
+        # self.value=[0,0,1]
+        return
+    pass
+
+class MassCube(RigidBody):
+    def __init__(self):
+        super().__init__()
+        self.adp='mod.AroCore.AdpCube'
+        # self.adp=['mod.AroCore.AdpCube','mod.AroCore.AdpCS']
         return
     pass

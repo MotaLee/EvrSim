@@ -2,6 +2,7 @@ import math
 import mod
 import numpy as np
 from core import esc as ESC
+inf=np.inf
 def getAro(aroid,queue=-1):
     'Lv1: Get Aro by ID. Return Aro if succeed, None if failed;'
     if queue==-1:aromap=ESC.ARO_MAP
@@ -23,7 +24,10 @@ def addAro(aroclass,aroid=0):
     if type(aroclass)==str:aro=eval(aroclass+'()')
     else:aro=aroclass()
     if aroid==0:
-        aro.AroID=max(ESC.ARO_ORDER)+1
+        if len(ESC.ARO_ORDER)==0:
+            aro.AroID=1
+        else:
+            aro.AroID=max(ESC.ARO_ORDER)+1
     else:
         aro.AroID=aroid
     ESC.ARO_MAP[aro.AroID]=aro
@@ -42,11 +46,11 @@ def delAro(aro):
 def initAro(aroclass,arove):
     'Lv3: Add an Aro with initilization;'
     for k,v in arove.items():
-        if v=='inf':arove[k]=math.inf
+        if v=='inf':arove[k]=np.inf
         if type(v)==list:
             temp=list()
             for ve in v:
-                if ve=='inf':temp.append(math.inf)
+                if ve=='inf':temp.append(np.inf)
                 else:temp.append(ve)
             arove[k]=temp
     aro=addAro(aroclass,arove.get('AroID',0))
@@ -60,11 +64,11 @@ def initAro(aroclass,arove):
 
     return aro
 
-def setAro(aroid,arove):
+def setAro(aro,arove):
     ''' Lv2: Set Arove with Arove dict.
 
         AroID, AroClass shouldnt be set;'''
-    aro=getAro(aroid)
+    if isinstance(aro,int):aro=getAro(aro)
     for k,v in arove.items():
         if type(v)==str:
             if v=='inf':arove[k]=math.inf

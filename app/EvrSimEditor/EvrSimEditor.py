@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 # App variable;
-EDITOR_VER='0.0.7'
+EDITOR_VER='0.0.9'
 ES_EDITOR_TITLE='EvrSimEditor'
 # Outer libs;
 import sys

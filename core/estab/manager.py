@@ -4,11 +4,10 @@ yu=esui.YU
 class ManagerTab(esui.ScrolledPlc):
     def __init__(self,parent,p,s,tablabel):
         super().__init__(parent,p,s)
-
         self.ori_s=s
         self.SetLabel(tablabel)
 
-        self.box_sizer=wx.BoxSizer(wx.VERTICAL)
+        self.sim_block=SimBlock(self,wx.DefaultPosition,(self.Size[0]-2*yu,49*yu))
         self.map_block=MapBlock(self,wx.DefaultPosition,(self.Size[0]-2*yu,49*yu))
         self.model_block=ModelBlock(self,wx.DefaultPosition,(self.Size[0]-2*yu,49*yu))
 
@@ -16,42 +15,51 @@ class ManagerTab(esui.ScrolledPlc):
         return
 
     def updateSizer(self):
-        new_sizer=wx.BoxSizer(wx.VERTICAL)
+        total_height=0
         for child in self.Children:
-            self.box_sizer.Detach(child)
-            new_sizer.Add(child,0,wx.ALL | wx.FIXED_MINSIZE,border=yu)
-        self.box_sizer=new_sizer
-        self.SetSizerAndFit(self.box_sizer)
-
+            child.SetPosition((yu,yu+total_height))
+            total_height+=child.Size.y
         self.updateVirtualSize()
         self.SetSize(self.ori_s)
-        for child in self.Children:
-            if not child.folded:
-                child.SetSize(child.ori_s)
         return
 
-    def onClkFold(self,e):
-        block=e.EventObject.Parent
-        if block.folded:
-            e.EventObject.SetLabel('^')
-            block.folded=False
-            block.SetSize(self.Size[0],49*yu)
-        else:
-            e.EventObject.SetLabel('v')
-            block.folded=True
-            block.SetSize(self.Size[0],5*yu)
-        self.updateSizer()
-        return
     pass
 
-class MapBlock(esui.Plc):
-    def __init__(self,parent,p,s):
+class MngrBlock(esui.Plc):
+    def __init__(self,parent,p,s,name):
         super().__init__(parent,p,s,border={'bottom':esui.COLOR_ACTIVE})
         self.folded=False
         self.ori_s=s
-        self.map_txt=esui.StaticText(self,(0,0),(8*yu,4*yu),'Map:',align='left')
-        self.btn_fold=esui.Btn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'^')
+        self.map_txt=esui.StaticText(self,(0,0),(8*yu,4*yu),name+':',align='left')
+        self.btn_fold=esui.Btn(self,(self.Parent.Size[0]-6*yu,0),(4*yu,4*yu),'^')
+        self.btn_fold.Bind(wx.EVT_LEFT_DOWN,self.onClkFold)
+        return
 
+    def onClkFold(self,e):
+        if self.folded:
+            self.btn_fold.SetLabel('^')
+            self.folded=False
+            self.SetSize(self.Parent.Size[0],49*yu)
+        else:
+            self.btn_fold.SetLabel('v')
+            self.folded=True
+            self.SetSize(self.Size[0],5*yu)
+        self.Parent.updateSizer()
+        return
+    pass
+
+class SimBlock(MngrBlock):
+    def __init__(self,parent,p,s):
+        super().__init__(parent,p,s,'Sim')
+        self.sim_tree=esui.SimTreePlc(self,(0,5*yu),(self.Size[0],38*yu))
+        # self.folded=True
+        self.onClkFold(None)
+        return
+    pass
+
+class MapBlock(MngrBlock):
+    def __init__(self,parent,p,s):
+        super().__init__(parent,p,s,'map')
         self.map_menu=esui.SelectMenuBtn(self,(0,5*yu),(24*yu,4*yu),'',[])
         self.btn_add_space=esui.Btn(self,(self.Size[0]-14*yu,5*yu),(4*yu,4*yu),'Spc')
         self.btn_add_group=esui.Btn(self,(self.Size[0]-9*yu,5*yu),(4*yu,4*yu),'Grp')
@@ -60,8 +68,6 @@ class MapBlock(esui.Plc):
             'Flr',['None','Space','Group'])
 
         self.map_tree=esui.MapTreePlc(self,(0,10*yu),(self.Size[0],38*yu))
-
-        self.btn_fold.Bind(wx.EVT_LEFT_DOWN,self.Parent.onClkFold)
         self.map_menu.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkMapMenu)
         return
 
@@ -76,18 +82,13 @@ class MapBlock(esui.Plc):
         return
     pass
 
-class ModelBlock(esui.Plc):
+class ModelBlock(MngrBlock):
     def __init__(self,parent,p,s):
-        super().__init__(parent,p,s,border={'bottom':esui.COLOR_ACTIVE})
-        self.ori_s=s
-        self.folded=False
-        self.model_txt=esui.StaticText(self,(0,0),(8*yu,4*yu),'Model:',align='left')
-        self.btn_fold=esui.Btn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'^')
+        super().__init__(parent,p,s,'Model')
         self.enable_btn=esui.Btn(self,(self.Size[0]-9*yu,5*yu),(4*yu,4*yu),'Ena')
         self.del_btn=esui.Btn(self,(self.Size[0]-4*yu,5*yu),(4*yu,4*yu),'Del')
         self.model_tree=esui.ModelTreePlc(self,(0,10*yu),(self.Size[0],38*yu))
         self.enable_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkEnable)
-        self.btn_fold.Bind(wx.EVT_LEFT_DOWN,self.Parent.onClkFold)
         return
 
     def onClkEnable(self,e):

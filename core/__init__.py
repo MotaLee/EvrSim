@@ -1,2 +1,2 @@
-import core.esc
-ESC=core.esc
+import core.esc as ESC
+# ESC=core.esc

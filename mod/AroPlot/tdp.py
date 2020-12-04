@@ -1,9 +1,7 @@
 import glm
 import numpy as np
 import OpenGL.GL as gl
-from core import ESC
-from core import esui
-from core import esgl
+from core import ESC,esui,esgl
 TDP=esgl.ToolDrawPart
 class TdpXyzAxis(TDP):
     def __init__(self,tool):

@@ -75,6 +75,7 @@ class AroDrawPart(DrawPart):
         super().__init__()
         self.Aro=ESC.getAro(aroid)
         self.dp_name=self.Aro.AroID
+        # self.Aro._adp.append(self)
         return
     pass
 

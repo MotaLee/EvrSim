@@ -1,4 +1,4 @@
-import glm
+import wx,glm
 import numpy as np
 from core import ESC,esui,esevt,esgl,estool
 from .tdp import TdpXyzAxis,TdpGrid,TdpViewBall,TdpTrack
@@ -65,7 +65,7 @@ class AuxDisTool(estool.UIGLTool):
             if type(aux)==TdpTrack:
                 aux.__init__(self)
         self.updateTDPLIST()
-        esui.ARO_PLC.drawGL()
+        esgl.drawGL()
         return
 
     def onSimCircled(self,e):
@@ -119,4 +119,27 @@ class AuxDisTool(estool.UIGLTool):
             aux.visible=self.enable
         return
 
+    pass
+
+class MainSwitch(estool.ToggleTool):
+    def __init__(self,name,parent,p,s):
+        super().__init__(name,parent,p,s,'√',select=True)
+        self.xyz_axis=None
+        self.view_ball=None
+        self.grid=None
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        return
+
+    def onClk(self,e):
+        if self.xyz_axis is None:
+            self.xyz_axis=estool.getToolByName('xyz_axis','AroPlot')
+            self.view_ball=estool.getToolByName('view_ball','AroPlot')
+            self.grid=estool.getToolByName('grid','AroPlot')
+
+        self.xyz_axis.tdp.visible=not self.xyz_axis.tdp.visible
+        self.grid.tdp.visible=not self.grid.tdp.visible
+        self.view_ball.tdp.visible=not self.view_ball.tdp.visible
+        e.Skip()
+        esgl.drawGL()
+        return
     pass

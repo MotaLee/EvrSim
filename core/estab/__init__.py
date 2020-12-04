@@ -61,6 +61,7 @@ class SidePlc(esui.Plc):
         elif etype==esevt.ETYPE_OPEN_SIM:
             self.loadMaps()
             self.loadModels()
+            self.manager_tab.sim_block.sim_tree.buildTree()
             self.Show()
         return
 
@@ -98,6 +99,7 @@ class SidePlc(esui.Plc):
         for ctrl in self.Children:
             if ctrl.GetLabel()==tablabel:
                 ctrl.DestroyLater()
+        self.toggleTab()
         return
 
     pass

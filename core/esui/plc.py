@@ -139,6 +139,7 @@ class ScrolledPlc(wx.ScrolledWindow):
 
     def onLeave(self,e):
         self.Refresh(eraseBackground=False)
+        return
     pass
 
 class CmdPlc(Plc):
@@ -195,5 +196,22 @@ class CmdPlc(Plc):
         if e.GetKeyCode()==wx.WXK_ESCAPE:
             esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_CMD)
         e.Skip()
+        return
+    pass
+
+class PopupPlc(Plc):
+    def __init__(self,parent,p,s,**argkw):
+        super().__init__(parent,p,s,border={'all':esui.COLOR_FRONT})
+        self.mode=argkw.get('mode',None)
+        # if self.mode=='list':
+            # list_items=argkw.get('list_items',list())
+            # list_height=argkw.get('list_height',4*yu)
+
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        return
+
+    def onClk(self,e):
+        e.Skip()
+        self.DestroyLater()
         return
     pass

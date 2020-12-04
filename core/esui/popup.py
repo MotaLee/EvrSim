@@ -1,7 +1,6 @@
 # Parent lib;
 import wx
 from core import esui
-gmv=esui
 
 class PopupList(wx.ComboPopup):
     def __init__(self,items):
@@ -166,7 +165,6 @@ class BorderlessMenuBtn(MenuBtn):
     pass
 
 class SelectMenuBtn(MenuBtn):
-
     def setItems(self,items):
         try:
             popup=self.GetPopupControl()
@@ -177,6 +175,14 @@ class SelectMenuBtn(MenuBtn):
             self.SetPopupControl(popup)
         self.SetPopupMaxHeight(len(items)*self.Size[1]+esui.YU)
         self.SetPopupMinWidth(self.Size[0])
+        self.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
+        return
+
+    def onClkPopup(self,e):
+        popup=self.PopupControl
+        self.SetLabel(popup.items[popup.ipos])
+        self.SetValue(popup.items[popup.ipos])
+        e.Skip()
         return
 
     def onPaint(self,e):

@@ -13,9 +13,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
 
 # EvrSim global variable;
-ES_VER='0.0.8'
+ES_VER='0.0.9'
 EST_VER = '0.0.4'
-ES_UPDATE=20201000
+ES_UPDATE=20201204
 ES_PY_VER_MIN='3.8.0'
 ES_PY_VER_MIN='3.8.7'
 ES_MOD=['AroCore','Dynamics','AroPlot','STS']
@@ -26,6 +26,6 @@ ES_RELIABILITIES=[
     'pyopengl',
     'pyglm==1.99.1',
     'interval',
-    'assimp',
+    'assimp-py',
     'matplotlib',
     'pillow']

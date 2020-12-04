@@ -36,6 +36,7 @@ from .textctrl import MultilineText
 from .textctrl import HintText
 
 # Popup;
+from .popup import PopupList
 from .popup import MenuBtn
 from .popup import BorderlessMenuBtn
 from .popup import SelectMenuBtn
@@ -60,7 +61,9 @@ from .btn import TabBtn
 from .plc_Head import HeadPlc
 from .plc_Head import HeadBar
 from .plc import CmdPlc
+from .plc import PopupPlc
 from .plc_tree import TreePlc
+from .plc_tree import SimTreePlc
 from .plc_tree import MapTreePlc
 from .plc_tree import ModelTreePlc
 

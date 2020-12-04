@@ -167,7 +167,6 @@ class RealTimeText(estool.TextTool):
         return
     pass
 
-
 class ALibsBtn(estool.ButtonTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)

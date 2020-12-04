@@ -12,6 +12,20 @@ Date:2020/08/26
 
 ## Details
 
+### 0.0.9 - 2020/12/04
+
+1. Mod:
+    * AroCore: Optimized the operation of selecting Aroes;
+    * AroCore: Added a new Aro drawpart 'AdpPlane';
+    * AroCore: Added options to selecting tool during double clicking while removed rect-selecting tool;
+    * Dynamics: Added a new Aro 'PlaneGnd' and a new Acp 'CPE';
+2. esui:
+    * Added 'PopupPlc' control derived from 'Plc';
+3. esgl:
+    * Moved some methods form 'AroGlc' to esgl;
+    * Addded 'selectADP' method;
+    * Replaced 'assimp' python library by 'assimp-py';
+
 ### 0.0.8 - 2020/10/26
 
 1. Mod:

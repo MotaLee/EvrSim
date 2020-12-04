@@ -10,6 +10,7 @@ class Aro(object):
             'uneditable':['adp','AroClass'],
             'longdata':['desc'],
             'target':[]}
+        self._adp=list()
         # Preset Arove;
         self.AroID=0
         self.AroClass=self.__module__+'.'+type(self).__name__
@@ -114,5 +115,14 @@ class AroGroup(AroTree):
                         new_dict[k].append(v)
         self.group_dict=new_dict
         self.children=list(self.group_dict.keys())
+        return
+    pass
+
+class AroField(AroPoint):
+    def __init__(self):
+        super().__init__()
+        self.shape=None     # None for all space;
+        self.CST='XYZ'  # Emum for XYZ, Rtp, Rtz;
+        self.function=[0,0,0]
         return
     pass

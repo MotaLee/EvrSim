@@ -34,7 +34,7 @@ EVT_UPDATE_MAP =wx.PyEventBinder(ETYPE_UPDATE_MAP, 1)
 EVT_UPDATE_MODEL =wx.PyEventBinder(ETYPE_UPDATE_MODEL, 1)
 EVT_LOAD_MOD = wx.PyEventBinder(ETYPE_LOAD_MOD, 1)
 EVT_SIM_CIRCLED = wx.PyEventBinder(ETYPE_SIM_CIRCLED, 1)
-EVT_KEY_DOWN = wx.PyEventBinder(ETYPE_KEY_DOWN, 1)
+EVT_LEFT_DOWN = wx.PyEventBinder(ETYPE_KEY_DOWN, 1)
 
 # EvrSim Custom event;
 class EvrSimEvent(wx.PyCommandEvent):
