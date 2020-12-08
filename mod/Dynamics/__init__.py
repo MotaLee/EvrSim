@@ -8,12 +8,13 @@ from .aro import MassPoint,RigidGroup,Moment,ForceField,RigidBody
 from .aro import Constraint,Ground,PointForce,PlaneGnd,MassCube
 from .tool import RGMenu,NewRGBtn,DelRGBtn,ConnectRGBtn,RemoveFromRGBtn
 from .acp import IPE,CPE
+from .bullet import BulletEngine
 # MOD INDEX
 MOD_NAME='Dynamics'
-MOD_VER='0.0.4'
+MOD_VER='0.0.5'
 MOD_SETTING={}
 ARO_INDEX=['MassPoint','PointForce','Moment','Ground','Constraint','PlaneGnd','MassCube','ForceField']
-ACP_INDEX=['IPE','CPE']
+ACP_INDEX=['IPE','CPE','BulletEngine']
 TOOL_INDEX=['new_obj','new_acp','rg_menu','new_rg','del_rg','connect_rg','remove_rg']
 MODEL_INDEX=['ug','PM1','PM2','PM3']
 TP=None

@@ -4,6 +4,7 @@ import glm
 import OpenGL.GL as gl
 import OpenGL.GLU as glu
 import numpy as np
+import assimp_py
 import assimp_py as ai
 import PIL.Image as pili
 import mod

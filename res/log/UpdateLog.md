@@ -12,6 +12,10 @@ Date:2020/08/26
 
 ## Details
 
+### 0.0.10 - 2020/12/08
+
+1. Removed some files of git;
+
 ### 0.0.9 - 2020/12/04
 
 1. Mod:

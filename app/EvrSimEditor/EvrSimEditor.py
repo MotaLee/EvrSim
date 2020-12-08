@@ -1,16 +1,13 @@
 # -*- coding: UTF-8 -*-
 # App variable;
-EDITOR_VER='0.0.9'
+EDITOR_VER='0.0.11'
 ES_EDITOR_TITLE='EvrSimEditor'
 # Outer libs;
-import sys
-import os
+import sys,os
 import wx
 sys.path.append(os.getcwd())
 # EvrSim libs;
-from core import ESC
-from core import esui
-from core import esevt,esmdl,esgl,estool,estab
+from core import ESC,esui,esevt,esmdl,esgl,estool,estab
 xu=esui.XU
 yu=esui.YU
 # Editor main window;

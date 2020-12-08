@@ -13,7 +13,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
 
 # EvrSim global variable;
-ES_VER='0.0.9'
+ES_VER='0.0.11'
 EST_VER = '0.0.4'
 ES_UPDATE=20201204
 ES_PY_VER_MIN='3.8.0'
@@ -28,4 +28,5 @@ ES_RELIABILITIES=[
     'interval',
     'assimp-py',
     'matplotlib',
-    'pillow']
+    'pillow',
+    'pybullet']
