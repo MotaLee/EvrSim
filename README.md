@@ -2,8 +2,13 @@
 
 ---
 
+<<<<<<< HEAD
 + Latest version: 0.0.11;
 + Latest update: 2021/01/26;
+=======
++ Latest version: 0.0.10;
++ Latest update: 2020/12/08;
+>>>>>>> 944950ae0447312825f2937c159713a9e1cb5f4d
 
 ---
 
