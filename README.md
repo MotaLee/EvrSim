@@ -2,8 +2,8 @@
 
 ---
 
-+ Latest version: 0.0.10;
-+ Latest update: 2020/12/08;
++ Latest version: 0.0.11;
++ Latest update: 2021/01/26;
 
 ---
 

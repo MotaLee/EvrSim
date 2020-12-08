@@ -1,5 +1,0 @@
-ACP_INDEX=[6, 13, 14]
-KEY_DICT={1: 'AcpID', 2: 'AcpClass', 3: 'position', 4: 'fixIO', 5: 'port', 6: 'inport', 7: 'outport', 8: 'AcpName', 9: 'desc', 10: 'expression', 11: 'item'}
-Acp_6={'_acpo_flag': {'invisible': ['_acpo_flag', 'AcpID', 'AcpClass', 'position', 'fixIO', 'port', 'inport', 'outport'], 'longdata': ['desc', 'expression'], 'uneditable': []}, 1: 6, 2: 'mod.AroCore.acp.AcpSelector', 3: [938.0, 188.0], 4: 'Both', 5: {1: 'out'}, 6: {}, 7: {1: [(14, 1)]}, 8: 'pSlctr', 9: '', 10: 'SELF_AROID==ARO.AroID', 11: 'position'}
-Acp_13={'_acpo_flag': {'invisible': ['_acpo_flag', 'AcpID', 'AcpClass', 'position', 'fixIO', 'port', 'inport', 'outport'], 'longdata': ['desc'], 'uneditable': []}, 1: 13, 2: 'mod.AroCore.acp.AcpProvider', 3: [136, 137], 4: 'Both', 5: {1: 'in'}, 6: {1: (14, 2)}, 7: {}, 8: 'mi', 9: '', 10: '"mass" in AROVE', 11: 'mass'}
-Acp_14={'_acpo_flag': {'invisible': ['_acpo_flag', 'AcpID', 'AcpClass', 'position', 'fixIO', 'port', 'inport', 'outport'], 'longdata': ['desc'], 'uneditable': []}, 1: 14, 2: 'mod.AroCore.acp.AcpNorm', 3: [566, 156], 4: 'Both', 5: {1: 'in vec', 2: 'out norm'}, 6: {1: (6, 1)}, 7: {2: [(13, 1)]}, 8: 'New Acp', 9: ''}
