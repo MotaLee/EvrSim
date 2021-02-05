@@ -18,7 +18,7 @@ class StaticText(wx.StaticText):
         return
 
     def onPaint(self,e):
-        dc = wx.PaintDC(self)
+        dc = wx.BufferedPaintDC(self)
         bg=self.Parent.GetBackgroundColour()
         dc.SetBrush(wx.Brush(bg))
         dc.SetPen(wx.Pen(bg))

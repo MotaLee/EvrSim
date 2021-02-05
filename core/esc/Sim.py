@@ -5,7 +5,7 @@ def newSim(simname,src='_Template'):
     'Lv1: Create new sim by copying para src dir without opening;'
     file_list=os.listdir('sim/')
     for f in file_list:
-        if simname==f: return ESC.bug('E: Sim existed.')
+        if simname==f: return ESC.bug('Sim existed.')
     tar_path='sim/'+simname+'/'
     src_path='sim/'+src+'/'
     shutil.copytree(src_path,tar_path)
@@ -13,22 +13,22 @@ def newSim(simname,src='_Template'):
 
 def delSim(simname):
     'Lv1: ;'
-    if ESC.SIM_FD is not None: return ESC.bug('E: Sim opened.')
+    if ESC.SIM_FD is not None: return ESC.bug('Sim opened.')
     if simname in os.listdir('sim/'):
         shutil.rmtree('sim/'+simname)
-    else: return ESC.bug('E: Sim not found.')
+    else: return ESC.bug('Sim not found.')
     return
 
 def openSim(simname):
     'Lv2: Open sim, and load mod and setting;'
     ESC.initESC()
-    if ESC.SIM_FD is not None: return ESC.bug('E: Sim already opened.')
+    if ESC.SIM_FD is not None: return ESC.bug('Sim already opened.')
 
     ESC.SIM_NAME=simname
     if simname in os.listdir('sim/'):
         shutil.copy('sim/'+simname+'/sim.py','sim/'+simname+'/_sim.py')
         ESC.SIM_FD=open('sim/'+simname+'/_sim.py','r+')
-    else: return ESC.bug('E: Sim not found.')
+    else: return ESC.bug('Sim not found.')
 
     # Read sim index;
     simtxt=ESC.SIM_FD.read()
@@ -52,7 +52,7 @@ def openSim(simname):
 
 def closeSim(save=False):
     'Lv2: Close current sim and load default setting;'
-    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
 
     if save:ESC.saveSim()
 
@@ -68,7 +68,7 @@ def setSim(setdict={},usercall=True):
         Wouldnt change which in USER_SETTING.
 
         Empty setdict to reset all to default;'''
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     if setdict=={}:
         ESC.SIM_REALTIME=True
         ESC.SIM_RECORD=False
@@ -85,7 +85,7 @@ def setSim(setdict={},usercall=True):
 
 def saveSim():
     'Save current sim;'
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     ESC.updateModelFile()
     ESC.updateMapFile()
 
@@ -113,7 +113,7 @@ def saveSim():
 def comSim():
     'todo: sim command'
     # ESC.ARO_MAP=[]
-    # if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    # if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     # ESC.SIM_FD.seek(0,0)
     # line=ESC.SIM_FD.readline()
     # while line!='# START\n':

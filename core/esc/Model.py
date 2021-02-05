@@ -11,20 +11,20 @@ def getModelPath(mdl_tuple):
 
 def newModelFile(mdlname):
     'Lv2: Create a new model in opened sim.'
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     model_tuple=(ESC.SIM_NAME,mdlname)
     if model_tuple not in ESC.ACP_MODELS:
         ESC.ACP_MODELS[model_tuple]=list()
         ESC.ACPID_MAX[model_tuple]=0
     else:
-        return ESC.bug('E: Model name already existed.')
+        return ESC.bug('Model name already existed.')
     return
 
 def updateModelFile(mdl_tuple=None):
     ''' Lv2: Update model files by ESC.ACP_MAP.
 
         Empty para mdl_tuple for all models;'''
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     if mdl_tuple is None:
         models=list(ESC.ACP_MODELS.keys())
     else: models=[mdl_tuple]
@@ -62,7 +62,7 @@ def updateModelFile(mdl_tuple=None):
 
 def loadModelFile(mdl_tuple):
     ''' Lv2: Load model from file;'''
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     if mdl_tuple not in ESC.ACP_MODELS:
         ESC.ACP_MODELS[mdl_tuple]=list()
         ESC.ACPID_MAX[mdl_tuple]=0
@@ -85,7 +85,7 @@ def loadModelFile(mdl_tuple):
 
 def renameModelFile(mdlname,newname):
     'Rename model in sim.'
-    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
     ESC.saveSim()
     mdl_tuple=(ESC.SIM_NAME,mdlname)
     new_tuple=(ESC.SIM_NAME,newname)

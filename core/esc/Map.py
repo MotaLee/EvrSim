@@ -4,7 +4,7 @@ from core import esc as ESC
 inf=math.inf
 
 def newMapFile(mapname):
-    if ESC.SIM_FD is None:return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
     if mapname not in ESC.MAP_LIST:
         updateMapFile()
         ESC.MAP_LIST.append(mapname)
@@ -12,12 +12,12 @@ def newMapFile(mapname):
         ESC.ARO_MAP_NAME=mapname
         updateMapFile(mapname)
     else:
-        return ESC.bug('E: Map name already existed.')
+        return ESC.bug('Map name already existed.')
     return
 
 def loadMapFile(mapname=''):
     ''' Lv.1: Read existed map.py;'''
-    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
     if mapname=='': mapname=ESC.ARO_MAP_NAME
     else: ESC.ARO_MAP_NAME=mapname
     ESC.ARO_MAP=dict()
@@ -39,7 +39,7 @@ def loadMapFile(mapname=''):
 
 def updateMapFile(mapname=''):
     'Lv1: Update map;'
-    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
     if mapname=='': mapname=ESC.ARO_MAP_NAME
     # Build index and key dict;
     key_dict=dict()
@@ -71,7 +71,7 @@ def updateMapFile(mapname=''):
 
 def renameMapFile(mapname='',newname='NewMap'):
     'Lv1: Rename map;'
-    if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
     ESC.saveSim()
     if mapname=='': mapname=ESC.ARO_MAP_NAME
     ESC.ARO_MAP_NAME=newname

@@ -5,8 +5,8 @@ import mod
 def runSim(itoritems=None):
     'Lv1: Run Sim with iterators, time default;'
     # s=time.time()
-    # if ESC.SIM_FD is None: return ESC.bug('E: Sim not opened.')
-    if ESC.CORE_STAUS=='BUSY':return ESC.bug('E: Core busy.')
+    # if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
+    if ESC.CORE_STAUS=='BUSY':return ESC.bug('Core busy.')
     ESC.CORE_STAUS='BUSY'
 
     if ESC.COMPILED_MODEL is not None:
@@ -96,7 +96,7 @@ def reqAcp(acp,acpmodel):
 
     # Main travesal;
     while len(stack)!=0:
-        if len(stack)>ESC.ACP_DEPTH:return ESC.bug('E: Acp too deep.')
+        if len(stack)>ESC.ACP_DEPTH:return ESC.bug('Acp too deep.')
         acp=stack[-1]
         if acp.static and (acpmodel[0],acpmodel[1],acp.AcpID) in ESC.STATIC_DICT:
             datadict.update(ESC.STATIC_DICT[acpmodel+(acp.AcpID)])
@@ -122,7 +122,7 @@ def reqAcp(acp,acpmodel):
             # All ready, post progress;
             try:ret=acp.postProgress(datadict)
             except BaseException as e:
-                ESC.bug('E: Post progressing in '+acp.AcpName+' '+str(e))
+                ESC.bug('Post progressing in '+acp.AcpName+' '+str(e))
                 ESC.CORE_STAUS='STOP'
                 return None,None
             datadict.update(ret)
@@ -132,7 +132,7 @@ def reqAcp(acp,acpmodel):
             # Inport all ready, calculate Acp;
             try:ret=acp.AcpProgress(datadict)
             except BaseException as e:
-                ESC.bug('E: Acp progressing in '+acp.AcpName+' '+str(e))
+                ESC.bug('Acp progressing in '+acp.AcpName+' '+str(e))
                 ESC.CORE_STAUS='STOP'
                 return None,None
             datadict.update(ret)

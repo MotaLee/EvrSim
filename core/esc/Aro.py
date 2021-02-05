@@ -15,7 +15,7 @@ def getAroByName(aroname):
     'Lv1: Get Aro by name. Return Aro if succeed, bugstr if failed;'
     for aro in ESC.ARO_MAP.values():
         if aro.AroName==aroname:return aro
-    return ESC.bug('E: Aro name not found.')
+    return ESC.bug('Aro name not found.')
 
 def addAro(aroclass,aroid=0):
     ''' Lv1: Add an Aro without initilization.

@@ -1,4 +1,4 @@
-import glm
+import _glm as glm
 import numpy as np
 import OpenGL.GL as gl
 from core import ESC,esui,esgl
@@ -53,7 +53,7 @@ class TdpViewBall(TDP):
             [0,0,.5,    0,0,1,1]],
             dtype=np.float32)
         self.EA=np.array([[0,1],[2,3],[4,5],[1,3],[1,5],[3,5]],dtype=np.uint32)
-        self.fix_position=[0,65*esui.YU,10*esui.XU,10*esui.YU]
+        self.dict_fix['pos']=[0,65*esui.YU,10*esui.XU,10*esui.YU]
         return
 
     pass

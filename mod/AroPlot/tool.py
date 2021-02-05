@@ -107,7 +107,7 @@ class AuxDisTool(estool.UIGLTool):
         alive_list=list()
         for aux in self.aux_list:
             if aux.alive:
-                aux.update_data=True
+                aux._is_modified=True
                 alive_list.append(aux)
         self.aux_list=alive_list
         self.updateTDPLIST()

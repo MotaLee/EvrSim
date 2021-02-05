@@ -1,9 +1,10 @@
 # System libs;
 import sys,ctypes
-import wx,glm
+import wx
 import wx.glcanvas as wg
 import OpenGL.GL as gl
 import numpy as np
+import _glm as glm
 
 # Built-in libs;
 from core import ESC,esui,esgl,esevt
@@ -38,19 +39,19 @@ class AroGlc(wg.GLCanvas):
         return
 
     def readMap(self,clear=False):
-        if clear:esgl.ADP_DICT=dict()
+        if clear:esgl.ADP_DICT.clear()
+        aid_remain=list(esgl.ADP_DICT.keys())
         for aro in ESC.ARO_MAP.values():
             if aro.AroID not in esgl.ADP_DICT:
                 if aro.adp!='':
                     adplist=esgl.initADP(aro)
                     esgl.ADP_DICT[aro.AroID]=adplist
-                    for adp in adplist:
-                        adp.viewDP()
+                    # for adp in adplist:adp.trans=esgl.fixViewDP(adp)
             else:
                 for adp in esgl.ADP_DICT[aro.AroID]:
-                        # adp.update_data=True
-                    adp.updateDP(aro)
-                    # adp.viewDP()
+                    adp.updateADP()
+                aid_remain.remove(aro.AroID)
+        for aid in aid_remain:del esgl.ADP_DICT[aid]
         esgl.drawGL()
         return
 
@@ -65,7 +66,7 @@ class AroGlc(wg.GLCanvas):
     def onComEvt(self,e):
         etype=e.GetEventArgs()
         if etype==esevt.ETYPE_UPDATE_MAP:
-            self.readMap(clear=True)
+            self.readMap()
         elif etype==esevt.ETYPE_OPEN_SIM:
             # self.readMap()
             esgl.lookAt()

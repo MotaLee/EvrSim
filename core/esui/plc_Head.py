@@ -52,6 +52,7 @@ class HeadBar(esui.Plc):
 
     def onClkExt(self,e):
         if ESC.SIM_NAME!='':ESC.closeSim()
+        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_ES)
         # wxapp.Destroy()
         exit()
         return
@@ -184,7 +185,7 @@ class HeadPlc(HeadBar):
             operation='New'
         elif pc.ipos==1:    # Rename;
             if len(esui.ACP_PLC.model_tuple)==0:
-                return ESC.bug('E: Model not opened.')
+                return ESC.bug('Model not opened.')
             elif esui.ACP_PLC.model_tuple[0]!=ESC.SIM_NAME:
                 return ESC.bug('#: Model in mod cannot be modified.')
             operation='Rename'

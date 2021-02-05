@@ -2,17 +2,29 @@
 
 ---
 
-## Most recent
-
-version: [0.0.6](#details)
-
-Date:2020/08/26
-
----
-
 ## Details
 
-### 0.0.10 - 2020/12/08
+### 0.0.12 - 2021/02/05
+
+1. App:
+    * Changed main program entrance to 'EvrSim.py';
+    * Renamed app 'EvrSimEditor' to 'Editor';
+2. Mod:
+    * Dynamics: Added a Acp 'BulletEngine' which using pybullet library for physic engine;
+    * AroCore: Moved AroToolbar to core module estool;
+    * Game: Added a new mod 'Game' containing few gaming stuff yet;
+3. esgl:
+    * Added a new shader 'phong' which contained simple lighting rendering;
+    * Added new functions 'getQuaternionFromCS'/'import3DFile';
+    * Added a sub module 'quaternion';
+    * Optimized some functions and variables;
+    * Added 'dict_layout' for drawpart and modified some variable name;
+    * Optimized the structure of Drawpart and relavant calling;
+    * Intergrated pyassimp package and did some changes;
+4. sim:
+    * Added a new sim loading a fbx model;
+
+### 0.0.10-0.0.11 - 2020/12/08
 
 1. Removed some files of git;
 

@@ -1,5 +1,5 @@
 import numpy as np
-import glm
+import _glm as glm
 from interval import Interval as Itv
 from core import ESC,esgl
 from mod.AroCore import AcpExecutor
@@ -82,8 +82,8 @@ class CPE(AcpExecutor):
         colibodys=set()
         colidata=list()
         for pair in pairs:
-            aro0=ESC.getAro(pair[0].dp_name)
-            aro1=ESC.getAro(pair[1].dp_name)
+            aro0=ESC.getAro(pair[0].name)
+            aro1=ESC.getAro(pair[1].name)
             if aro1==aro0:continue
             if not (isinstance(aro0,RigidBody) and isinstance(aro1,RigidBody)):continue
             is_coll,simplex=self.gjk(pair)

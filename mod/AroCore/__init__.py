@@ -1,17 +1,18 @@
 # libs;
 from core import ESC,esui
 # Class import;
-from .aro import Aro,AroPoint,AroTree,AroSpace,AroGroup,AroTargets,AroImage,AroField
+from .aro import Aro,AroPoint,AroTree,AroSpace,AroGroup,AroTargets,AroImage,AroField,AroLight
+
 from .acp import Acp,AcpConst,AcpSelector,AcpProvider,AcpIterator,AcpExecutor
 from .acp import AcpVector3,AcpDepartor3,AcpNorm
 from .acp import AcpPMTD,AcpLimitor,AcpSum,AcpCross
+
 from .adp import AdpPoint,AdpArrow,AdpImage,AdpPlane,AdpCube,AdpCS
-from.tool import AroMenu,AcpMenu,RunSimBtn,SimTimeText,ResetMapBtn,ALibsBtn,RealTimeText
-from .arotoolbar import AroToolbar
+from .atl import AroMenu,AcpMenu,RunSimBtn,SimTimeText,ResetMapBtn,ALibsBtn,RealTimeText
 # from .setting import set_dict
 # Mod index and global var;
 MOD_NAME='AroCore'
-MOD_VER='0.0.9'
+MOD_VER='0.0.10'
 MOD_SETTING={}
 ARO_INDEX=['AroPoint']
 ACP_INDEX=['Acp','AcpConst','AcpSelector','AcpProvider','AcpIterator',
@@ -22,13 +23,10 @@ TP=None
 # Tool preset;
 # Tool variable name need to add to TOOL_INDEX;
 if ESC.ES_APP!='EST':
-    if esui.ARO_PLC is None  or esui.TOOL_PLC is None:
-        ESC.bug('E: Leak of reliabilities.')
-        raise BaseException
-    yu=esui.YU
+    if esui.ARO_PLC is None: ESC.bug('Leak of reliabilities.')
     TP=esui.TOOL_PLC.getModTab('AroCore')
-    esui.ARO_PLC.toolbar=AroToolbar()
 if TP is not None:
+    yu=esui.YU
     new_aro=AroMenu('new_aro',TP,(yu,yu),(8*yu,4*yu),'New Aro',ARO_INDEX)
     new_acp=AcpMenu('new_acp',TP,(yu,6*yu),(8*yu,4*yu),'New Acp',ACP_INDEX)
     run_btn=RunSimBtn('run_btn',TP,(10*yu,yu),(9*yu,9*yu),'▶')

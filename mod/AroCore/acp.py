@@ -132,7 +132,7 @@ class AcpProvider(Acp):
         reqlist=datadict['REQ']
         for aroid,itemvalue in indict.items():
             if aroid in reqlist:
-                if len(itemvalue)!=1:return ESC.bug('E: Provide too more')
+                if len(itemvalue)!=1:return ESC.bug('Provide too more')
                 if len(itemvalue[0])==1:
                     data=itemvalue[0][0]
                 else:

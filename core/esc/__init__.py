@@ -75,10 +75,15 @@ def initESC():
     TIME_STEP=1/30
     return
 
-def bug(bugstr,report=False):
+def info(string,level='[Info] ',record=False):
+    string=level+string
+    print(string)
+    if record:pass
+    return string
+
+def bug(bugstr,record=False):
     'Lv0: Report bug str;'
-    if report:raise bugstr
-    print(bugstr)
+    info(bugstr,level='[Bug] ',record=record)
     return bugstr
 
 def loadMod(modlist,unload=False):

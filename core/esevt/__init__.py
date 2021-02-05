@@ -21,6 +21,9 @@ ETYPE_KEY_DOWN = wx.NewEventType()
 ETYPE_OPEN_CMD = wx.NewEventType()
 ETYPE_CLOSE_CMD = wx.NewEventType()
 
+ETYPE_CLOSE_ES = wx.NewEventType()
+
+
 # Event binder;
 EVT_COMMON_EVENT = wx.PyEventBinder(ETYPE_COMEVT, 1)
 EVT_NEW_SIM = wx.PyEventBinder(ETYPE_NEW_SIM, 1)

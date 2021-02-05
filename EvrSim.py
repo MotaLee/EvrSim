@@ -11,22 +11,36 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
-
+import sys,os
+import wx
+sys.path.append(os.getcwd())
 # EvrSim global variable;
-ES_VER='0.0.11'
+ES_VER='0.0.12'
 EST_VER = '0.0.4'
 ES_UPDATE=20201204
 ES_PY_VER_MIN='3.8.0'
 ES_PY_VER_MIN='3.8.7'
 ES_MOD=['AroCore','Dynamics','AroPlot','STS']
 # Pip installation;
-ES_RELIABILITIES=[
+ES_LIBS=[
     'wxpython',
     'numpy',
     'pyopengl',
-    'pyglm==1.99.1',
     'interval',
     'assimp-py',
     'matplotlib',
-    'pillow',
-    'pybullet']
+    'pillow']
+
+ES_PRECOMPILE_LIBS=[
+    'pyglm==1.99.1',
+    'pybullet'
+]
+
+if __name__ == "__main__":
+    if 'Editor' in sys.argv:
+        ESAPP=wx.App()
+        from app.Editor import EvrSimEditor
+        # Main enterance;
+        wxmw=EvrSimEditor()
+        ESAPP.MainLoop()
+    elif 'EST' in sys.argv:pass

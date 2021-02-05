@@ -2,7 +2,7 @@ import mod
 from core import ESC
 from core import esui
 from core import esgl
-from .tool_plc import ToolPlc
+
 
 def getToolByName(toolname,modname):
     # ''' Para mod: empty for self mod.;'''
@@ -12,10 +12,10 @@ def getToolByName(toolname,modname):
             tool=eval('mod.'+modname+'.'+toolname)
             return tool
         except BaseException:
-            ESC.bug('E: Tool not created.')
+            ESC.bug('Tool not created.')
             return None
     else:
-        ESC.bug('E: Tool not found.')
+        ESC.bug('Tool not found.')
         return None
 
 class BaseTool(object):
@@ -98,3 +98,6 @@ class InputTool(BaseTool,esui.InputText):
         esui.InputText.__init__(self,parent,p,s,hint=label)
         return
     pass
+
+from .tool_plc import ToolPlc
+from .aro_toolbar import AroToolbar

@@ -2,11 +2,6 @@
 
 ---
 
-+ Latest version: 0.0.11;
-+ Latest update: 2021/01/26;
-
----
-
 ## Introduction
 
 EvrSim is a python based calculation engine.

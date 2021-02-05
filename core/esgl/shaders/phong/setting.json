@@ -1,0 +1,6 @@
+{
+    "name":"default",
+    "glEnable":["GL_DEPTH_TEST","GL_BLEND"],
+    "DICT_FLAG":{"LIGHT":true},
+    "global":{}
+}

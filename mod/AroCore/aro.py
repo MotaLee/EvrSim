@@ -126,3 +126,20 @@ class AroField(AroPoint):
         self.function=[0,0,0]
         return
     pass
+
+class AroLight(AroPoint):
+    def __init__(self):
+        super().__init__()
+        self.type=1     # 1 for 'point';
+        self.strength=.5
+        self.color=[1,1,1]
+        return
+
+    def getLightPara(self):
+        out={
+            'pos':self.position,
+            'type':self.type,
+            'strength':self.strength,
+            'color':self.color}
+        return out
+    pass

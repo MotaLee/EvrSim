@@ -2,7 +2,6 @@
 'ESUI defination.'
 import wx
 # Globals variable;
-WXAPP=wx.App()
 cx,cy,cw,ch=wx.ClientDisplayRect()
 XU=cw/100
 YU=ch/100
