@@ -33,6 +33,11 @@ class StaticText(wx.StaticText):
         else:tx=(self.Size[0]-tsize[0])//2
         dc.DrawText(self.GetLabel(),tx,(self.Size[1]-tsize[1])//2)
         return
+
+    def setLabel(self,label):
+        self.Label=label
+        self.Refresh()
+        return
     pass
 # Transparent StaticText wx sub class;
 class TransText(wx.StaticText):
@@ -102,7 +107,9 @@ class InputText(esui.Plc):
         self.input.SetBackgroundColour(esui.COLOR_BACK)
         e.Skip()
         return
+
     pass
+
 # Multiline text ctrl;
 class MultilineText(esui.ScrolledPlc):
     def __init__(self,parent,p,s,hint='',tsize=12,cn='',exstl=0):

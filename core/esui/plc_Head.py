@@ -19,16 +19,16 @@ class HeadBar(esui.Plc):
 
         self.ori_size=s
 
-        self.btn_min=esui.BorderlessBtn(self,(self.Size[0]-8*yu,0),(4*yu,4*yu),'-')
+        self.btn_min=esui.Btn(self,(self.Size[0]-8*yu,0),(4*yu,4*yu),'-',option={'border':False})
         self.btn_min.Bind(wx.EVT_LEFT_DOWN,self.onClkMin)
-        self.btn_ext=esui.BorderlessBtn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'X')
+        self.btn_ext=esui.Btn(self,(self.Size[0]-4*yu,0),(4*yu,4*yu),'X',option={'border':False})
         self.btn_ext.Bind(wx.EVT_LEFT_DOWN,self.onClkExt)
 
         if 'title' in argkw:
             self.title=esui.StaticText(self,(self.Size.x/2-10*yu,0),(20*yu,4*yu-1),argkw['title'])
 
         if isinstance(parent,esui.EsWindow):
-            self.btn_es=esui.BlSelectBtn(self,(0,1),(4*yu,4*yu-2),'ES')
+            self.btn_es=esui.SltBtn(self,(0,1),(4*yu,4*yu-2),'ES',option={'border':False})
         self.Bind(wx.EVT_PAINT,self.onPaint)
         return
 
@@ -51,7 +51,7 @@ class HeadBar(esui.Plc):
         return
 
     def onClkExt(self,e):
-        if ESC.SIM_NAME!='':ESC.closeSim()
+        if ESC.isSimOpened():ESC.closeSim()
         esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_ES)
         # wxapp.Destroy()
         exit()
@@ -99,7 +99,7 @@ class HeadPlc(HeadBar):
         return
 
     def onClkES(self,e):
-        if ESC.SIM_NAME=='':return
+        if not ESC.isSimOpened():return
         if e.EventObject.GetValue():
             esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_CLOSE_CMD)
         else:
@@ -110,14 +110,14 @@ class HeadPlc(HeadBar):
         DlgType=None
         fc=self.menu_sim.GetPopupControl()
         if fc.ipos==0:
-            if ESC.SIM_NAME=='':
+            if not ESC.isSimOpened():
                 DlgType=esui.NewDialog
             else:
                 'todo: new sim after already opened another sim;'
         elif fc.ipos==1:
             DlgType=esui.OpenDialog
 
-        if not ESC.SIM_NAME and DlgType is None:return
+        if not ESC.isSimOpened() and DlgType is None:return
         if fc.ipos==2:  # Save;
             DlgType=None
             ESC.saveSim()
@@ -142,7 +142,7 @@ class HeadPlc(HeadBar):
         return
 
     def onClkEdit(self,e):
-        if not ESC.SIM_NAME:return
+        if not ESC.isSimOpened():return
         pc=self.menu_edit.GetPopupControl()
 
         if pc.ipos==0:  # Undo
@@ -162,7 +162,7 @@ class HeadPlc(HeadBar):
         return
 
     def onClkMap(self,e):
-        if not ESC.SIM_NAME:return
+        if not ESC.isSimOpened():return
         pc=self.menu_map.GetPopupControl()
         if pc.ipos==0:  # New;
             operation='New'
@@ -179,15 +179,15 @@ class HeadPlc(HeadBar):
         return
 
     def onClkModel(self,e):
-        if not ESC.SIM_NAME:return
+        if not ESC.isSimOpened():return
         pc=self.menu_model.GetPopupControl()
         if pc.ipos==0:  # New;
             operation='New'
         elif pc.ipos==1:    # Rename;
             if len(esui.ACP_PLC.model_tuple)==0:
-                return ESC.bug('Model not opened.')
+                return ESC.err('Model not opened.')
             elif esui.ACP_PLC.model_tuple[0]!=ESC.SIM_NAME:
-                return ESC.bug('#: Model in mod cannot be modified.')
+                return ESC.err('#: Model in mod cannot be modified.')
             operation='Rename'
         elif pc.ipos==2:    # Save as;
             operation='Saveas'
@@ -200,7 +200,7 @@ class HeadPlc(HeadBar):
         return
 
     def onClkMod(self,e):
-        if not ESC.SIM_NAME:return
+        if not ESC.isSimOpened():return
         DlgType=None
         fc=self.menu_mod.GetPopupControl()
         if fc.ipos==0:  # Load;

@@ -15,7 +15,7 @@ import sys,os
 import wx
 sys.path.append(os.getcwd())
 # EvrSim global variable;
-ES_VER='0.0.12'
+ES_VER='0.0.13'
 EST_VER = '0.0.4'
 ES_UPDATE=20201204
 ES_PY_VER_MIN='3.8.0'
@@ -27,13 +27,13 @@ ES_LIBS=[
     'numpy',
     'pyopengl',
     'interval',
-    'assimp-py',
     'matplotlib',
     'pillow']
 
-ES_PRECOMPILE_LIBS=[
+ES_INTERGRATED_LIBS=[
     'pyglm==1.99.1',
     'pybullet'
+    'pyassimp'
 ]
 
 if __name__ == "__main__":

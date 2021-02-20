@@ -10,13 +10,14 @@ import _pyassimp as ai
 import PIL.Image as pili
 import mod
 from core import ESC,esui
+from .variable import AdpDict,TdpDict
 from .quaternion import Quaternion
 from .aroglc import AroGlc
 from .drawpart import DrawPart,AroDrawPart,ToolDrawPart,Mesh,VertexLayout
 
 # Esgl global variable
-ADP_DICT=dict()     # {int AroID:[ins adp,...],...}
-TDP_LIST=list()
+DICT_ADP=AdpDict()
+DICT_TDP=TdpDict()
 
 ASPECT_RATIO=1
 VIEW_RATIO=1
@@ -42,12 +43,10 @@ GL_PROGRAM=0
 BGC=[0,0,0,0]
 DICT_LOC={'pos':0,'color':0,'trans':0,'flags':0,'tex':0,'proj':0,'view':0,'normal':0}
 # Module-in variables;
-_list_all_adp=list()
 _list_light=list()
 
 def initADP(aro):
-    global _list_all_adp
-    _list_all_adp.clear()
+    DICT_ADP.clearCache()
     if isinstance(aro.adp,list):adplist=aro.adp
     else:adplist=[aro.adp]
     outlist=list()
@@ -189,7 +188,7 @@ def genGLProgram(shader):
     success=gl.glGetShaderiv(vtx_shader,gl.GL_COMPILE_STATUS)
     if not success:
         infolog=gl.glGetShaderInfoLog(vtx_shader)
-        ESC.bug(infolog.decode())
+        ESC.err(infolog.decode())
 
     frag_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
     gl.glShaderSource(frag_shader,com_src+fragmentShaderSource)
@@ -198,7 +197,7 @@ def genGLProgram(shader):
     if not success:
         infolog=gl.glGetShaderInfoLog(frag_shader)
         print(infolog.decode())
-        ESC.bug(infolog.decode())
+        ESC.err(infolog.decode())
 
     id_glprogram = gl.glCreateProgram()
     gl.glAttachShader(id_glprogram, vtx_shader)
@@ -207,7 +206,7 @@ def genGLProgram(shader):
     success=gl.glGetProgramiv(id_glprogram,gl.GL_LINK_STATUS)
     if not success:
         infolog=gl.glGetProgramInfoLog(id_glprogram)
-        ESC.bug(infolog.decode())
+        ESC.err(infolog.decode())
 
     gl.glDeleteShader(vtx_shader)
     gl.glDeleteShader(frag_shader)
@@ -243,7 +242,7 @@ def normPos(p):
 
 def selectADP(x,y,w=6,h=6):
     global ARO_SELECTION
-    all_adp=getAllAdp()
+    all_adp=DICT_ADP.getAllAdp()
     for dp in all_adp:
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         if (not dp.visible) or dp.VA.size==0:continue
@@ -278,7 +277,7 @@ def highlight(selection=None):
         if isinstance(selection,list):ARO_SELECTION=selection
         else:ARO_SELECTION=[selection]
 
-    for adp in getAllAdp():
+    for adp in DICT_ADP.getAllAdp():
         if adp.Aro in ARO_SELECTION:adp.highlight=True
         else:adp.highlight=False
     drawGL()
@@ -305,13 +304,6 @@ def rotateToCS(trans,srccs,tarcs):
     qua=getQuaternionFormCS(tarcs)
     trans=trans*glm.mat4_cast(glm.fquat(qua))
     return trans
-
-def getAllAdp():
-    global _list_all_adp
-    if len(_list_all_adp)==0:
-        for adplist in ADP_DICT.values():
-            _list_all_adp+=adplist
-    return _list_all_adp
 
 def getTransPosition(p,trans,out='np'):
     ''' Para out: list/np'''
@@ -400,7 +392,7 @@ def getQuaternionFormCS(cs):
 def getLightList():
     from mod.AroCore import AroLight
     global _list_light
-    for aro in ESC.ARO_MAP.values():
+    for aro in ESC.getFullMap():
         if isinstance(aro,AroLight):_list_light.append(aro)
     if len(_list_light)==0:
         light_default=AroLight()
@@ -428,7 +420,7 @@ def setUniform(obj,tar):
     return
 
 def initGL(shader='default'):
-    shader='phong'  # for test;
+    # shader='phong'  # for test;
     global DICT_LOC,GL_PROGRAM,DICT_FLAG
     with open('core/esgl/shaders/'+shader+'/setting.json','r') as fd:
         setting=json.loads(fd.read())
@@ -462,8 +454,8 @@ def drawGL():
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
     setUniform([li.getLightPara() for li in getLightList()],'lights')
     setUniform(EP.tolist(),'pos_eye')
-    for dp in TDP_LIST+getAllAdp():
-        if (not dp.visible):continue
+    for dp in DICT_TDP.getAll()+DICT_ADP.getAllAdp():
+        if not dp.visible:continue
         if dp.dict_glo['VAO']==-1:
             dp.dict_glo['VAO'],dp.dict_glo['VBO'],dp.dict_glo['EBO']=genGLO()
         bindGLO(dp.dict_glo)
@@ -489,15 +481,17 @@ def drawGL():
                 gl.glVertexAttribPointer(DICT_LOC['tex'],dp.dict_layout['tex'],
                     gl.GL_FLOAT,gl.GL_FALSE,vtx_len,ctypes.c_void_p(12))
                 gl.glEnableVertexAttribArray(2)
-                if dp.dict_glo['TAO']==-1:dp.dp.dict_glo['TAO']=genGLTex(dp.texture)
-                else:gl.glBindTexture(gl.GL_TEXTURE_2D,dp.dp.dict_glo['TAO'])
+                if dp.dict_glo['TAO']==-1:dp.dict_glo['TAO']=genGLTex(dp.texture)
+                else:gl.glBindTexture(gl.GL_TEXTURE_2D,dp.dict_glo['TAO'])
             if 'normal' in dp.dict_layout and DICT_LOC['normal']!=-1:
                 gl.glVertexAttribPointer(DICT_LOC['normal'],dp.dict_layout['normal'],
                     gl.GL_FLOAT,gl.GL_FALSE,vtx_len,ctypes.c_void_p(28))
                 gl.glEnableVertexAttribArray(3)
 
             if dp.dict_fix['fix']:ftrans=_fixViewDP(dp)
-            else:ftrans=dp.trans
+            else:
+                gl.glViewport(0,0,PLC_W,PLC_H)
+                ftrans=dp.trans
             setUniform(ftrans,'trans')
 
         _drawDP(dp)
@@ -517,6 +511,7 @@ def drawGL():
 
 def _drawDP(dp:DrawPart):
     if len(dp.EA)!=0:gl.glDrawElements(dp.gl_type,dp.EA.size,gl.GL_UNSIGNED_INT,None)
+    elif len(dp.VA)!=0:gl.glDrawArrays(dp.gl_type,0,dp.VA.size)
     if len(dp.list_mesh)!=0:
         for mesh in dp.list_mesh:
             if mesh.dict_glo['VAO']==-1:
@@ -576,5 +571,4 @@ def _fixViewDP(dp:DrawPart):
                 ftrans=glm.scale(ftrans,glm.vec3(l_ArE/l_AE))
         if dp.dict_fix['orient']:
             ftrans=getFixOriMat(ftrans)
-        dp.ftrans=ftrans
         return ftrans

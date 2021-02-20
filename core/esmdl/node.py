@@ -24,14 +24,14 @@ class AcpNode(esui.Plc):
 
         i=2
         for k in acp.inport.keys():
-            inbtn=esui.SelectBtn(self,(width-2.5*yu,0.5*yu+i*3*yu),
+            inbtn=esui.SltBtn(self,(width-2.5*yu,0.5*yu+i*3*yu),
                 (2*yu,2*yu),'<',tsize=8,tip=acp.port[k])
             inbtn.portid=k
             inbtn.Bind(wx.EVT_LEFT_DOWN,self.onClkIOBtn)
             i+=1
         i=2
         for k in acp.outport.keys():
-            outbtn=esui.SelectBtn(self,(0.5*yu,0.5*yu+i*3*yu),(2*yu,2*yu),'<',tsize=8,tip=acp.port[k])
+            outbtn=esui.SltBtn(self,(0.5*yu,0.5*yu+i*3*yu),(2*yu,2*yu),'<',tsize=8,tip=acp.port[k])
             outbtn.portid=k
             outbtn.Bind(wx.EVT_LEFT_DOWN,self.onClkIOBtn)
             i+=1

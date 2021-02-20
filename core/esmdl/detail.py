@@ -23,7 +23,7 @@ class DetailDialog(esui.EsDialog):
                 v=ctrl.GetValue()
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
-            elif type(ctrl)==esui.SelectBtn:
+            elif type(ctrl)==esui.SltBtn:
                 v_eval=ctrl.GetValue()
             else:continue
             set_dcit[ctrl.Name]=v_eval
@@ -52,7 +52,7 @@ class DetailDialog(esui.EsDialog):
                     hint=str(v),cn=k,exstl=stl)
                 i+=3
             elif type(v)==bool:
-                esui.SelectBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
+                esui.SltBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
             else:
                 esui.InputText(DP,(14*yu,(i*4+0.5)*yu),(DP.Size[0]-15*yu,3.5*yu),hint=str(v),cn=k,exstl=stl)
             i+=1

@@ -1,105 +1,147 @@
 # -*- coding: UTF-8 -*-
 import wx
 from core import ESC,esui,esevt
-from .manager import ManagerTab
-from .detail import DetailTab
+from .manager import MgrDiv
+from .detail import DetailDiv
 yu=esui.YU
 
-class SidePlc(esui.Plc):
-    def __init__(self,parent,p,s):
-        super().__init__(parent,p,s)
-        self.Hide()
+class TabBtn(esui.Div):
+    _stl={'s':(8*yu,4*yu),'bgc':esui.COLOR_BACK}
+    _stl_active={'bgc':esui.COLOR_LBACK}
+    _stl_hover={'bgc':esui.COLOR_ACTIVE}
 
-        self.map_list=list()
-        self.model_list=list()
-        self.tab_list=['Manager']
+    def __init__(self, parent, **argkw):
+        ''' Button used in TabDiv. Para `argkw` addition:
+            * `close`: flag if tab can be closed*;
+            * `icon`: img path*;'''
+        argkw['style'].update(self._stl)
+        argkw['hover']=self._stl_hover
+        argkw['active']=self._stl_active
+        super().__init__(parent,**argkw)
 
-        tab_pos=(2,8*yu)
-        tab_size=(s[0],88*yu)
-        self.workspace_btn=esui.Btn(self,(1,0),(4*yu,4*yu),'<->',tip='Toggle Aro/Acp')
-        self.manager_btn=esui.TabBtn(self,(1,4*yu),(8*yu,4*yu),'Manager')
-        self.manager_tab=ManagerTab(self,tab_pos,tab_size,'Manager')
+        if len(self.label)>10:self.SetToolTip(self.label)
+        self._flag_close=argkw.get('close',False)
 
-        self.detail_btn=esui.TabBtn(self,(8*yu,4*yu),(8*yu,4*yu),'Detail')
-        self.detail_tab=DetailTab(self,tab_pos,tab_size,'Detail')
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        return
 
+    def onClk(self,e:wx.Event):
+        # self._onClk(e)
+        self.GrandParent.toggleTab(self.label)
+        return
+
+    def act(self):
+        self._flag_active=True
+        self.Refresh()
+        return
+
+    def deact(self):
+        self._flag_active=False
+        self.Refresh()
+        return
+    pass
+class TabDiv(esui.Div):
+    def __init__(self, parent, **argkw):
+        '''Para argkw addition:
+        * loc_btn: location of tab buttons, enum for udlr;
+        * labels: initial list of tabs;'''
+        super().__init__(parent, **argkw)
+        self._p_tab=(0,5*yu)
+        self._s_tab=(self.Size[0],self.Size[1]-5*yu)
+        self._loc_btn=argkw.get('loc_btn','u')
+        self._dict_tabs=dict()  # {label:(tabbtn,tab),..}
+        self._list_shown_tabs=argkw.get('labels',[])
+        self._crt_tab=''
+
+        if self._loc_btn=='u':
+            self._div_btn=esui.Div(self,style={
+                'p':(0,0),'s':(self.Size[0],5*yu)})
+        for label in self._list_shown_tabs:self.addTab(label)
+        if len(self._list_shown_tabs)!=0:self.toggleTab(self._list_shown_tabs[0])
+        return
+
+    def addTab(self,label,tab=None):
+        ''' Add a new tab.
+            * tab: tab class or None for adding a normal div;'''
+        btn=TabBtn(self._div_btn,label=label,style={
+            'p':(len(self._list_shown_tabs)*(8*yu+1),yu)})
+        if tab is None:
+            tab=esui.Div(self,style={
+                'p':self._p_tab,'s':self._s_tab,'bgc':esui.COLOR_LBACK})
+        else:
+            tab=tab(self,style={
+                'p':self._p_tab,'s':self._s_tab,'bgc':esui.COLOR_LBACK})
+        self._dict_tabs[label]=(btn,tab)
+        self._list_shown_tabs.append(label)
+        return tab
+
+    def getTab(self,label=''):
+        ''' Get a tab div.
+            * label: get a tab with existed label;
+            * toggle: if toggle to the tab after getting;'''
+        if label=='':label=list(self._dict_tabs.keys())[0]
+        if label not in self._dict_tabs:return None
+        return self._dict_tabs[label][1]
+
+    def toggleTab(self,label=''):
+        ''' Toggle to a tab with label including hided tabs.
+            * label: default for the first tab.'''
+        if label=='':label=list(self._dict_tabs.keys())[0]
+        for k,v in self._dict_tabs.items():
+            if k==label:
+                v[0].act()
+                v[0].Show()
+                v[1].Show()
+                self._crt_tabs=label
+                self._list_shown_tabs.append(label)
+            else:
+                v[0].deact()
+                v[1].Hide()
+        return
+
+    def hideTab(self,label,clear=False):
+        if clear and self._crt_tab==label:self.toggleTab()
+        for k,v in self._dict_tabs.items():
+            if k==label:
+                self._list_shown_tabs.remove(label)
+                if clear:
+                    v[0].DestroyLater()
+                    v[1].DestroyLater()
+                    del self._dict_tabs[k]
+                else:
+                    v[0].Hide()
+                    v[1].Hide()
+                break
+        return
+    pass
+
+class SideDiv(TabDiv):
+    def __init__(self, parent, **argkw):
+        super().__init__(parent,**argkw)
+        self.div_mgr=self.addTab('Manager',MgrDiv)
+        self.div_detail=self.addTab('Detail',DetailDiv)
+        self.hideTab('Detail')
+        self.toggleTab()
+
+        self.updateAroTree=self.div_mgr.tree_map.buildTree
+        self.showDetail=self.div_detail.showDetail
+        self.clearDetail=self.div_detail.clearDetail
         self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
-
-        self.workspace_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkWorkspace)
-
-        self.updateAroTree=self.manager_tab.map_block.map_tree.buildTree
-        self.showDetail=self.detail_tab.showDetail
-        self.clearDetail=self.detail_tab.clearDetail
         self.Hide()
         return
 
-    def loadMaps(self,maps=None):
-        '''Load maps;'''
-        if maps is None:
-            maps=list(ESC.MAP_LIST)
-        self.map_list=maps
-        self.manager_tab.map_block.map_menu.setItems(maps)
-        self.manager_tab.map_block.onClkMapMenu(None)
-        self.toggleTab('Manager')
-        return
-
-    def loadModels(self,models=None):
-        if models is None:
-            models=list(ESC.ACP_MODELS.keys())
-        for model in models:
-            if model not in self.model_list:
-                self.model_list.append(model)
-        self.manager_tab.model_block.model_tree.buildTree()
-        return
-
-    def onComEvt(self,e):
+    def onComEvt(self,e:wx.Event):
         etype=e.GetEventArgs()
         if etype==esevt.ETYPE_UPDATE_MAP:
             self.updateAroTree()
+            self.div_mgr.tree_sim.updateTree()
         elif etype==esevt.ETYPE_RESET_SIM:
             self.updateAroTree()
         elif etype==esevt.ETYPE_OPEN_SIM:
-            self.loadMaps()
-            self.loadModels()
-            self.manager_tab.sim_block.sim_tree.buildTree()
+            self.div_mgr.tree_sim.buildTree()
+            self.div_mgr.tree_map.buildTree()
+            self.div_mgr.tree_mdl.buildTree()
             self.Show()
-        return
-
-    def onClkWorkspace(self,e=None,call=None):
-        status=esui.ARO_PLC.IsShown()
-        if status or call=='ACP_PLC':
-            esui.ARO_PLC.Hide()
-            esui.ACP_PLC.Show()
-            esui.ACP_PLC.drawConnection()
-        elif not status or call=='ARO_PLC':
-            esui.ARO_PLC.Show()
-            esui.ACP_PLC.Hide()
-        if e is not None and call is None:e.Skip()
-        return
-
-    def toggleTab(self,tablabel='Manager'):
-        for ctrl in self.Children:
-            if type(ctrl)==esui.TabBtn and tablabel==ctrl.Label:
-                ctrl.onClk(None)
-        return
-
-    def getTab(self,tablabel):
-        for ctrl in self.Children:
-            if ctrl.GetLabel()==tablabel and isinstance(ctrl,esui.Plc):
-                return ctrl
-        i=len(self.tab_list)
-        yu=esui.YU
-        btn=esui.TabBtn(self,(8*yu*i,4*yu),(8*yu,4*yu),tablabel)
-        tab=esui.ScrolledPlc(self,(0,8*yu),(self.Size.x,self.Size.y-8*yu),cn=tablabel)
-        self.tab_list.append(tablabel)
-        btn.onClk(None)
-        return tab
-
-    def delTab(self,tablabel):
-        for ctrl in self.Children:
-            if ctrl.GetLabel()==tablabel:
-                ctrl.DestroyLater()
-        self.toggleTab()
         return
 
     pass

@@ -21,11 +21,14 @@ COLOR_TEXT='#ffffff'
 COLOR_ACTIVE='#555555'
 COLOR_DECRO='#996600'
 TEXT_FONT='Microsoft YaHei'
+STL_DFT={'p':(0,0),'s':(0,0),'bgc':COLOR_BACK,'fgc':COLOR_FRONT,'text':COLOR_TEXT}
+STL_BOX={'border':COLOR_FRONT}
+STL_FILL={'bgc':COLOR_FRONT}
 
+from .method import toggleWorkspace
 from .window import EsWindow
 # Panel container;
-from .plc import Plc
-from .plc import ScrolledPlc
+from .plc import Plc,ScrolledPlc,Div,ScrollDiv
 
 # Text ctrl;
 from .textctrl import StaticText
@@ -33,6 +36,11 @@ from .textctrl import TransText
 from .textctrl import InputText
 from .textctrl import MultilineText
 from .textctrl import HintText
+
+# Button;
+from .btn import Btn
+from .btn import SltBtn
+from .btn import TabBtn
 
 # Popup;
 from .popup import PopupList
@@ -50,21 +58,11 @@ from .dialog import ModDialog
 from .dialog import MapDialog
 from .dialog import ModelDialog
 
-# Button;
-from .btn import Btn
-from .btn import BorderlessBtn
-from .btn import SelectBtn
-from .btn import BlSelectBtn
-from .btn import TabBtn
-
 from .plc_Head import HeadPlc
 from .plc_Head import HeadBar
 from .plc import CmdPlc
 from .plc import PopupPlc
-from .plc_tree import TreePlc
-from .plc_tree import SimTreePlc
-from .plc_tree import MapTreePlc
-from .plc_tree import ModelTreePlc
+from .plc_tree import TreeDiv,TreeItemDiv
 
 class ESFont(wx.Font):
     ''' Simple font class.

@@ -53,7 +53,7 @@ class EsWindow(wx.Frame):
         return
 
     def onOpenSim(self,e):
-        if ESC.SIM_NAME!='':
+        if ESC.isSimOpened():
             'todo: open sim after already opened another sim;'
             return
         sim_name=e.GetEventArgs(1)

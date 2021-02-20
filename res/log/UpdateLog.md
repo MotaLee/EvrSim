@@ -1,8 +1,30 @@
 # Update Log
 
 ---
-
 ## Details
+
+### 0.0.13 - 2021/02/20
+
+* Mod:
+    * Removed attribute 'TOOL_INDEX' for every mod;
+* esui:
+    * Added keyword 'option' for control 'Btn';
+    * Removed control class 'BorderlessBtn', and replaced by 'Btn' with border option;
+    * Added keywords 'option'/'exclusive' for control 'SltBtn' which named 'SelectBtn' before;
+    * Removed control class 'BlSelectBtn', and replaced by 'SltBtn' with border option;
+    * Added new controls 'Div'/'ScrollDiv' for replacing Plc/ScrolledPlc in future;
+* esc:
+    * Renamed method 'bug' to 'err';
+    * Changed variable 'MODEL_DISABLE' to 'MODEL_ENABLE';
+    * Added class 'SimTree' and applied to every sims;
+    * Added class 'ModTree' and its relative methods;
+    * Added class 'Aro' for AroCore;
+* esgl:
+    * Intergrated pyassimp package and did some changes;
+* estab:
+    * Remastered Fully using Div/ScrollDiv;
+
+---
 
 ### 0.0.12 - 2021/02/05
 
@@ -11,7 +33,7 @@
     * Renamed app 'EvrSimEditor' to 'Editor';
 2. Mod:
     * Dynamics: Added a Acp 'BulletEngine' which using pybullet library for physic engine;
-    * AroCore: Moved AroToolbar to core module estool;
+    * AroCore: Moved AroToolbar to core module estl;
     * Game: Added a new mod 'Game' containing few gaming stuff yet;
 3. esgl:
     * Added a new shader 'phong' which contained simple lighting rendering;
@@ -139,7 +161,7 @@
 12. Core module 'esgl':
     * Added 'genTexture' method, now supporting base texture display;
     * Added lots of openGL methods, and optimized the performance;
-13. Core module 'estool':
+13. Core module 'estl':
     * Moved Mod panel(plc_Mod) form esui and renamed to Tool panel(tool_plc);
     * Massively optimized tool relavant structure, including modified all mods;
 

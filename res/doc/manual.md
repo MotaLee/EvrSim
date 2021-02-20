@@ -40,7 +40,7 @@ Under the main folder, there are some sub-folders and files:
   * esc: EvrSimCore,
   * esevt: Event relavant,
   * esgl: OpenGl and drawing relavant,
-  * estool: Tool for mod devoloping,
+  * estl: Tool for mod devoloping,
   * esui: UI controls library and variables,
 * doc: Documentation, including helps and manuals;
 * lang: Language support;

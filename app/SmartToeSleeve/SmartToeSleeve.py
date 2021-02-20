@@ -12,7 +12,7 @@ from core import ESC
 from core import esui
 from core import esevt
 from core import esgl
-from core import estool
+from core import estl
 import mod
 from mod.AroPlot import CanvasPlc
 
@@ -35,16 +35,16 @@ class PlotPlc(esui.Plc):
 
         esui.StaticText(self,(yu,self.Size.y-10*yu),(8*yu,4*yu),'显示选项：',align='left')
 
-        self.btn_x=esui.SelectBtn(self,(yu,self.Size.y-5*yu),(4*yu,4*yu),'√',select=True)
+        self.btn_x=esui.SltBtn(self,(yu,self.Size.y-5*yu),(4*yu,4*yu),'√',select=True)
         self.txt_x=esui.StaticText(self,(5*yu,self.Size.y-5*yu),(8*yu,4*yu),'位移')
 
-        self.btn_v=esui.SelectBtn(self,(13*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
+        self.btn_v=esui.SltBtn(self,(13*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
         self.txt_v=esui.StaticText(self,(17*yu,self.Size.y-5*yu),(8*yu,4*yu),'速度')
 
-        self.btn_a=esui.SelectBtn(self,(26*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
+        self.btn_a=esui.SltBtn(self,(26*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
         self.txt_a=esui.StaticText(self,(30*yu,self.Size.y-5*yu),(8*yu,4*yu),'加速度')
 
-        self.btn_pip=esui.SelectBtn(self,(39*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
+        self.btn_pip=esui.SltBtn(self,(39*yu,self.Size.y-5*yu),(4*yu,4*yu),'√')
         self.txt_pip=esui.StaticText(self,(43*yu,self.Size.y-5*yu),(8*yu,4*yu),'管压')
         self.Bind(esevt.EVT_COMMON_EVENT,self.onPPComEvt)
         return
@@ -66,7 +66,7 @@ class EvrSimSTS(esui.EsWindow):
         yu=esui.YU
         esui.WXMW=self
         esui.HEAD_PLC=esui.HeadBar(self,title=STS_TITLE)
-        esui.TOOL_PLC=estool.ToolPlc(self,(0,4*yu),(self.Size.x,11*yu),single='STS')
+        esui.TOOL_PLC=estl.ToolPlc(self,(0,4*yu),(self.Size.x,11*yu),single='STS')
         esui.ARO_PLC=esgl.AroGlc(self,(0,15*yu),(50*xu,85*yu),backgroundColor=(.5,.5,.5,1))
         self.PLOT_PLC=PlotPlc(self,(50*xu,15*yu),(50*xu,85*yu))
         esui.ARO_PLC.Show()

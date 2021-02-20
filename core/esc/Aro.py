@@ -1,4 +1,3 @@
-import math
 import mod
 import numpy as np
 from core import esc as ESC
@@ -7,27 +6,28 @@ def getAro(aroid,queue=-1):
     'Lv1: Get Aro by ID. Return Aro if succeed, None if failed;'
     if queue==-1:aromap=ESC.ARO_MAP
     else:aromap=ESC.MAP_QUEUE[queue]
-    if aroid in aromap:return aromap[aroid]
+    if aroid in aromap:
+        ret:ESC.Aro=aromap[aroid]
+        return ret
     else:return None
     return
 
 def getAroByName(aroname):
-    'Lv1: Get Aro by name. Return Aro if succeed, bugstr if failed;'
-    for aro in ESC.ARO_MAP.values():
+    'Get Aro by name. Return Aro if succeed;'
+    for aro in ESC.getFullMap():
         if aro.AroName==aroname:return aro
-    return ESC.bug('Aro name not found.')
+    return ESC.err('Aro name not found.')
 
 def addAro(aroclass,aroid=0):
     ''' Lv1: Add an Aro without initilization.
 
         Return Aro if succeed;'''
-    if type(aroclass)==str:aro=eval(aroclass+'()')
-    else:aro=aroclass()
+    if isinstance(aroclass,str):
+        aro:ESC.Aro=eval(aroclass+'()')
+    else:aro:ESC.Aro=aroclass()
     if aroid==0:
-        if len(ESC.ARO_ORDER)==0:
-            aro.AroID=1
-        else:
-            aro.AroID=max(ESC.ARO_ORDER)+1
+        if len(ESC.ARO_ORDER)==0:aro.AroID=1
+        else:aro.AroID=max(ESC.ARO_ORDER)+1
     else:
         aro.AroID=aroid
     ESC.ARO_MAP[aro.AroID]=aro
@@ -55,13 +55,6 @@ def initAro(aroclass,arove):
             arove[k]=temp
     aro=addAro(aroclass,arove.get('AroID',0))
     aro.onInit(arove)
-    # if 'AroID' in arove:
-    #     k,v=list(ESC.ARO_MAP.items())[-1]
-    #     if k!=v.AroID:
-    #         ESC.ARO_MAP[aro.AroID]=aro
-    #         del ESC.ARO_MAP[k]
-    #     ESC.AROID_MAX=max(arove['AroID'],ESC.AROID_MAX)
-
     return aro
 
 def setAro(aro,arove):
@@ -71,11 +64,11 @@ def setAro(aro,arove):
     if isinstance(aro,int):aro=getAro(aro)
     for k,v in arove.items():
         if type(v)==str:
-            if v=='inf':arove[k]=math.inf
+            if v=='inf':arove[k]=np.inf
         elif type(v)==list:
             temp=list()
             for ve in v:
-                if ve=='inf':temp.append(math.inf)
+                if ve=='inf':temp.append(np.inf)
                 else:temp.append(ve)
             arove[k]=temp
         elif type(v)==np.array:
@@ -87,6 +80,8 @@ def setAro(aro,arove):
 
 def sortAro(srcs,tar,direction='after'):
     ''' Para srcs/tar: Accept Aro;'''
+    if len(srcs)==1:
+        if tar==srcs[0]:return
     new_list=list()
     for aro in srcs:
         ESC.ARO_ORDER.remove(aro.AroID)
@@ -94,5 +89,5 @@ def sortAro(srcs,tar,direction='after'):
     tar_index=ESC.ARO_ORDER.index(tar.AroID)
     for newid in new_list:
         ESC.ARO_ORDER.insert(tar_index+1,newid)
-    ESC.sortAroMap()
+    ESC.sortMap()
     return

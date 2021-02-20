@@ -45,7 +45,7 @@ class IPE(AcpExecutor):
             Mmass=np.linalg.inv(a*np.identity(3)
                 +1/Im*MIm
                 +1/Is*MIs)
-            bias=-0.2/ESC.TIME_STEP*(pt-pj)
+            bias=-0.2/ESC.len_timestep*(pt-pj)
 
             i=0
             IT=5
@@ -58,11 +58,11 @@ class IPE(AcpExecutor):
                 ws=np.array(getattr(servant,'agl_v',[0,0,0]))
                 dv=vm+np.cross(wm,rm)-vs-np.cross(ws,rs)
                 p=np.dot(Mmass,(dv+bias))
-                fp=p/ESC.TIME_STEP
-                master.velocity-=fp/master.mass*ESC.TIME_STEP
-                servant.velocity+=fp/servant.mass*ESC.TIME_STEP
-                master.agl_v-=np.cross(rm,fp)/Im*ESC.TIME_STEP
-                servant.agl_v+=np.cross(rs,fp)/Is*ESC.TIME_STEP
+                fp=p/ESC.len_timestep
+                master.velocity-=fp/master.mass*ESC.len_timestep
+                servant.velocity+=fp/servant.mass*ESC.len_timestep
+                master.agl_v-=np.cross(rm,fp)/Im*ESC.len_timestep
+                servant.agl_v+=np.cross(rs,fp)/Is*ESC.len_timestep
                 i+=1
 
             ESC.setAro(master.AroID,{'velocity':master.velocity.tolist(),'agl_v':master.agl_v.tolist()})
@@ -96,7 +96,7 @@ class CPE(AcpExecutor):
                     colidata.append((aro0,aro1,v_tgh,d_tgh,p_coli))
 
         self._bodys,self._forces,self._fields=list(),list(),list()
-        for aro in ESC.ARO_MAP.values():
+        for aro in ESC.getFullMap():
             if isinstance(aro,RigidBody):self._bodys.append(aro)
             elif isinstance(aro,PointForce):self._forces.append(aro)
             elif isinstance(aro,ForceField):self._fields.append(aro)

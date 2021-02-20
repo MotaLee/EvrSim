@@ -2,9 +2,7 @@
 import sys
 import os
 import wx
-from core import ESC
-from core import esui
-from core import esevt
+from core import ESC,esui,esevt
 xu=esui.XU
 yu=esui.YU
 # Dialog wx sub class;
@@ -130,13 +128,13 @@ class SettingDialog(EsDialog):
             esui.StaticText(SP,(yu,i*5*yu+yu),(24*yu,4*yu),desc+':',align='left')
             v_esc=ESC.__dict__[value]
             if type(v_esc)==bool:
-                esui.SelectBtn(SP,(24*yu,i*5*yu+yu),(3*yu,3*yu),'√',select=v_esc,tip=value)
+                esui.SltBtn(SP,(24*yu,i*5*yu+yu),(3*yu,3*yu),'√',select=v_esc,tip=value)
             elif type(v_esc)==int or type(v_esc)==float:
                 esui.InputText(SP,(24*yu,i*5*yu+yu),(8*yu,4*yu),hint=str(v_esc),tip=value)
             i+=1
         # self.SIM_QUEUE_LEN=1
         # self.ACP_DEPTH=20
-        # self.TIME_STEP=1/30     # Unit second, fps=30Hz;
+        # self.len_timestep=1/30     # Unit second, fps=30Hz;
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
         return
 
@@ -180,8 +178,8 @@ class ModDialog(EsDialog):
             if fl[i][0]=='_':continue
             bx=(i %6)*bw+bw//3
             by=(i//6)*bh+bh//3
-            esui.SelectBtn(self.plc_mod,(bx,by),(bw//1.5,bh//1.5),fl[i],
-                select=fl[i] in ESC.MOD_LIST)
+            esui.SltBtn(self.plc_mod,(bx,by),(bw//1.5,bh//1.5),fl[i],
+                select=fl[i] in ESC.MOD_TREE_DICT)
         return
     pass
 
@@ -196,7 +194,7 @@ class ViewSimPlc(esui.Plc):
             if slist[i].find('_')!=-1:continue
             bx=(i %6)*bw+bw//3
             by=(i//6)*bh+bh//3
-            esui.SelectBtn(self,(bx,by),(bw//1.5,bh//1.5),slist[i])
+            esui.SltBtn(self,(bx,by),(bw//1.5,bh//1.5),slist[i],exclusive=True)
 
         self.Bind(wx.EVT_PAINT,self.onPaint)
         return
@@ -223,10 +221,11 @@ class MapDialog(EsDialog):
         self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
         self.warnstc.Hide()
         if operation!='New':
-            self.nametcc.SetValue(ESC.ARO_MAP_NAME)
+            self.nametcc.SetValue(ESC.MAP_ACTIVE)
         return
 
     def onConfirm(self,e):
+        from core import estl
         map_name=self.nametcc.GetValue()
         file_list=os.listdir('sim/'+ESC.SIM_NAME+'/map/')
         for f in file_list:
@@ -236,7 +235,7 @@ class MapDialog(EsDialog):
         if self.operation=='New':
             ESC.newMapFile(map_name)
             esui.SIDE_PLC.loadMaps()
-            esui.SIDE_PLC.onClkWorkspace(call='ARO_PLC')
+            esui.toggleWorkspace(target='ARO')
         elif self.operation=='Rename':
             ESC.renameMapFile(newname=map_name)
             esui.SIDE_PLC.loadMaps()
@@ -270,6 +269,7 @@ class ModelDialog(EsDialog):
         return
 
     def onConfirm(self,e):
+        from core import estl
         model_name=self.nametcc.GetValue()
         file_list=os.listdir('sim/'+ESC.SIM_NAME+'/model/')
         for f in file_list:
@@ -279,7 +279,7 @@ class ModelDialog(EsDialog):
         if self.operation=='New':
             ESC.newModelFile(model_name)
             esui.SIDE_PLC.loadModels()
-            esui.SIDE_PLC.onClkWorkspace(call='ACP_PLC')
+            esui.toggleWorkspace(target='ACP')
             esui.ACP_PLC.drawAcp((ESC.SIM_NAME,model_name))
         elif self.operation=='Rename':
             ESC.renameModelFile(mdlname=esui.ACP_PLC.model_tuple[1],newname=model_name)

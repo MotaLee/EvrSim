@@ -39,19 +39,19 @@ class AroGlc(wg.GLCanvas):
         return
 
     def readMap(self,clear=False):
-        if clear:esgl.ADP_DICT.clear()
-        aid_remain=list(esgl.ADP_DICT.keys())
-        for aro in ESC.ARO_MAP.values():
-            if aro.AroID not in esgl.ADP_DICT:
+        if clear:esgl.DICT_ADP.clear()
+        aid_remain=list(esgl.DICT_ADP.keys())
+        for aro in ESC.getFullMap():
+            if aro.AroID not in esgl.DICT_ADP:
                 if aro.adp!='':
                     adplist=esgl.initADP(aro)
-                    esgl.ADP_DICT[aro.AroID]=adplist
+                    esgl.DICT_ADP[aro.AroID]=adplist
                     # for adp in adplist:adp.trans=esgl.fixViewDP(adp)
             else:
-                for adp in esgl.ADP_DICT[aro.AroID]:
+                for adp in esgl.DICT_ADP[aro.AroID]:
                     adp.updateADP()
                 aid_remain.remove(aro.AroID)
-        for aid in aid_remain:del esgl.ADP_DICT[aid]
+        for aid in aid_remain:esgl.DICT_ADP.rmByAroid(aid)
         esgl.drawGL()
         return
 
@@ -68,7 +68,7 @@ class AroGlc(wg.GLCanvas):
         if etype==esevt.ETYPE_UPDATE_MAP:
             self.readMap()
         elif etype==esevt.ETYPE_OPEN_SIM:
-            # self.readMap()
+            self.readMap()
             esgl.lookAt()
             self.Show()
         elif etype==esevt.ETYPE_RESET_SIM:

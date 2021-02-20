@@ -29,7 +29,7 @@ def loadJsonESF(path):
         fd=open(path,'r')
         esf=json.load(fd.read())
 
-    except BaseException as e:ESC.bug(e)
+    except BaseException as e:ESC.err(e)
     return esf
 
 def saveJsonESF(esf:JsonESF,path):

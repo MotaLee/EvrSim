@@ -5,7 +5,7 @@ ES_EDITOR_TITLE='EvrSimEditor'
 # Outer libs;
 import wx
 # EvrSim libs;
-from core import ESC,esui,esevt,esmdl,esgl,estool,estab
+from core import ESC,esui,esevt,esmdl,esgl,estl,estab
 xu=esui.XU
 yu=esui.YU
 # Editor main window;
@@ -14,13 +14,12 @@ class EvrSimEditor(esui.EsWindow):
         super().__init__(title=ES_EDITOR_TITLE)
         esui.WXMW=self
         esui.HEAD_PLC=esui.HeadPlc(self)
-        esui.TOOL_PLC=estool.ToolPlc(self,(0,4*yu),(75*xu,21*yu))
+        esui.TOOL_PLC=estl.ToolPlc(self,(0,4*yu),(75*xu,21*yu))
         esui.CMD_PLC=esui.CmdPlc(self,(0,4*yu),(75*xu,21*yu))
         esui.ARO_PLC=esgl.AroGlc(self,(0,25*yu),(75*xu,75*yu))
-        # esui.ARO_PLC.toolbar=
-        estool.AroToolbar()
+        estl.AroToolbar()
         esui.ACP_PLC=esmdl.AcpPlc(self,(0,25*yu),(75*xu,75*yu))
-        esui.SIDE_PLC=estab.SidePlc(self,(75*xu,4*yu),(25*xu,96*yu))
+        esui.SIDE_PLC=estab.SideDiv(self,style={'p':(75*xu,4*yu),'s':(25*xu,96*yu)})
         self.wel_plc=WelPlc(self,(self.Size.x/2-360,self.Size.y/2-225),(720,450))
 
         self.Show()

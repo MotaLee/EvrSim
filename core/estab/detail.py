@@ -1,46 +1,51 @@
 import wx
 from core import ESC,esui,esevt,esgl
 yu=esui.YU
-class DetailTab(esui.Plc):
-    def __init__(self,parent,p,s,tablabel):
-        super().__init__(parent,p,s)
-
-        self.ori_s=s
+class DetailDiv(esui.Div):
+    def __init__(self,parent,**argkw):
+        super().__init__(parent,**argkw)
         self.aro=None
-        self.SetLabel(tablabel)
-        self.SetBackgroundColour(esui.COLOR_LBACK)
 
-        self.btn_con=esui.Btn(self,(self.Size[0]-10*yu,yu),(4*yu,4*yu),label='√')
-        self.btn_can=esui.Btn(self,(self.Size[0]-5*yu,yu),(4*yu,4*yu),label='×')
-        self.plc_detail=esui.ScrolledPlc(self,(0,6*yu),(self.Size[0],self.Size[1]-6*yu))
+        self.btn_con=esui.Btn(self,(self.Size[0]-10*yu,yu),(4*yu,4*yu),txt='√')
+        self.btn_can=esui.Btn(self,(self.Size[0]-5*yu,yu),(4*yu,4*yu),txt='×')
+        self.div_detail=esui.ScrollDiv(self,style={
+            'p':(0,6*yu),
+            's':(self.Size[0],self.Size[1]-6*yu),
+            'bgc':esui.COLOR_LBACK})
         self.btn_con.Bind(wx.EVT_LEFT_DOWN,self.onClkConfirm)
+        self.btn_can.Bind(wx.EVT_LEFT_DOWN,self.onClkCancel)
         return
 
     def onClkConfirm(self,e):
-        set_dict=dict()
-        for ctrl in self.plc_detail.Children:
+        arove=dict()
+        for ctrl in self.div_detail.getChildren():
             if isinstance(ctrl,(esui.InputText,esui.MultilineText)):
                 v=ctrl.GetValue()
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
-            elif type(ctrl)==esui.SelectBtn:
+            elif type(ctrl)==esui.SltBtn:
                 v_eval=ctrl.GetValue()
             elif type(ctrl)==esui.Btn and hasattr(ctrl,'value'):
                 v_eval=ctrl.value
             else:continue
-            set_dict[ctrl.Name]=v_eval
-        ESC.setAro(self.aro.AroID,set_dict)
-        esui.ARO_PLC.readMap()
+            arove[ctrl.Name]=v_eval
+        ESC.setAro(self.aro.AroID,arove)
+        # esui.ARO_PLC.readMap()
         esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
         esui.HintText(self,(self.Size[0]-14*yu,yu),(8*yu,4*yu),txt='Updated!')
         return
 
+    def onClkCancel(self,e):
+        esui.SIDE_PLC.hideTab('Detail')
+        esui.SIDE_PLC.toggleTab('Manager')
+        return
+
     def showDetail(self,aro=None):
-        DP=self.plc_detail
-        DP.DestroyChildren()
+        DP=self.div_detail
+        DP.delChildren()
         esui.SIDE_PLC.toggleTab('Detail')
         if aro is None:aro=esgl.ARO_SELECTION[0]
-        elif type(aro)==int:aro=ESC.getAro(aro)
+        elif isinstance(aro,int):aro=ESC.getAro(aro)
         self.aro=aro
         esui.StaticText(self,(yu,0),(8*yu,4*yu),aro.AroName+' Detail:',align='left')
         i=0
@@ -67,16 +72,16 @@ class DetailTab(esui.Plc):
                 tb2.Bind(wx.EVT_LEFT_DOWN,self.onChangeTarget)
                 tb3.Bind(wx.EVT_LEFT_DOWN,self.onRemoveTarget)
             elif type(v)==bool:
-                esui.SelectBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
+                esui.SltBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
             else:
                 esui.InputText(DP,(14*yu,(i*4+0.5)*yu),
                     (DP.Size[0]-15*yu,3.5*yu),hint=str(v),cn=k,exstl=stl)
             i+=1
-        DP.updateVirtualSize()
+        DP.updateMaxSize()
         return
 
     def clearDetail(self):
-        self.plc_detail.DestroyChildren()
+        self.div_detail.delChildren()
         return
 
     def onChangeTarget(self,e):

@@ -91,8 +91,8 @@ def connectAcp(sid,stport,eid,edport,acpmodel):
                 eacp.inport[edport]=None
                 sacp.outport[stport].remove(e_combo)
                 return 0
-            else:return ESC.bug('End inport already connected.')
-        else:return ESC.bug('End inport not existed.')
+            else:return ESC.err('End inport already connected.')
+        else:return ESC.err('End inport not existed.')
     elif stport in sacp.inport:
         # Inport to outport;
         if edport in eacp.outport:
@@ -106,6 +106,6 @@ def connectAcp(sid,stport,eid,edport,acpmodel):
                 eacp.outport[edport].remove(s_combo)
                 sacp.inport[stport]=None
                 return 0
-        else:return ESC.bug('End outport not existed.')
-    else:return ESC.bug('Start port not existed.')
+        else:return ESC.err('End outport not existed.')
+    else:return ESC.err('Start port not existed.')
     return

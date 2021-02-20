@@ -7,6 +7,7 @@ class TdpXyzAxis(TDP):
     def __init__(self,tool):
         super().__init__(tool)
         self.gl_type=gl.GL_LINES
+        self.dict_layout['color']=4
         self.VA=np.array([
             [0,0,0,     1,0,0,1],
             [.5,0,0,    1,0,0,1],
@@ -15,7 +16,7 @@ class TdpXyzAxis(TDP):
             [0,0,0,     0,0,1,1],
             [0,0,.5,    0,0,1,1]],
             dtype=np.float32)
-        self.EA=np.array([0,1,2,3,4,5],dtype=np.uint32)
+        self.EA=np.array([[0,1],[2,3],[4,5]],dtype=np.uint32)
         return
     pass
 
@@ -24,6 +25,7 @@ class TdpGrid(TDP):
     def __init__(self,tool,panel):
         super().__init__(tool)
         self.gl_type=gl.GL_LINES
+        self.dict_layout['color']=4
         self.EA=np.array([],dtype=np.uint32)
         self.VA=np.zeros([44,7],dtype=np.float32)
         for i in range(0,21,2):
@@ -44,6 +46,9 @@ class TdpViewBall(TDP):
     def __init__(self,tool):
         super().__init__(tool)
         self.gl_type=gl.GL_LINES
+        self.dict_fix['fix']=True
+        self.dict_fix['pos']=[0,65*esui.YU,10*esui.XU,10*esui.YU]
+        self.dict_layout['color']=4
         self.VA=np.array([
             [0,0,0,     1,0,0,1],
             [.5,0,0,    1,0,0,1],
@@ -53,7 +58,6 @@ class TdpViewBall(TDP):
             [0,0,.5,    0,0,1,1]],
             dtype=np.float32)
         self.EA=np.array([[0,1],[2,3],[4,5],[1,3],[1,5],[3,5]],dtype=np.uint32)
-        self.dict_fix['pos']=[0,65*esui.YU,10*esui.XU,10*esui.YU]
         return
 
     pass
@@ -65,6 +69,7 @@ class TdpTrack(TDP):
     def __init__(self,tool):
         super().__init__(tool)
         self.gl_type=gl.GL_LINES
+        self.dict_layout['color']=4
         self.VA=np.array([],dtype=np.float32)
         self.EA=np.array([],dtype=np.uint32)
         return

@@ -99,7 +99,7 @@ class AcpSelector(Acp):
                     resdict[SELF_AROID].append(ARO.AroID)
                     slctdict[SELF_AROID].append(data)
             if len(slctdict[SELF_AROID])==0:slctdict[SELF_AROID]=[self.default]
-        if len(list(slctdict.values())[0])==0:ESC.bug('W: Selector '+self.AcpName+' matched nothing.')
+        if len(list(slctdict.values())[0])==0:ESC.err('W: Selector '+self.AcpName+' matched nothing.')
         return {(self.AcpID,1):slctdict,(self.AcpID,'RES'):resdict}
     pass
 
@@ -120,7 +120,7 @@ class AcpProvider(Acp):
 
     def preProgress(self,datadict):
         arolist=list()
-        for ARO in ESC.ARO_MAP.values():
+        for ARO in ESC.getFullMap():
             ABBRCLASS=ARO.AroClass[ARO.AroClass.rfind('.')+1:]
             AROVE=ARO.__dict__
             target=eval(self.expression)
@@ -132,7 +132,7 @@ class AcpProvider(Acp):
         reqlist=datadict['REQ']
         for aroid,itemvalue in indict.items():
             if aroid in reqlist:
-                if len(itemvalue)!=1:return ESC.bug('Provide too more')
+                if len(itemvalue)!=1:return ESC.err('Provide too more')
                 if len(itemvalue[0])==1:
                     data=itemvalue[0][0]
                 else:
@@ -161,7 +161,7 @@ class AcpIterator(Acp):
     def AcpProgress(self,datadict):
         op1=(self.AcpID,1)
         op2=(self.AcpID,2)
-        if self.item=='time':out1=ESC.TIME_RATE*ESC.TIME_STEP
+        if self.item=='time':out1=ESC.TIME_RATE*ESC.len_timestep
         else:out1=self.step
         ret={op1:{self.item:[out1]},
             op2:{self.item:[self.current]}}
@@ -169,9 +169,9 @@ class AcpIterator(Acp):
 
     def iterate(self):
         'Return 0 when iterator stoped;'
-        if self.current>self.end and not ESC.SIM_REALTIME:
+        if self.current>self.end and not ESC.flag_realtime:
             return 0
-        if self.item=='time':self.current+=ESC.TIME_RATE*ESC.TIME_STEP
+        if self.item=='time':self.current+=ESC.TIME_RATE*ESC.len_timestep
         else:self.current+=self.step
         return 1
 

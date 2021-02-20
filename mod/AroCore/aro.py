@@ -1,46 +1,6 @@
 from core import ESC
-# Aro class defination;
-class Aro(object):
-    ''' Core Aro class.
 
-        Variable started with '_' wont save to map.'''
-    def __init__(self):
-        self._Arove_flag={
-            'invisible':['_Arove_flag','AroID'],
-            'uneditable':['adp','AroClass'],
-            'longdata':['desc'],
-            'target':[]}
-        self._adp=list()
-        # Preset Arove;
-        self.AroID=0
-        self.AroClass=self.__module__+'.'+type(self).__name__
-        self.adp=''
-        # User changeable Arove;
-        self.AroName=''
-        self.desc=''
-        self.enable=True
-        self.visable=True
-        return
-
-    def onInit(self,arove={}):
-        ''' This method will be called in ESC.initAro'''
-        new_arove=dict(arove)
-        for k,v in arove.items():
-            if k not in self.__dict__:
-                del new_arove[k]
-        self.__dict__.update(new_arove)
-        return
-
-    def onSet(self,arove={}):
-        ''' This method will be called in ESC.setAro'''
-        return
-
-    def onDel(self):
-        ''' This method will be called in ESC.delAro'''
-        return
-    pass
-
-class AroTree(Aro):
+class AroTree(ESC.Aro):
     ''' Aro with tree structure.
 
         Addition Arove: parent, children;'''
@@ -52,7 +12,7 @@ class AroTree(Aro):
         return
     pass
 
-class AroTargets(Aro):
+class AroTargets(ESC.Aro):
     ''' Aro with targets.
 
         Addition Arove: targets;'''
@@ -63,7 +23,7 @@ class AroTargets(Aro):
         return
     pass
 
-class AroPoint(Aro):
+class AroPoint(ESC.Aro):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpPoint'
@@ -71,7 +31,7 @@ class AroPoint(Aro):
         return
     pass
 
-class AroImage(Aro):
+class AroImage(ESC.Aro):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpImage'

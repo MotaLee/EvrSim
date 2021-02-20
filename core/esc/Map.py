@@ -1,28 +1,29 @@
 import os
-import math
+import numpy as np
 from core import esc as ESC
-inf=math.inf
+inf=np.inf
 
 def newMapFile(mapname):
-    if ESC.SIM_FD is None:return ESC.bug('Sim not opened.')
+    if ESC.SIM_FD is None:return ESC.err('Sim not opened.')
     if mapname not in ESC.MAP_LIST:
-        updateMapFile()
+        saveMapFile()
         ESC.MAP_LIST.append(mapname)
         ESC.ARO_MAP=dict()
-        ESC.ARO_MAP_NAME=mapname
-        updateMapFile(mapname)
+        ESC.MAP_ACTIVE=mapname
+        saveMapFile(mapname)
     else:
-        return ESC.bug('Map name already existed.')
+        return ESC.err('Map name already existed.')
     return
 
 def loadMapFile(mapname=''):
-    ''' Lv.1: Read existed map.py;'''
-    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
-    if mapname=='': mapname=ESC.ARO_MAP_NAME
-    else: ESC.ARO_MAP_NAME=mapname
+    ''' Read existed map.py;'''
+    if ESC.SIM_FD is None:ESC.err('Sim not opened.')
+    if mapname=='': mapname=ESC.MAP_ACTIVE
+    else: ESC.MAP_ACTIVE=mapname
     ESC.ARO_MAP=dict()
     with open('sim/'+ESC.SIM_NAME+'/map/'+mapname+'.py','r') as map_fd:
         txt=map_fd.read()
+
     _locals=dict(locals())
     exec(txt,globals(),_locals)
     ESC.ARO_ORDER=_locals['ARO_INDEX']
@@ -37,13 +38,13 @@ def loadMapFile(mapname=''):
         ESC.initAro(aro['AroClass'],aro)
     return
 
-def updateMapFile(mapname=''):
+def saveMapFile(mapname=''):
     'Lv1: Update map;'
-    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
-    if mapname=='': mapname=ESC.ARO_MAP_NAME
+    if ESC.SIM_FD is None: return ESC.err('Sim not opened.')
+    if mapname=='': mapname=ESC.MAP_ACTIVE
     # Build index and key dict;
     key_dict=dict()
-    for aro in ESC.ARO_MAP.values():
+    for aro in ESC.getFullMap():
         # ESC.ARO_ORDER.append(aro.AroID)
         for k,v in aro.__dict__.items():
             if k[0]=='_':continue
@@ -53,7 +54,7 @@ def updateMapFile(mapname=''):
     txt='ARO_INDEX='+ESC.ARO_ORDER.__str__()+'\n'
     txt+='KEY_DICT='+key_dict.__str__()+'\n'
     # Replace key;
-    for aro in ESC.ARO_MAP.values():
+    for aro in ESC.getFullMap():
         temp_dict=dict()
         for k,v in aro.__dict__.items():
             if k[0]!='_':temp_dict[k]=v
@@ -71,18 +72,18 @@ def updateMapFile(mapname=''):
 
 def renameMapFile(mapname='',newname='NewMap'):
     'Lv1: Rename map;'
-    if ESC.SIM_FD is None: return ESC.bug('Sim not opened.')
+    if ESC.SIM_FD is None: return ESC.err('Sim not opened.')
     ESC.saveSim()
-    if mapname=='': mapname=ESC.ARO_MAP_NAME
-    ESC.ARO_MAP_NAME=newname
+    if mapname=='': mapname=ESC.MAP_ACTIVE
+    ESC.MAP_ACTIVE=newname
     ESC.MAP_LIST.remove(mapname)
     ESC.MAP_LIST.append(newname)
     os.rename('sim/'+ESC.SIM_NAME+'/map/'+mapname+'.py','sim/'+ESC.SIM_NAME+'/map/'+newname+'.py')
     ESC.saveSim()
     return
 
-def sortAroMap(mapname=''):
-    # mapname=ESC.ARO_MAP_NAME
+def sortMap():
+    ''' Sort and update ARO_ORDER.'''
     new_order=list()
     for aroid in ESC.ARO_ORDER:
         tstack=[aroid]
@@ -95,14 +96,14 @@ def sortAroMap(mapname=''):
                     new_order.append(aro.AroID)
                 for child in aro.children:
                     if child not in new_order:
-                        new_order.append(child)
                         allow_popout=False
+                        new_order.append(child)
                         tstack.append(child)
                         break
                     elif new_order.index(child)<new_order.index(aro.AroID):
+                        allow_popout=False
                         new_order.remove(child)
                         new_order.append(child)
-                        allow_popout=False
                         tstack.append(child)
                         break
             if allow_popout:

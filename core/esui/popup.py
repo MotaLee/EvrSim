@@ -1,10 +1,11 @@
 # Parent lib;
 import wx
 from core import esui
+yu=esui.YU
 
 class PopupList(wx.ComboPopup):
     def __init__(self,items):
-        wx.ComboPopup.__init__(self)
+        super().__init__()
         self.ipos=0
         self.items=items
         return
@@ -31,7 +32,7 @@ class PopupList(wx.ComboPopup):
 
     def OnDismiss(self):
         # Overrided;
-        self.GetComboCtrl().click_ctrl=False
+        self.GetComboCtrl()._flag_active=False
         wx.ComboPopup.OnDismiss(self)
         return
 
@@ -41,13 +42,14 @@ class PopupList(wx.ComboPopup):
         dc.SetPen(wx.Pen(esui.COLOR_FRONT))
         dc.DrawRectangle(0,0,self.lctrl.Size[0],self.lctrl.Size[1])
         dc.DrawLine(5,self.ph*(self.ipos+1),self.lctrl.Size[0]-5,self.ph*(self.ipos+1))
+
         dc.SetTextForeground(esui.COLOR_TEXT)
-        pts=dc.GetTextExtent(self.GetComboCtrl().GetLabel())
-        for i in range(0,len(self.items)):
-            if type(self.items[i])==tuple:
-                txt=self.items[i][0]+'.'+self.items[i][1]
-            else:
-                txt=self.items[i]
+        pts=dc.GetTextExtent(self.GetComboCtrl().label)
+        for i in range(len(self.items)):
+            # if type(self.items[i])==tuple:
+                # txt=self.items[i][0]+'.'+self.items[i][1]
+            # else:
+            txt=self.items[i]
             dc.DrawText(txt,(self.pw-pts[0])/2,i*self.ph+pts[1]/2)
         return
 
@@ -66,13 +68,12 @@ class PopupList(wx.ComboPopup):
 
 # Menu Btn wx sub class;
 class MenuBtn(wx.ComboCtrl):
-
     def __init__(self,parent,p,s,label,items):
         super().__init__(parent,
             pos=p,size=s,value=label,style=wx.CB_READONLY)
-        self.Label=label
-        self.click_ctrl=False
-        self.on_ctrl=False
+        self.label=label
+        self._flag_active=False
+        self._flag_hover=False
         self.setItems(items)
         self.popup=self.PopupControl
         self.pop_ctrl=self.PopupControl.lctrl
@@ -91,15 +92,15 @@ class MenuBtn(wx.ComboCtrl):
         except BaseException:
             popup=PopupList(items)
             self.SetPopupControl(popup)
-        self.SetPopupMaxHeight(len(items)*self.Size[1]+esui.YU)
-        self.SetPopupMinWidth(2*self.Size[0]+esui.YU)
+        self.SetPopupMaxHeight(len(items)*self.Size[1]+yu)
+        self.SetPopupMinWidth(2*self.Size[0]+yu)
         return
 
     def onPaint(self,e):
         dc=wx.PaintDC(self)
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
-        elif self.on_ctrl:
+        elif self._flag_hover:
             dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
@@ -112,56 +113,60 @@ class MenuBtn(wx.ComboCtrl):
             (self.Size[0]-7,self.Size[1]-1),
             (self.Size[0]-1,self.Size[1]-7)])
 
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetTextForeground(esui.COLOR_BACK)
         else:
             dc.SetTextForeground(esui.COLOR_TEXT)
-        tsize=dc.GetTextExtent(self.GetLabel())
-        dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+        tsize=dc.GetTextExtent(self.label)
+        dc.DrawText(self.label,(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
 
     def onEnter(self,e):
-        self.on_ctrl=True
+        self._flag_hover=True
         self.Refresh(eraseBackground=False)
         return
 
     def onLeave(self,e):
-        self.on_ctrl=False
+        self._flag_hover=False
         self.Refresh(eraseBackground=False)
         return
 
     def onClk(self,e):
-        self.click_ctrl=True
+        self._flag_active=True
         self.ShowPopup()
         self.GetPopupControl().lctrl.Refresh(eraseBackground=False)
         return
+
+    def getCurrent(self)->str:
+        return self.popup.items[self.popup.ipos]
     pass
 
 class BorderlessMenuBtn(MenuBtn):
     def onPaint(self,e):
         dc=wx.PaintDC(self)
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
-        elif self.on_ctrl:
+        elif self._flag_hover:
             dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_LBACK))
         dc.SetPen(wx.TRANSPARENT_PEN)
         dc.DrawRectangle(0,0,self.Size[0],self.Size[1])
 
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetTextForeground(esui.COLOR_BACK)
         else:
             dc.SetTextForeground(esui.COLOR_TEXT)
-        tsize=dc.GetTextExtent(self.GetLabel())
-        dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+        tsize=dc.GetTextExtent(self.label)
+        dc.DrawText(self.label,(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
 
-        dc.SetBrush(wx.Brush(esui.COLOR_TEXT))
-        dc.DrawPolygon([
-            (self.Size[0]-1,self.Size[1]-1),
-            (self.Size[0]-7,self.Size[1]-1),
-            (self.Size[0]-1,self.Size[1]-7)])
+        # dc.SetBrush(wx.Brush(esui.COLOR_TEXT))
+        # dc.DrawPolygon([
+        #     (self.Size[0]-1,self.Size[1]-1),
+        #     (self.Size[0]-7,self.Size[1]-1),
+        #     (self.Size[0]-1,self.Size[1]-7)])
         return
+
     pass
 
 class SelectMenuBtn(MenuBtn):
@@ -173,23 +178,23 @@ class SelectMenuBtn(MenuBtn):
         except BaseException:
             popup=PopupList(items)
             self.SetPopupControl(popup)
-        self.SetPopupMaxHeight(len(items)*self.Size[1]+esui.YU)
+        self.SetPopupMaxHeight(len(items)*self.Size[1]+yu)
         self.SetPopupMinWidth(self.Size[0])
         self.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
         return
 
     def onClkPopup(self,e):
         popup=self.PopupControl
-        self.SetLabel(popup.items[popup.ipos])
+        self.label=popup.items[popup.ipos]
         self.SetValue(popup.items[popup.ipos])
         e.Skip()
         return
 
     def onPaint(self,e):
         dc=wx.PaintDC(self)
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
-        elif self.on_ctrl:
+        elif self._flag_hover:
             dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
         else:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
@@ -202,11 +207,12 @@ class SelectMenuBtn(MenuBtn):
             (self.Size[0]-7,self.Size[1]-1),
             (self.Size[0]-1,self.Size[1]-7)])
 
-        if self.click_ctrl:
+        if self._flag_active:
             dc.SetTextForeground(esui.COLOR_BACK)
         else:
             dc.SetTextForeground(esui.COLOR_TEXT)
-        tsize=dc.GetTextExtent(self.GetLabel())
-        dc.DrawText(self.GetLabel(),(esui.YU,(self.Size[1]-tsize[1])/2))
+        tsize=dc.GetTextExtent(self.label)
+        dc.DrawText(self.label,(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+        # dc.DrawText(self.label,(yu,(self.Size[1]-tsize[1])/2))
         return
     pass

@@ -1,10 +1,10 @@
 import wx
 import numpy as np
-from core import ESC,esui,esgl,esevt,estool
+from core import ESC,esui,esgl,esevt,estl
 from .aro import RigidGroup
 from .bullet import BulletEngine
 
-class DynamicsTool(estool.TextTool):
+class DynamicsTool(estl.TextTool):
     def __init__(self, name, parent, p, s, label):
         super().__init__(name, parent, p, s, label)
         self.bullet_engine=None
@@ -18,11 +18,12 @@ class DynamicsTool(estool.TextTool):
                 if isinstance(acp,BulletEngine):
                     self.bullet_engine=acp
                     break
-        self.bullet_engine.resetSimulation()
+        if self.bullet_engine is not None:
+            self.bullet_engine.resetSimulation()
         return
     pass
 
-class RGMenu(estool.SelectMenuTool):
+class RGMenu(estl.SelectMenuTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(esevt.EVT_UPDATE_MAP,self.onUpdateMap)
@@ -32,7 +33,7 @@ class RGMenu(estool.SelectMenuTool):
 
     def onUpdateMap(self,e):
         item_list=list()
-        for aro in ESC.ARO_MAP.values():
+        for aro in ESC.getFullMap():
             if type(aro)==RigidGroup:
                 item_list.append(aro.AroName)
         self.setItems(item_list)
@@ -49,7 +50,7 @@ class RGMenu(estool.SelectMenuTool):
     #     return
     pass
 
-class NewRGBtn(estool.ButtonTool):
+class NewRGBtn(estl.ButtonTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -61,7 +62,7 @@ class NewRGBtn(estool.ButtonTool):
         return
     pass
 
-class DelRGBtn(estool.ButtonTool):
+class DelRGBtn(estl.ButtonTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -72,7 +73,7 @@ class DelRGBtn(estool.ButtonTool):
         return
     pass
 
-class ConnectRGBtn(estool.ButtonTool):
+class ConnectRGBtn(estl.ButtonTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -82,7 +83,7 @@ class ConnectRGBtn(estool.ButtonTool):
         if len(esgl.ARO_SELECTION)!=2:return
         aro1=esgl.ARO_SELECTION[0]
         aro2=esgl.ARO_SELECTION[1]
-        rg_menu=estool.getToolByName('rg_menu','Dynamics')
+        rg_menu=estl.getToolByName('rg_menu','Dynamics')
         now_rg=ESC.getAroByName(rg_menu.Label)
         rg_dict=dict(now_rg.group_dict)
         if aro1.AroID not in rg_dict:
@@ -99,7 +100,7 @@ class ConnectRGBtn(estool.ButtonTool):
         return
     pass
 
-class RemoveFromRGBtn(estool.ButtonTool):
+class RemoveFromRGBtn(estl.ButtonTool):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
@@ -107,7 +108,7 @@ class RemoveFromRGBtn(estool.ButtonTool):
 
     def onClk(self,e):
         'todo'
-        rg_menu=estool.getToolByName('rg_menu','Dynamics')
+        rg_menu=estl.getToolByName('rg_menu','Dynamics')
         now_rg=ESC.getAroByName(rg_menu.Label)
         rg_dict=dict(now_rg.group_dict)
         for aro in esgl.ARO_SELECTION:

@@ -135,7 +135,7 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
                 # Input lines, inport->tar outport;
                 for Btn in node.Children:
                     # Inport position;
-                    if type(Btn)==esui.SelectBtn and Btn.portid==ip:
+                    if type(Btn)==esui.SltBtn and Btn.portid==ip:
                         nx=Btn.Position[0]
                         ny=Btn.Position[1]
                         break
@@ -150,7 +150,7 @@ class AcpCanvasPlc(wx.ScrolledCanvas):
                 newlist=list(self.Children)
                 for tarnode in newlist:
                     for tarctrl in tarnode.Children:
-                        if type(tarctrl)==esui.SelectBtn:
+                        if type(tarctrl)==esui.SltBtn:
                             if tarnode.acp.AcpID==tarid and tarctrl.portid==tarport:
                                 tny=tarctrl.Position[1]
                                 break

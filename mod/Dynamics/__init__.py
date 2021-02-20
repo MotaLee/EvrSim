@@ -12,20 +12,18 @@ from .bullet import BulletEngine
 # MOD INDEX
 MOD_NAME='Dynamics'
 MOD_VER='0.0.6'
-MOD_SETTING={}
+MOD_PERF={}
 ARO_INDEX=['MassPoint','PointForce','Moment','Ground','Constraint','PlaneGnd','MassCube','ForceField']
 ACP_INDEX=['IPE','CPE','BulletEngine']
-TOOL_INDEX=['new_obj','new_acp','rg_menu','new_rg','del_rg','connect_rg','remove_rg']
 MODEL_INDEX=['ug','PM1','PM2','PM3']
 TP=None
 
 # Tool preset;
-# Tool variable name need to add to TOOL_INDEX;
 if ESC.ES_APP!='EST':
-    if esui.ARO_PLC is None:raise ESC.bug('Leak of reliabilities.')
+    if esui.ARO_PLC is None:raise ESC.err('Leak of reliabilities.')
 
     yu=esui.YU
-    TP=esui.TOOL_PLC.getModTab('Dynamics')
+    TP=esui.TOOL_PLC.getTab('Dynamics')
     psx=esui.TOOL_PLC.Size[0]
     dynamic_tool=DynamicsTool('dynamic_tool',TP,(yu,yu),(8*yu,4*yu),'Dynamics')
     new_obj=AroMenu('new_Obj',TP,(yu,6*yu),(8*yu,4*yu),'New Obj',ARO_INDEX)

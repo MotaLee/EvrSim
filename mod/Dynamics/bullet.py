@@ -20,7 +20,7 @@ class BulletEngine(AcpExecutor):
 
     def postProgress(self, datadict):
         force_allfield=np.array([0,0,0])
-        for aro in ESC.ARO_MAP.values():
+        for aro in ESC.getFullMap():
             if isinstance(aro,RigidBody):
                 if aro.AroID not in self.arobodys:self.createBody(aro)
             elif isinstance(aro,ForceField):
@@ -57,7 +57,7 @@ class BulletEngine(AcpExecutor):
 
     def createBody(self,aro,cubic=True):
         shift=[0,0,0]
-        adplist=esgl.ADP_DICT[aro.AroID]
+        adplist=esgl.DICT_ADP[aro.AroID]
         if len(adplist)==1:
             size=esgl.getAABB(adplist[0],False)
             scale=getattr(aro,'size',[1,1,1])

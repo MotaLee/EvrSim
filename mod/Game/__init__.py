@@ -14,17 +14,15 @@ from .adp import MeshObj
 # Mod index and global var;
 MOD_NAME='Game'
 MOD_VER='0.0.1'
-MOD_SETTING={}
+MOD_PERF={}
 ARO_INDEX=['MeshObject']
 ACP_INDEX=[]
-TOOL_INDEX=['new_obj','new_acp','run_btn','time_txt','rst_btn','real_time']
 MODEL_INDEX=[]
 TP=None
 # Tool preset;
-# Tool variable name need to add to TOOL_INDEX;
 if ESC.ES_APP!='EST':
-    if esui.ARO_PLC is None: ESC.bug('Leak of reliabilities.')
-    TP=esui.TOOL_PLC.getModTab(MOD_NAME)
+    if esui.ARO_PLC is None: ESC.err('Leak of reliabilities.')
+    TP=esui.TOOL_PLC.getTab(MOD_NAME)
 if TP is not None:
     yu=esui.YU
     new_obj=AC.AroMenu('new_obj',TP,(yu,yu),(8*yu,4*yu),'New obj',ARO_INDEX)

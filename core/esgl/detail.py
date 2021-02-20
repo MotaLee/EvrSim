@@ -11,7 +11,7 @@ class DetailDialog(esui.EsDialog):
         self.plc_port=esui.ScrolledPlc(self,(self.Size.x/2+0.5*yu,6*yu),
             (self.Size.x/2-1.5*yu,self.Size[1]-12*yu),
             border={'all':esui.COLOR_ACTIVE})
-        self.btn_move=esui.BorderlessBtn(self,(self.Size.x-5*yu,yu),(yu,yu),'=')
+        self.btn_move=esui.Btn(self,(self.Size.x-5*yu,yu),(yu,yu),'=',option={'border':False})
         if type(aro)==int:aro=ESC.getAcp(aro)
         self.aro=aro
         self.showDetail()
@@ -24,7 +24,7 @@ class DetailDialog(esui.EsDialog):
                 v=ctrl.GetValue()
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
-            elif type(ctrl)==esui.SelectBtn:
+            elif type(ctrl)==esui.SltBtn:
                 v_eval=ctrl.GetValue()
             elif type(ctrl)==esui.Btn and hasattr(ctrl,'value'):
                 v_eval=ctrl.value
@@ -64,7 +64,7 @@ class DetailDialog(esui.EsDialog):
                 tb2.Bind(wx.EVT_LEFT_DOWN,self.onChangeTarget)
                 tb3.Bind(wx.EVT_LEFT_DOWN,self.onRemoveTarget)
             elif type(v)==bool:
-                esui.SelectBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
+                esui.SltBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
             else:
                 esui.InputText(DP,(14*yu,(i*4+0.5)*yu),
                     (DP.Size[0]-15*yu,3.5*yu),hint=str(v),cn=k,exstl=stl)
