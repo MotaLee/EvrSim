@@ -31,7 +31,7 @@ class DetailDialog(esui.EsDialog):
             else:continue
             set_dict[ctrl.Name]=v_eval
         ESC.setAro(self.aro.AroID,set_dict)
-        esui.ARO_PLC.readMap()
+        esui.IDX.MAP_DIV.readMap()
         self.EndModal(1)
         return
 

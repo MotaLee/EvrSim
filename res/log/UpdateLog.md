@@ -3,6 +3,22 @@
 ---
 ## Details
 
+### 0.0.14 - 2021/03/03
+
+* App:
+    * EST: Rewrited EST as a class 'ESTerminal';
+    * Added lauching custom app in main file;
+* esui:
+    * Added new class 'Index' and attr 'IDX';
+* esc:
+    * Added a class 'CoreStatus' and fixed 'CORE_STAUS' to 'CORE_STATUS';
+    * Moved class 'Acp' from AroCore to ESC;
+    * Restructed all Acp massively. Only model (Dynamics,ug)/(Complict,col-1) had been tested;
+    * Removed attribute 'SIM_FD'/'REFERENCE', etc.;
+    * Renamed folder 'model' in sim to 'mdl';
+* estl:
+    * Intergrated estab/esmdl;
+
 ### 0.0.13 - 2021/02/20
 
 * Mod:

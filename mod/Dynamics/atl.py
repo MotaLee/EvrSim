@@ -8,7 +8,7 @@ class DynamicsTool(estl.TextTool):
     def __init__(self, name, parent, p, s, label):
         super().__init__(name, parent, p, s, label)
         self.bullet_engine=None
-        esui.TOOL_PLC.regToolEvent(self)
+        esui.IDX.TOOL_DIV.regToolEvent(self)
         self.Bind(esevt.EVT_RESET_SIM,self.onResetSim)
         return
 
@@ -28,7 +28,7 @@ class RGMenu(estl.SelectMenuTool):
         super().__init__(name,parent,p,s,label)
         self.Bind(esevt.EVT_UPDATE_MAP,self.onUpdateMap)
         # self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClk)
-        esui.TOOL_PLC.regToolEvent(self)
+        esui.IDX.TOOL_DIV.regToolEvent(self)
         return
 
     def onUpdateMap(self,e):

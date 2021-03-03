@@ -12,7 +12,7 @@ ACP_INDEX=[]
 MODEL_INDEX=[]
 # Tool preset;
 yu=esui.YU
-TP=esui.TOOL_PLC.getTab('STS')
+TP=esui.IDX.TOOL_DIV.getModTab('STS')
 TPY=TP.Size.y
 btn_run=RunSimBtn('btn_run',TP,(yu,yu),(9*yu,9*yu),'▶')
 btn_rst=ResetMapBtn('btn_rst',TP,(11*yu,yu),(8*yu,4*yu),'重置')

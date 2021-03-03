@@ -48,7 +48,7 @@ class AuxDisTool(estl.UIGLTool):
 
         self.Bind(esevt.EVT_RESET_SIM,self.onResetSim)
         self.Bind(esevt.EVT_SIM_CIRCLED,self.onSimCircled)
-        esui.ARO_PLC.regToolEvent(self)
+        esui.IDX.MAP_DIV.regToolEvent(self)
         self.Hide()
         return
 

@@ -3,7 +3,7 @@ import numpy as np
 from core import esc as ESC
 inf=np.inf
 def getAro(aroid,queue=-1):
-    'Lv1: Get Aro by ID. Return Aro if succeed, None if failed;'
+    'Get Aro by ID. Return Aro if succeed, None if failed.'
     if queue==-1:aromap=ESC.ARO_MAP
     else:aromap=ESC.MAP_QUEUE[queue]
     if aroid in aromap:

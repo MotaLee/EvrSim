@@ -162,7 +162,7 @@ class TabBtn(wx.ToggleButton):
         return
 
     def onClk(self,e):
-        # if ESC.SIM_FD is None:return
+        # if not ESC.isSimOpened():return
         self.SetValue(True)
         for ctrl in self.Parent.Children:
             if type(ctrl)==TabBtn and ctrl!=self:

@@ -1,13 +1,8 @@
-import sys,os
-sys.path.append(os.getcwd()+'\\res\\lib')
 import _pybullet as pb
 import numpy as np
-# import _glm as glm
-# from interval import Interval as Itv
 from core import ESC,esgl
-from mod.AroCore import AcpExecutor
 from .aro import RigidBody,ForceField
-class BulletEngine(AcpExecutor):
+class BulletEngine(ESC.AcpExecutor):
     def __init__(self):
         super().__init__()
         # self.Client = pb.connect(pb.GUI)    # or p.DIRECT for non-graphical version
@@ -18,7 +13,7 @@ class BulletEngine(AcpExecutor):
         pb.setTimeStep(1/esgl.FPS)
         return
 
-    def postProgress(self, datadict):
+    def execute(self):
         force_allfield=np.array([0,0,0])
         for aro in ESC.getFullMap():
             if isinstance(aro,RigidBody):

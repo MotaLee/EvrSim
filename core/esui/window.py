@@ -33,19 +33,19 @@ class EsWindow(wx.Frame):
         if self.gl_timer.IsRunning():
             self.gl_timer.Stop()
         else:
-            if ESC.CORE_STAUS=='STOP':ESC.CORE_STAUS='READY'
+            if ESC.CORE_STATUS.isStop():ESC.CORE_STATUS.setReady()
             from core import esgl
             self.gl_timer.Start(int(1000/esgl.FPS))
         return
 
     def onRunSimTimer(self,e):
-        if ESC.CORE_STAUS=='STOP':
+        if ESC.CORE_STATUS.isStop():
             self.gl_timer.Stop()
-            esui.ARO_PLC.readMap()
-        elif ESC.CORE_STAUS=='BUSY':
+            esui.IDX.MAP_DIV.readMap()
+        elif ESC.CORE_STATUS.isBusy():
             return
-        elif ESC.CORE_STAUS=='READY':
-            esui.ARO_PLC.readMap()
+        elif ESC.CORE_STATUS.isReady():
+            esui.IDX.MAP_DIV.readMap()
             # s=time.time()
             ESC.runCompiledSim()
             esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_SIM_CIRCLED)
@@ -65,16 +65,5 @@ class EsWindow(wx.Frame):
         if not isinstance(e.EventObject,wx.TextCtrl):
             esevt.sendEvent(esevt.ETYPE_COMEVT,[esevt.ETYPE_KEY_DOWN,e])
         e.Skip()
-        return
-    pass
-
-class ESCThread(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        return
-
-    def run(self):
-        ESC.runSim()
-        # ESC.runCompiledSim()
         return
     pass

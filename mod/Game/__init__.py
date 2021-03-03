@@ -20,9 +20,10 @@ ACP_INDEX=[]
 MODEL_INDEX=[]
 TP=None
 # Tool preset;
-if ESC.ES_APP!='EST':
-    if esui.ARO_PLC is None: ESC.err('Leak of reliabilities.')
-    TP=esui.TOOL_PLC.getTab(MOD_NAME)
+if esui.IDX.TOOL_DIV is not None:
+    if not esui.IDX.hasIndex('MAP_DIV'):
+        ESC.err('Leak of reliabilities.')
+    TP=esui.IDX.TOOL_DIV.getTab(MOD_NAME)
 if TP is not None:
     yu=esui.YU
     new_obj=AC.AroMenu('new_obj',TP,(yu,yu),(8*yu,4*yu),'New obj',ARO_INDEX)

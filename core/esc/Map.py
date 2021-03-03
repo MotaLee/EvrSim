@@ -4,7 +4,7 @@ from core import esc as ESC
 inf=np.inf
 
 def newMapFile(mapname):
-    if ESC.SIM_FD is None:return ESC.err('Sim not opened.')
+    if not ESC.isSimOpened():return ESC.err('Sim not opened.')
     if mapname not in ESC.MAP_LIST:
         saveMapFile()
         ESC.MAP_LIST.append(mapname)
@@ -17,7 +17,7 @@ def newMapFile(mapname):
 
 def loadMapFile(mapname=''):
     ''' Read existed map.py;'''
-    if ESC.SIM_FD is None:ESC.err('Sim not opened.')
+    if not ESC.isSimOpened():ESC.err('Sim not opened.')
     if mapname=='': mapname=ESC.MAP_ACTIVE
     else: ESC.MAP_ACTIVE=mapname
     ESC.ARO_MAP=dict()
@@ -40,7 +40,7 @@ def loadMapFile(mapname=''):
 
 def saveMapFile(mapname=''):
     'Lv1: Update map;'
-    if ESC.SIM_FD is None: return ESC.err('Sim not opened.')
+    if not ESC.isSimOpened(): return ESC.err('Sim not opened.')
     if mapname=='': mapname=ESC.MAP_ACTIVE
     # Build index and key dict;
     key_dict=dict()
@@ -72,7 +72,7 @@ def saveMapFile(mapname=''):
 
 def renameMapFile(mapname='',newname='NewMap'):
     'Lv1: Rename map;'
-    if ESC.SIM_FD is None: return ESC.err('Sim not opened.')
+    if not ESC.isSimOpened(): return ESC.err('Sim not opened.')
     ESC.saveSim()
     if mapname=='': mapname=ESC.MAP_ACTIVE
     ESC.MAP_ACTIVE=newname

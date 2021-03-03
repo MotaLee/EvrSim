@@ -1,6 +1,5 @@
 # Libs;
 import wx
-from core import esui
 # Event type;
 ETYPE_COMEVT = wx.NewEventType()
 ETYPE_NEW_SIM = wx.NewEventType()
@@ -60,11 +59,12 @@ class EvrSimEvent(wx.PyCommandEvent):
 
 def sendEvent(etype,args=None,target=None):
     ''' Para target: None for wxmw main window;'''
+    from core import esui
     evt =EvrSimEvent(etype,-1)
     evt.SetEventArgs(args)
     if target is None:
-        esui.WXMW.GetEventHandler().ProcessEvent(evt)
-        for plc in esui.WXMW.Children:
+        esui.IDX.ESMW.GetEventHandler().ProcessEvent(evt)
+        for plc in esui.IDX.ESMW.Children:
             plc.GetEventHandler().ProcessEvent(evt)
     else:target.ProcessEvent(evt)
     return

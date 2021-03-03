@@ -46,8 +46,8 @@ class EsTree(object):
             tmp=dict(v.__dict__)
             if not savedata:del tmp['data']
             dict_out[k]=tmp
-        dict_out=json.dumps(dict_out,indent=4,ensure_ascii=False)
-        dict_out=str(dict_out).replace('null','None')
+        # dict_out=json.dumps(dict_out,indent=4,ensure_ascii=False)
+        # dict_out=str(dict_out).replace('null','None')
         return str(dict_out)
 
     def getNode(self,index):
@@ -179,4 +179,25 @@ class Aro(object):
     def onDel(self):
         ''' This method will be called in ESC.delAro'''
         return
+    pass
+
+
+class CoreStatus(object):
+    def __init__(self) -> None:
+        self.value=0    # Enum for ['READY':0,'BUSY':1,'STOP':2,'STEP':3];
+        return
+
+    def isReady(self):
+        return self.value==0
+    def isBusy(self):
+        return self.value==1
+    def isStop(self):
+        return self.value==2
+
+    def setReady(self):
+        self.value=0
+    def setBusy(self):
+        self.value=1
+    def setStop(self):
+        self.value=2
     pass

@@ -1,2 +1,0 @@
-ARO_INDEX=[]
-KEY_DICT={}

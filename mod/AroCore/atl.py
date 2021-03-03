@@ -50,7 +50,7 @@ class AcpMenu(estl.CreateMenuTool):
     def onClkPopup(self,e):
         self.HidePopup()
         acpclass='mod.'+self.mod_name+'.'+self.items[self.popup.ipos]
-        esui.ACP_PLC.addAcpNode(acpclass)
+        esui.IDX.MDL_DIV.addAcpNode(acpclass)
         return
     pass
 
@@ -61,7 +61,7 @@ class RunSimBtn(estl.ToggleTool):
         return
 
     def onClk(self,e):
-        esevt.sendEvent(esevt.ETYPE_RUN_SIM,target=esui.WXMW)
+        esevt.sendEvent(esevt.ETYPE_RUN_SIM,target=esui.IDX.ESMW)
         time_txt=estl.getToolByName('time_txt','AroCore')
         real_time=estl.getToolByName('real_time','AroCore')
         if time_txt is not None:
@@ -105,7 +105,7 @@ class SimTimeText(estl.TextTool):
         return
 
     def onTimer(self,e):
-        if ESC.CORE_STAUS=='STOP':
+        if ESC.CORE_STATUS.isStop():
             self.timer.Stop()
             estl.getToolByName('run_btn','AroCore').SetValue(False)
             return
@@ -141,7 +141,7 @@ class RealTimeText(estl.TextTool):
         return
 
     def onTimer(self,e):
-        if ESC.CORE_STAUS=='STOP':
+        if ESC.CORE_STATUS.isStop():
             self.timer.Stop()
             return
         if self.timer.IsRunning():
@@ -177,7 +177,7 @@ class ALibsBtn(estl.ButtonTool):
     def onClk(self,e):
         if self.show_lib:return
         else:self.show_lib=True
-        self.tab=esui.SIDE_PLC.getTab('ALibs')
+        self.tab=esui.IDX.SIDE_DIV.getTab('ALibs')
         # self.tab.SetBackgroundColour(esui.COLOR_LBACK)
         tx=self.tab.Size.x
         ty=self.tab.Size.y
@@ -202,7 +202,7 @@ class ALibsBtn(estl.ButtonTool):
             aro=ESC.addAro(classname)
             ESC.setAro(aro.AroID,{'AroName':'New Aro'})
             esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
-        else:esui.ACP_PLC.addAcpNode(classname)
+        else:esui.IDX.MDL_DIV.addAcpNode(classname)
         return
     pass
 

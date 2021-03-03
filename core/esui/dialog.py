@@ -234,11 +234,11 @@ class MapDialog(EsDialog):
                 return
         if self.operation=='New':
             ESC.newMapFile(map_name)
-            esui.SIDE_PLC.loadMaps()
+            esui.IDX.SIDE_DIV.loadMaps()
             esui.toggleWorkspace(target='ARO')
         elif self.operation=='Rename':
             ESC.renameMapFile(newname=map_name)
-            esui.SIDE_PLC.loadMaps()
+            esui.IDX.SIDE_DIV.loadMaps()
         elif self.operation=='Saveas':
             pass
         self.EndModal(1)
@@ -265,7 +265,7 @@ class ModelDialog(EsDialog):
         self.nametcc.Bind(wx.EVT_LEFT_DOWN,self.onClkNameTcc)
         self.warnstc.Hide()
         if operation!='New':
-            self.nametcc.SetValue(esui.ACP_PLC.model_tuple[1])
+            self.nametcc.SetValue(esui.IDX.MDL_DIV.model_tuple[1])
         return
 
     def onConfirm(self,e):
@@ -278,12 +278,12 @@ class ModelDialog(EsDialog):
                 return
         if self.operation=='New':
             ESC.newModelFile(model_name)
-            esui.SIDE_PLC.loadModels()
+            esui.IDX.SIDE_DIV.loadModels()
             esui.toggleWorkspace(target='ACP')
-            esui.ACP_PLC.drawAcp((ESC.SIM_NAME,model_name))
+            esui.IDX.MDL_DIV.drawMdl((ESC.SIM_NAME,model_name))
         elif self.operation=='Rename':
-            ESC.renameModelFile(mdlname=esui.ACP_PLC.model_tuple[1],newname=model_name)
-            esui.SIDE_PLC.loadModels()
+            ESC.renameModelFile(mdlname=esui.IDX.MDL_DIV.model_tuple[1],newname=model_name)
+            esui.IDX.SIDE_DIV.loadModels()
         elif self.operation=='Saveas':
             pass
         self.EndModal(1)

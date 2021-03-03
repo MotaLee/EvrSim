@@ -1,13 +1,13 @@
 from core import esui
-def toggleWorkspace(target=''):
+def toggleWorkspace(target=None):
     if target is None:
-        status=esui.ARO_PLC.IsShown()
+        status=esui.IDX.MAP_DIV.IsShown()
     else:status=False
     if status or target=='ACP':
-        esui.ARO_PLC.Hide()
-        esui.ACP_PLC.Show()
-        esui.ACP_PLC.drawConnection()
+        esui.IDX.MAP_DIV.Hide()
+        esui.IDX.MDL_DIV.Show()
+        esui.IDX.MDL_DIV.drawConnection()
     elif not status or target=='ARO':
-        esui.ARO_PLC.Show()
-        esui.ACP_PLC.Hide()
+        esui.IDX.MAP_DIV.Show()
+        esui.IDX.MDL_DIV.Hide()
     return

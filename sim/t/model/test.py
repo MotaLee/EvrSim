@@ -1,9 +1,0 @@
-ACP_INDEX=[1, 2, 3, 4, 5, 6, 14]
-KEY_DICT={1: 'AcpID', 2: 'AcpClass', 3: 'position', 4: 'fixIO', 5: 'port', 6: 'inport', 7: 'outport', 8: 'AcpName', 9: 'desc', 10: 'static', 11: 'expression', 12: 'item', 13: 'current', 14: 'start', 15: 'step', 16: 'end', 17: 'default'}
-Acp_1={1: 1, 2: 'mod.AroCore.acp.AcpProvider', 3: [114, 95], 4: 'Both', 5: {1: 'in'}, 6: {1: (2, 0)}, 7: {}, 8: 'm2', 9: '', 10: False, 11: "ARO.AroName=='m2'", 12: 'position'}
-Acp_2={1: 2, 2: 'mod.AroCore.acp.AcpPMTD', 3: [261, 88], 4: 'Out', 5: {0: 'out r', 1: 'in a', 2: 'in b', 3: 'in c'}, 6: {1: (4, 1), 2: (5, 1), 3: (3, 1)}, 7: {0: [(1, 1)]}, 8: 'New Acp', 9: '', 10: False, 11: 'a+b*c', 12: 'position'}
-Acp_3={1: 3, 2: 'mod.AroCore.acp.AcpIterator', 3: [586, 371], 4: 'Both', 5: {1: 'step out', 2: 'current out'}, 6: {}, 7: {1: [(2, 3), (14, 3)], 2: []}, 8: 'New Acp', 9: '', 10: False, 11: 'a+b*c', 12: 'time', 13: 17.50000000000003, 14: 0, 15: 0.1, 16: 1}
-Acp_4={1: 4, 2: 'mod.AroCore.acp.AcpSelector', 3: [591, 234], 4: 'Both', 5: {1: 'out'}, 6: {}, 7: {1: [(2, 1), (14, 2)]}, 8: 'p_m2', 9: '', 10: False, 11: 'ARO==SELF_ARO', 12: 'position', 13: 17.50000000000003, 14: 0, 15: 0.1, 16: 1, 17: 0}
-Acp_5={1: 5, 2: 'mod.AroCore.acp.AcpSelector', 3: [579, 77], 4: 'Both', 5: {1: 'out'}, 6: {}, 7: {1: [(2, 2), (14, 1)]}, 8: 'v_m2', 9: '', 10: False, 11: 'ARO==SELF_ARO', 12: 'velocity', 13: 17.50000000000003, 14: 0, 15: 0.1, 16: 1, 17: 0}
-Acp_6={1: 6, 2: 'mod.AroCore.acp.AcpProvider', 3: [106, 269], 4: 'Both', 5: {1: 'in'}, 6: {1: (14, 0)}, 7: {}, 8: 'prdr_m2_v', 9: '', 10: False, 11: "ARO.AroName=='m2'", 12: 'velocity', 13: 17.50000000000003, 14: 0, 15: 0.1, 16: 1, 17: 0}
-Acp_14={1: 14, 2: 'mod.AroCore.acp.AcpPMTD', 3: [254, 256], 4: 'Out', 5: {0: 'out r', 1: 'in a', 2: 'in b', 3: 'in c'}, 6: {1: (5, 1), 2: (4, 1), 3: (3, 1)}, 7: {0: [(6, 1)]}, 8: 'New Acp', 9: '', 10: False, 11: 'a-b*c', 12: 'velocity', 13: 17.50000000000003, 14: 0, 15: 0.1, 16: 1, 17: 0}

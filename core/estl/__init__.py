@@ -1,6 +1,8 @@
+import wx
 import mod
-from core import ESC,esui,esgl
-
+from core import ESC,esui,esgl,esevt
+yu=esui.YU
+xu=esui.XU
 
 def getToolByName(toolname,modname):
     try:
@@ -31,7 +33,7 @@ class GLTool(BaseTool):
 class UIGLTool(GLTool,esui.Plc):
     def __init__(self,name,p=(0,0),s=(0,0)):
         GLTool.__init__(self,name)
-        esui.Plc.__init__(self,esui.ARO_PLC,p,s,cn=name)
+        esui.Plc.__init__(self,esui.IDX.MAP_DIV,p,s,cn=name)
         return
     pass
 
@@ -91,5 +93,9 @@ class InputTool(BaseTool,esui.InputText):
         return
     pass
 
-from .tool_plc import ToolPlc
+from .tool_div import ToolDiv,ModTab
 from .aro_toolbar import AroToolbar
+
+from .mdl_div import MdlDiv
+
+from .side_div import SideDiv

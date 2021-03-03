@@ -4,27 +4,25 @@
 Communicate with memory and files.
 '''
 
-import os,json
+import os
 # Built-in importion;
 import mod
-from .cls import EsTree,TreeNode,Aro
+from .cls import EsTree,TreeNode,Aro,CoreStatus
 from .aro import getAro,addAro,delAro,initAro,setAro,getAroByName,sortAro
-from .Acp import getAcp,addAcp,setAcp,delAcp,initAcp,connectAcp
+# from .acp import Acp,PAcp,getAcp,addAcp,setAcp,delAcp,initAcp,cntAcp
+from .acp import *
 from .Map import newMapFile,loadMapFile,saveMapFile,renameMapFile,sortMap
-from .Mdl import newModelFile,loadModelFile,updateModelFile,getModelPath,renameModelFile
-from .Run import runSim,reqAcp,runCompiledSim,compileModel
-from .Sim import newSim,openSim,delSim,closeSim,setSim,saveSim,resetSim,SimTree
+from .mdl import newModelFile,loadModelFile,saveModelFile,getModelPath,renameModelFile
+from .run import reqAcp,runCompiledSim,compileModel,RunProcess
+from .sim import newSim,openSim,delSim,closeSim,setSim,saveSim,resetSim,SimTree
 from .Mod import loadMod,getModAttr
 # Attr;
 ES_PATH=os.getcwd()
 ES_APP=''
-CORE_STAUS='READY'     # ['READY','BUSY','STOP','STEP']
+CORE_STATUS=CoreStatus()
 SIM_NAME=''
-SIM_FD=None
 SIM_TREE:SimTree=None
 MOD_TREE_DICT=dict()
-PERFERENCE=dict()
-# Core modified;
 TIME_RATE=1
 MODEL_ENABLE=list()
 # Maps and models;
@@ -33,15 +31,12 @@ ARO_MAP=dict()
 MAP_QUEUE=list()
 MAP_ACTIVE=''
 MAP_LIST=list()
-
-ACPID_MAX=dict()    # {(modName,modelName):acpid, ...}
 ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[...]}
-STATIC_DICT=dict()      # {(modname,mdlname,acpid):datadict, ...}
 STATIC_PREPARED=False
 ACPS_PREPARED={'Providers':dict(),'Executors':dict(),'Iterators':dict()}
 DATADICT=dict()
 COMPILED_MODEL=None
-
+RUN_PROCESS=RunProcess()
 # User changeable setting;
 flag_realtime=True
 flag_record=False
@@ -58,30 +53,28 @@ SETTING_DICT={
 
 # Methods
 def initESC():
-    global CORE_STAUS,SIM_NAME,SIM_FD,SIM_TREE
-    global MOD_TREE_DICT,PERFERENCE,TIME_RATE
+    global CORE_STATUS,SIM_NAME,SIM_TREE
+    global MOD_TREE_DICT,TIME_RATE
     global MODEL_ENABLE,ARO_MAP,MAP_QUEUE,MAP_ACTIVE
-    global ACPID_MAX,ACP_MODELS,flag_realtime,flag_record,len_sim_queue
-    global max_acp_depth,len_timestep,MAP_LIST
-    CORE_STAUS='READY'
+    global ACP_MODELS,flag_realtime,flag_record,len_sim_queue
+    global max_acp_depth,len_timestep,MAP_LIST,RUN_PROCESS
+    CORE_STATUS=CoreStatus()
     SIM_NAME=''
-    SIM_FD=None
     SIM_TREE=None
     MOD_TREE_DICT=dict()
-    PERFERENCE=dict()
     TIME_RATE=1
     MODEL_ENABLE=list()
     ARO_MAP=dict()
     MAP_QUEUE=list()
     MAP_ACTIVE=''
     MAP_LIST=list()
-    ACPID_MAX=dict()
     ACP_MODELS=dict()
     flag_realtime=True
     flag_record=False
     len_sim_queue=1
     max_acp_depth=20
     len_timestep=1/30
+    RUN_PROCESS=RunProcess()
     return
 
 def info(string,level='[Info] ',record=False):
@@ -91,13 +84,22 @@ def info(string,level='[Info] ',record=False):
     return string
 
 def err(errstr,record=False):
-    'Lv0: Report error str;'
+    'Report error.'
     info(errstr,level='[Err] ',record=record)
     raise BaseException(errstr)
-    return errstr
+
+def warn(warnstr,record=False):
+    'Report warning.'
+    info(warnstr,level='[Warn] ',record=record)
+    return warnstr
 
 def getFullMap():
     return ARO_MAP.values()
 
 def isSimOpened():
     return SIM_NAME!=''
+
+def setApp(app):
+    global ES_APP
+    ES_APP=app
+    return

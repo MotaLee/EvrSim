@@ -1,7 +1,5 @@
 import wx
-from core import ESC
-from core import esui
-from core import esevt
+from core import ESC,esui,esevt
 xu=esui.XU
 yu=esui.YU
 
@@ -128,16 +126,16 @@ class HeadPlc(HeadBar):
             DlgType=esui.SettingDialog
         elif fc.ipos==5:    # Close;
             ESC.closeSim()
-            esui.SIDE_PLC.Hide()
-            esui.ARO_PLC.Hide()
-            esui.ACP_PLC.Hide()
-            esui.TOOL_PLC.Hide()
+            esui.IDX.SIDE_DIV.Hide()
+            esui.IDX.MAP_DIV.Hide()
+            esui.IDX.MDL_DIV.Hide()
+            esui.IDX.TOOL_DIV.Hide()
 
         if DlgType is not None:
             xu=esui.XU
             yu=esui.YU
-            esui.WXMW.dialog=DlgType(esui.WXMW,(20*xu,20*yu),(60*xu,60*yu))
-            esui.WXMW.dialog.ShowModal()
+            esui.IDX.ESMW.dialog=DlgType(esui.IDX.ESMW,(20*xu,20*yu),(60*xu,60*yu))
+            esui.IDX.ESMW.dialog.ShowModal()
         e.Skip()
         return
 
@@ -150,14 +148,14 @@ class HeadPlc(HeadBar):
         elif pc.ipos==1:    # Redo
             pass
         elif pc.ipos==2:    # Copy
-            if esui.ACP_PLC.IsShown():
-                esui.ACP_PLC.onKeyDown(None,operation='Copy')
+            if esui.IDX.MDL_DIV.IsShown():
+                esui.IDX.MDL_DIV.onKeyDown(None,operation='Copy')
         elif pc.ipos==3:    # Cut
-            if esui.ACP_PLC.IsShown():
-                esui.ACP_PLC.onKeyDown(None,operation='Cut')
+            if esui.IDX.MDL_DIV.IsShown():
+                esui.IDX.MDL_DIV.onKeyDown(None,operation='Cut')
         elif pc.ipos==4:    # Paste
-            if esui.ACP_PLC.IsShown():
-                esui.ACP_PLC.onKeyDown(None,operation='Paste')
+            if esui.IDX.MDL_DIV.IsShown():
+                esui.IDX.MDL_DIV.onKeyDown(None,operation='Paste')
         e.Skip()
         return
 
@@ -184,9 +182,9 @@ class HeadPlc(HeadBar):
         if pc.ipos==0:  # New;
             operation='New'
         elif pc.ipos==1:    # Rename;
-            if len(esui.ACP_PLC.model_tuple)==0:
+            if len(esui.IDX.MDL_DIV.model_tuple)==0:
                 return ESC.err('Model not opened.')
-            elif esui.ACP_PLC.model_tuple[0]!=ESC.SIM_NAME:
+            elif esui.IDX.MDL_DIV.model_tuple[0]!=ESC.SIM_NAME:
                 return ESC.err('#: Model in mod cannot be modified.')
             operation='Rename'
         elif pc.ipos==2:    # Save as;
@@ -212,8 +210,8 @@ class HeadPlc(HeadBar):
         if DlgType is not None:
             xu=esui.XU
             yu=esui.YU
-            esui.WXMW.dialog=DlgType(esui.WXMW,(20*xu,20*yu),(60*xu,60*yu))
-            esui.WXMW.dialog.ShowModal()
+            esui.IDX.ESMW.dialog=DlgType(esui.IDX.ESMW,(20*xu,20*yu),(60*xu,60*yu))
+            esui.IDX.ESMW.dialog.ShowModal()
         e.Skip()
         return
     pass

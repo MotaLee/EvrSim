@@ -7,9 +7,9 @@ yu=esui.YU
 
 class AroToolbar(estl.UIGLTool):
     def __init__(self):
-        super().__init__('AroToolbar',(0,0),(4*yu,esui.ARO_PLC.Size.y))
+        super().__init__('AroToolbar',(0,0),(4*yu,esui.IDX.MAP_DIV.Size.y))
         self.SetBackgroundColour(esui.COLOR_LBACK)
-        self.host=esui.ARO_PLC
+        self.host=esui.IDX.MAP_DIV
         self.spos=(0,0)
         self.state_select=['None','Pick']    # enum with [None, Pick, Rect, Picktop]
         self.show_tab=False
@@ -90,7 +90,7 @@ class AroToolbar(estl.UIGLTool):
 
     def onDClkGL(self,e):
         if len(esgl.ARO_SELECTION)==1:
-            esui.SIDE_PLC.showDetail(esgl.ARO_SELECTION[0].AroID)
+            esui.IDX.SIDE_DIV.showDetail(esgl.ARO_SELECTION[0].AroID)
         return
 
     def onRlsGL(self,e):
@@ -172,7 +172,7 @@ class AroToolbar(estl.UIGLTool):
     def onDClkSlct(self,e):
         if self.show_tab:return
         else:self.show_tab=True
-        self.tab=esui.SIDE_PLC.getTab('Options')
+        self.tab=esui.IDX.SIDE_DIV.getTab('Options')
         tx=self.tab.Size.x
         esui.StaticText(self.tab,(yu,yu),(12*yu,4*yu),'Selecting Options:',align='left')
         btn_con=esui.Btn(self.tab,(tx-5*yu,yu),(4*yu,4*yu),'√')
@@ -184,17 +184,17 @@ class AroToolbar(estl.UIGLTool):
             self.show_tab=False
             self.state_select=[ops[int(menu_option.Value)]]*2
             self.btn_slct.SetValue(True)
-            esui.SIDE_PLC.hideTab('Options',clear=True)
+            esui.IDX.SIDE_DIV.delTab('Options')
 
         btn_con.Bind(wx.EVT_LEFT_DOWN,onClkSlctCon)
         self.tab.Show()
         return
 
     def onClkMove(self,e):
-        if esui.ARO_PLC.moving:
-            esui.ARO_PLC.moving=False
+        if esui.IDX.MAP_DIV.moving:
+            esui.IDX.MAP_DIV.moving=False
         else:
-            esui.ARO_PLC.moving=True
+            esui.IDX.MAP_DIV.moving=True
         e.Skip()
         return
 

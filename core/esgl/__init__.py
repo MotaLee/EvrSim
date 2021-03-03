@@ -1,7 +1,8 @@
 import os,sys,ctypes,math,json
-sys.path.append(os.getcwd()+'\\res\\lib')
-os.environ['PATH']+=';'+os.getcwd()+'\\res\\lib'
-os.add_dll_directory(os.getcwd()+'\\res\\lib')
+# sys.path.append(os.getcwd()+'\\res\\lib')
+# os.environ['PATH']+=';'+os.getcwd()+'\\res\\lib'
+# sys.path.append(os.getcwd()+'\\res\\lib\\dll')
+# os.environ['PATH']+=';'+os.getcwd()+'\\res\\lib\\dll'
 import _glm as glm
 import numpy as np
 import OpenGL.GL as gl
@@ -236,8 +237,8 @@ def lookAt(ep=None,ap=None,up=None):
     return
 
 def normPos(p):
-    px=2*p[0]/esui.ARO_PLC.Size.x-1
-    py=1-2*p[1]/esui.ARO_PLC.Size.y
+    px=2*p[0]/esui.IDX.MAP_DIV.Size.x-1
+    py=1-2*p[1]/esui.IDX.MAP_DIV.Size.y
     return (px,py)
 
 def selectADP(x,y,w=6,h=6):
@@ -504,8 +505,8 @@ def drawGL():
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK,gl.GL_FILL)
             gl.glDisable(gl.GL_POLYGON_OFFSET_FILL)
             setUniform({'is_frame':0},'flags')
-    esui.ARO_PLC.SwapBuffers()
-    # for ctrl in esui.ARO_PLC.Children:
+    esui.IDX.MAP_DIV.SwapBuffers()
+    # for ctrl in esui.IDX.MAP_DIV.Children:
         # if type(ctrl)==esui.TransText:ctrl.Refresh()
     return
 

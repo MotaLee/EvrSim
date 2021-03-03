@@ -4,9 +4,6 @@ from core import ESC,esui
 Aro=ESC.Aro
 from .aro import AroPoint,AroTree,AroSpace,AroGroup
 from .aro import AroTargets,AroImage,AroField,AroLight
-from .acp import Acp,AcpConst,AcpSelector,AcpProvider,AcpIterator,AcpExecutor
-from .acp import AcpVector3,AcpDepartor3,AcpNorm
-from .acp import AcpPMTD,AcpLimitor,AcpSum,AcpCross
 
 from .adp import AdpPoint,AdpArrow,AdpImage,AdpPlane,AdpCube,AdpCS
 from .atl import AroMenu,AcpMenu,RunSimBtn,SimTimeText
@@ -25,9 +22,9 @@ MODEL_INDEX=[]
 
 TP=None
 # Tool preset;
-if ESC.ES_APP!='EST':
-    if esui.ARO_PLC is None: ESC.err('Leak of reliabilities.')
-    TP=esui.TOOL_PLC.getTab('AroCore')
+if esui.IDX.hasIndex('TOOL_DIV'):
+    if not esui.IDX.hasIndex('MAP_DIV'): ESC.err('Leak of reliabilities.')
+    TP=esui.IDX.TOOL_DIV.getModTab('AroCore')
 if TP is not None:
     yu=esui.YU
     new_aro=AroMenu('new_aro',TP,(yu,yu),(8*yu,4*yu),'New Aro',ARO_INDEX)
