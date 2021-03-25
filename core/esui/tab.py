@@ -1,23 +1,24 @@
 import wx
 from core import ESC,esui
 yu=esui.YU
-class TabDivBtn(esui.Div):
+class TabBtn(esui.Div):
     _stl={'s':(8*yu,4*yu),'bgc':esui.COLOR_BACK}
     _stl_active={'bgc':esui.COLOR_LBACK}
-    _stl_hover={'bgc':esui.COLOR_ACTIVE}
+    _stl_hover={'bgc':esui.COLOR_HOVER}
 
     def __init__(self, parent, **argkw):
         ''' Button used in TabDiv. Para `argkw` addition:
             * `close`: flag if tab can be closed*;
             * `icon`: img path*;'''
-        argkw['style'].update(self._stl)
-        argkw['hover']=self._stl_hover
-        argkw['active']=self._stl_active
+        # argkw['style'].update(self._stl)
+        # argkw['hover']=self._stl_hover
+        # argkw['active']=self._stl_active
         super().__init__(parent,**argkw)
-
         if len(self.label)>10:self.SetToolTip(self.label)
         self._flag_close=argkw.get('close',False)
-
+        self.updateStyle(style={'bgc':esui.COLOR_BACK},
+            hover={'bgc':esui.COLOR_HOVER},
+            active={'bgc':esui.COLOR_LBACK})
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
@@ -59,7 +60,7 @@ class TabDiv(esui.Div):
         ''' Add a new tab.
             * tab: tab class or None for adding a normal div;'''
         if label in self._dict_tabs:ESC.err('Tab existed.')
-        btn=TabDivBtn(self.div_btn,label=label,style={
+        btn=TabBtn(self.div_btn,label=label,style={
             'p':(len(self._list_shown_tabs)*(8*yu+1),yu)})
         if tabclass is None:tab=esui.Div(self,style=self.stl_tab)
         else:tab=tabclass(self,style=self.stl_tab)

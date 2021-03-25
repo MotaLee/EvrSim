@@ -1,8 +1,8 @@
 # import os,sys
-# sys.path.append(os.getcwd())
 import interval
 import numpy as np
 from core import ESC,esgl
+GLC=esgl.glc
 class OcTree(ESC.EsTree):
     def __init__(self):
         self.bound=100
@@ -12,7 +12,7 @@ class OcTree(ESC.EsTree):
 
     def buildTree(self,rebuild=False):
         if rebuild:self.__init__()
-        alladp=esgl.DICT_ADP.getAllAdp()
+        alladp=GLC.getAllAdp()
         for adp in alladp:
             v=getattr(adp.Aro,'velocity',[0,0,0])
             if id(adp) not in self.tree or np.linalg.norm(v,ord=1)!=0:
@@ -30,7 +30,7 @@ class OcTree(ESC.EsTree):
     def getColPairs(self,tars=list()):
         pairs=list()
         TOR=1e-4
-        if len(tars)==0:tars=esgl.DICT_ADP.getAllAdp()
+        if len(tars)==0:tars=GLC.getAllAdp()
         for adp1 in tars:
             aabb1=esgl.getAABB(adp1)
             xi=interval.Interval(aabb1[0]+TOR,aabb1[1]-TOR)

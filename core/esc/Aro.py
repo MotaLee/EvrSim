@@ -1,93 +1,80 @@
-import mod
 import numpy as np
-from core import esc as ESC
+import mod,app
 inf=np.inf
-def getAro(aroid,queue=-1):
-    'Get Aro by ID. Return Aro if succeed, None if failed.'
-    if queue==-1:aromap=ESC.ARO_MAP
-    else:aromap=ESC.MAP_QUEUE[queue]
-    if aroid in aromap:
-        ret:ESC.Aro=aromap[aroid]
-        return ret
-    else:return None
-    return
+class Aro(object):
+    ''' Core Aro class.
+        '''
+    def __init__(self):
+        self._flag={
+            'unsave':['_flag'],
+            'invisible':['_flag','AroID'],
+            'uneditable':['adp','AroClass'],
+            'longdata':['desc'],
+            'target':[],
+            'enum':[]}
+        # Preset Arove;
+        self.AroID=0
+        self.AroClass=self.__module__+'.'+type(self).__name__
+        self.adp=''
+        # User changeable Arove;
+        self.AroName=''
+        self.desc=''
+        self.enable=True
+        self.visable=True
+        return
 
-def getAroByName(aroname):
-    'Get Aro by name. Return Aro if succeed;'
-    for aro in ESC.getFullMap():
-        if aro.AroName==aroname:return aro
-    return ESC.err('Aro name not found.')
+    def onAdd(self):
+        ''' This method will be called in ESC.addAro'''
+        return
+    def onSet(self):
+        ''' This method will be called in ESC.setAro'''
+        return
+    def onDel(self):
+        ''' This method will be called in ESC.delAro'''
+        return
 
-def addAro(aroclass,aroid=0):
-    ''' Lv1: Add an Aro without initilization.
+    def addAroveFlag(self,**argkw):
+        ''' Add flag of Arove using argkw=Arove | [Arove..].
+            * Argkw unsave: Not save to map;
+            * Argkw invisible: Not display in editor;
+            * Argkw uneditble: Uneditable in editor;
+            * Argkw longdata: Dislay as longdata in editor;
+            * Argkw enum: As enum;
+            '''
+        for k,vl in argkw.items():
+            if not isinstance(vl,list):vl=[vl]
+            vchk=[v for v in vl
+                if hasattr(self,v) and v not in self._flag[k]]
+            self._flag[k]+=vchk
 
-        Return Aro if succeed;'''
-    if isinstance(aroclass,str):
-        aro:ESC.Aro=eval(aroclass+'()')
-    else:aro:ESC.Aro=aroclass()
-    if aroid==0:
-        if len(ESC.ARO_ORDER)==0:aro.AroID=1
-        else:aro.AroID=max(ESC.ARO_ORDER)+1
-    else:
-        aro.AroID=aroid
-    ESC.ARO_MAP[aro.AroID]=aro
-    if aro.AroID not in ESC.ARO_ORDER:
-        ESC.ARO_ORDER.append(aro.AroID)
-    return aro
+        return
+    pass
 
-def delAro(aro):
-    'Lv2: Return deleted Aro if succeed;'
-    if isinstance(aro,int):aro=ESC.getAro(aro)
-    aro.onDel()
-    del ESC.ARO_MAP[aro.AroID]
-    ESC.ARO_ORDER.remove(aro.AroID)
-    return aro
+class AroNode(Aro):
+    ''' Aro node with tree structure.
+        * Addition Arove: parent, children;'''
+    def __init__(self):
+        super().__init__()
+        self.parent=-1    # AroID;
+        self.children=list()    # AroID list;
+        self.addAroveFlag(invisible=['parent','children'])
+        return
+    pass
 
-def initAro(aroclass,arove):
-    'Lv3: Add an Aro with initilization;'
-    for k,v in arove.items():
-        if v=='inf':arove[k]=np.inf
-        if type(v)==list:
-            temp=list()
-            for ve in v:
-                if ve=='inf':temp.append(np.inf)
-                else:temp.append(ve)
-            arove[k]=temp
-    aro=addAro(aroclass,arove.get('AroID',0))
-    aro.onInit(arove)
-    return aro
+class AroSpace(AroNode):
+    '''Addition Arove: space_set;'''
+    def __init__(self):
+        super().__init__()
+        self._flag['invisible'].append('space_list')
+        self.space_list=list()
+        return
+    pass
 
-def setAro(aro,arove):
-    ''' Lv2: Set Arove with Arove dict.
-
-        AroID, AroClass shouldnt be set;'''
-    if isinstance(aro,int):aro=getAro(aro)
-    for k,v in arove.items():
-        if type(v)==str:
-            if v=='inf':arove[k]=np.inf
-        elif type(v)==list:
-            temp=list()
-            for ve in v:
-                if ve=='inf':temp.append(np.inf)
-                else:temp.append(ve)
-            arove[k]=temp
-        elif type(v)==np.array:
-            arove[k]=v.tolist()
-        if k not in aro.__dict__:continue
-        setattr(aro,k,v)
-    aro.onSet(arove)
-    return
-
-def sortAro(srcs,tar,direction='after'):
-    ''' Para srcs/tar: Accept Aro;'''
-    if len(srcs)==1:
-        if tar==srcs[0]:return
-    new_list=list()
-    for aro in srcs:
-        ESC.ARO_ORDER.remove(aro.AroID)
-        new_list.append(aro.AroID)
-    tar_index=ESC.ARO_ORDER.index(tar.AroID)
-    for newid in new_list:
-        ESC.ARO_ORDER.insert(tar_index+1,newid)
-    ESC.sortMap()
-    return
+class AroGroup(AroNode):
+    '''Addition Arove: link_dict;'''
+    def __init__(self):
+        super().__init__()
+        self._flag['invisible'].append('group_dict')
+        self.group_dict=dict()  # {AroID:AroID list}
+        return
+    pass

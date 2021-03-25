@@ -1,20 +1,21 @@
-import wx
 import _glm as glm
 import numpy as np
-from core import ESC,esui,esevt,esgl,estl
+from core import ESC,esui,esgl,estl
+GLC=esgl.glc
 from .tdp import TdpXyzAxis,TdpGrid,TdpViewBall,TdpTrack
 class XyzAxisTool(estl.GLTool):
-    def __init__(self,name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__()
         self.tdp=TdpXyzAxis(self)
         self.addToGL()
         return
     pass
 
 class GridTool(estl.GLTool):
-    def __init__(self,name):
-        super().__init__(name)
-        self.tdp=TdpGrid(self,'xz')
+    def __init__(self):
+        super().__init__()
+        self.tdp=TdpGrid(self)
+        self.transGrid('xz')
         self.addToGL()
         return
 
@@ -29,110 +30,98 @@ class GridTool(estl.GLTool):
     pass
 
 class ViewBallTool(estl.GLTool):
-    def __init__(self,name):
-        super().__init__(name)
+    def __init__(self):
+        super().__init__()
         self.tdp=TdpViewBall(self)
         self.addToGL()
         return
     pass
 
-class AuxDisTool(estl.UIGLTool):
-    def __init__(self,name):
-        super().__init__(name)
-        self.enable=False    # Testing,false default;
-        self.aux_list=list()    # aux is a tdp instance with dynamic attrs;
-        self.col_dict={
-            0:[1,0,0,1],
-            1:[0,1,0,1],
-            2:[0,0,1,1]}
+# class AuxTool(estl.UIGLTool):
+#     def __init__(self,name,mod):
+#         super().__init__(name,mod)
+#         self.enable=True
+#         self.aux_list=list()    # aux is a tdp instance with dynamic attrs;
+#         self.col_dict={
+#             0:[1,0,0,1],
+#             1:[0,1,0,1],
+#             2:[0,0,1,1]}
 
-        self.Bind(esevt.EVT_RESET_SIM,self.onResetSim)
-        self.Bind(esevt.EVT_SIM_CIRCLED,self.onSimCircled)
-        esui.IDX.MAP_DIV.regToolEvent(self)
-        self.Hide()
-        return
+#         self.Bind(esui.EBIND_RESET_SIM,self.onResetSim)
+#         self.Bind(esui.EBIND_STEP_SIM,self.onSimCircled)
+#         esui.UMR.MAP_DIV.regToolEvent(self)
+#         self.Hide()
+#         return
 
-    def onResetSim(self,e):
-        if not self.enable:return
-        for aux in self.aux_list:
-            if type(aux)==TdpTrack:
-                aux.__init__(self)
-        esgl.DICT_TDP.add(self.fullname,self.aux_list)
-        esgl.drawGL()
-        return
+#     def onResetSim(self,e):
+#         if not self.enable:return
+#         for aux in self.aux_list:
+#             if type(aux)==TdpTrack:
+#                 aux.__init__(self)
+#         GLC.addTdp(self.fullname,self.aux_list)
+#         GLC.drawGL()
+#         return
 
-    def onSimCircled(self,e):
-        if not self.enable:return
-        p_aro_list=list()
-        for aro in ESC.getFullMap():
-            if hasattr(aro,'position'):
-                p_aro_list.append(aro)
+#     def onSimCircled(self,e):
+#         if not self.enable:return
+#         p_aro_list=list()
+#         for aro in ESC.getFullMap():
+#             if hasattr(aro,'position'):
+#                 p_aro_list.append(aro)
 
-        for aro in p_aro_list:
-            hasaux=False
-            for aux in self.aux_list:
-                if aux.aroid==aro.AroID:
-                    if len(aux.VA)==0:continue
-                    hasaux=True
-                    aux.alive=True
-                    vtx=np.array([aro.position+self.col_dict[aux.col]],dtype=np.float32)
+#         for aro in p_aro_list:
+#             aro:ESC.Aro
+#             hasaux=False
+#             for aux in self.aux_list:
+#                 if isinstance(aux,TdpTrack) and aux.aroid==aro.AroID:
+#                     if len(aux.VA)==0:continue
+#                     hasaux=True
+#                     aux.flag_alive=True
+#                     vtx=np.array([aro.position+self.col_dict[aux.col]],dtype=np.float32)
 
-                    if (vtx==aux.VA[-1]).all():continue
-                    aux.VA=np.append(aux.VA,vtx,axis=0)
-                    if len(aux.VA)<50:
-                        if len(aux.EA)==0:
-                            if len(aux.VA)>=2:
-                                aux.EA=np.append(aux.EA,np.array([0,1],dtype=np.uint32))
-                        else:
-                            aux.EA=np.append(aux.EA,np.array([aux.EA[-1],aux.EA[-1]+1],dtype=np.uint32))
-                    else:
-                        aux.VA=np.delete(aux.VA,0,axis=0)
-                    break
-            if not hasaux:
-                aux=TdpTrack(self)
-                aux.aroid=aro.AroID
-                aux.alive=True
-                aux.col=aux.aroid % len(self.col_dict)
-                aux.VA=np.array([aro.position+self.col_dict[aux.col]],dtype=np.float32)
+#                     if (vtx==aux.VA[-1]).all():continue
+#                     aux.VA=np.append(aux.VA,vtx,axis=0)
+#                     if len(aux.VA)<50:
+#                         if len(aux.EA)==0:
+#                             if len(aux.VA)>=2:
+#                                 aux.EA=np.append(aux.EA,np.array([0,1],dtype=np.uint32))
+#                         else:
+#                             aux.EA=np.append(aux.EA,np.array([aux.EA[-1],aux.EA[-1]+1],dtype=np.uint32))
+#                     else:aux.VA=np.delete(aux.VA,0,axis=0)
+#                     break
+#             if not hasaux:
+#                 aux=TdpTrack(self)
+#                 aux.aroid=aro.AroID
+#                 aux.col=aux.aroid % len(self.col_dict)
+#                 aux.VA=np.array([aro.position+self.col_dict[aux.col]],dtype=np.float32)
+#                 self.aux_list.append(aux)
 
-                self.aux_list.append(aux)
+#         alive_list=list()
+#         for aux in self.aux_list:
+#             if aux.flag_alive:
+#                 aux.flag_update=True
+#                 alive_list.append(aux)
+#         self.aux_list=alive_list
+#         GLC.addTdp(self.fullname,self.aux_list)
+#         return
 
-        alive_list=list()
-        for aux in self.aux_list:
-            if aux.alive:
-                aux._is_modified=True
-                alive_list.append(aux)
-        self.aux_list=alive_list
-        esgl.DICT_TDP.add(self.fullname,self.aux_list)
-        return
+#     pass
 
-    def toggleDis(self,enable=True):
-        self.enable=enable
-        for aux in self.aux_list:
-            aux.visible=self.enable
-        return
-
-    pass
-
-class MainSwitch(estl.ToggleTool):
-    def __init__(self,name,parent,p,s):
-        super().__init__(name,parent,p,s,'√',select=True)
-        self.xyz_axis=None
-        self.view_ball=None
-        self.grid=None
-        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class DisplaySwitch(estl.ToggleButton):
+    def __init__(self,parent,name,mod,**argkw):
+        super().__init__(parent,name,mod,**argkw)
+        self.Bind(esui.EBIND_LEFT_CLK,self.onClk)
         return
 
     def onClk(self,e):
-        if self.xyz_axis is None:
-            self.xyz_axis=estl.getToolByName('xyz_axis','AroPlot')
-            self.view_ball=estl.getToolByName('view_ball','AroPlot')
-            self.grid=estl.getToolByName('grid','AroPlot')
-
-        self.xyz_axis.tdp.visible=not self.xyz_axis.tdp.visible
-        self.grid.tdp.visible=not self.grid.tdp.visible
-        self.view_ball.tdp.visible=not self.view_ball.tdp.visible
         e.Skip()
-        esgl.drawGL()
+        from . import xyz_axis,grid,view_ball
+        if self.label=='All':
+            xyz_axis.tdp.visible=not xyz_axis.tdp.visible
+            grid.tdp.visible=not grid.tdp.visible
+            view_ball.tdp.visible=not view_ball.tdp.visible
+        if self.label=='Trc':
+            pass
+        GLC.drawGL()
         return
     pass

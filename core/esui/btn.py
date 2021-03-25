@@ -21,13 +21,13 @@ class Btn(wx.Button):
         self.Bind(wx.EVT_PAINT,self.onPaint)
         self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
-        self.Bind(wx.EVT_LEFT_DCLICK,lambda e: None)
+        self.Bind(esui.EBIND_LEFT_DCLK,lambda e: None)
         return
 
     def onPaint(self,e):
         dc = wx.PaintDC(self)
         if self._flag_hover:
-            dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
+            dc.SetBrush(wx.Brush(esui.COLOR_HOVER))
         elif self.option['border']:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         else:
@@ -46,7 +46,7 @@ class Btn(wx.Button):
             dc.DrawRectangle(self.Size[0]-5,self.Size[1]-6,4,4)
 
         if self.flag_enable: dc.SetTextForeground(esui.COLOR_TEXT)
-        else: dc.SetTextForeground(esui.COLOR_ACTIVE)
+        else: dc.SetTextForeground(esui.COLOR_HOVER)
         tsize=dc.GetTextExtent(self.Label)
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -86,7 +86,7 @@ class SltBtn(wx.ToggleButton):
         self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.Bind(wx.EVT_LEFT_DCLICK,lambda e: None)
+        self.Bind(esui.EBIND_LEFT_DCLK,lambda e: None)
         return
 
     def onClk(self,e):
@@ -105,7 +105,7 @@ class SltBtn(wx.ToggleButton):
         if self.Value:
             dc.SetBrush(wx.Brush(esui.COLOR_FRONT))
         elif self._flag_hover:
-            dc.SetBrush(wx.Brush(esui.COLOR_ACTIVE))
+            dc.SetBrush(wx.Brush(esui.COLOR_HOVER))
         elif self.option['border']:
             dc.SetBrush(wx.Brush(esui.COLOR_BACK))
         else:
@@ -125,7 +125,7 @@ class SltBtn(wx.ToggleButton):
 
         if self.Value:dc.SetTextForeground(esui.COLOR_BACK)
         elif self.flag_enable: dc.SetTextForeground(esui.COLOR_TEXT)
-        else: dc.SetTextForeground(esui.COLOR_ACTIVE)
+        else: dc.SetTextForeground(esui.COLOR_HOVER)
         tsize=dc.GetTextExtent(self.Label)
         dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
         return
@@ -143,54 +143,61 @@ class SltBtn(wx.ToggleButton):
         return
     pass
 
-# Tab Btn wx sub class;
-class TabBtn(wx.ToggleButton):
-    ''' Label of Btn and its tab must be the same.'''
-    def __init__(self,parent,p,s,tablabel,cn=''):
-        wx.ToggleButton.__init__(self,parent,
-            pos=p,
-            size=s,
-            label=tablabel,
-            name=cn,
-            style=wx.NO_BORDER)
-        self._flag_hover=False
-        self.SetBackgroundColour(esui.COLOR_BACK)
-        self.Bind(wx.EVT_PAINT,self.onPaint)
-        self.Bind(wx.EVT_ENTER_WINDOW,self.onEnter)
-        self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
-        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+class DivBtn(esui.Div):
+    ''' Button using div.'''
+    def __init__(self, parent: wx.Window, **argkw):
+        ''' Para:
+            * Argkw enable: True default;'''
+        super().__init__(parent, **argkw)
+        self._flag_enable=argkw.get('enable',True)
+        self.updateStyle(
+            style={'bgc':esui.COLOR_BACK,'border':argkw['style'].get('border',esui.COLOR_FRONT)},
+            hover={'bgc':esui.COLOR_HOVER},
+            active={'bgc':esui.COLOR_FRONT,'text':esui.COLOR_BLACK})
         return
 
-    def onClk(self,e):
-        # if not ESC.isSimOpened():return
-        self.SetValue(True)
-        for ctrl in self.Parent.Children:
-            if type(ctrl)==TabBtn and ctrl!=self:
-                ctrl.SetValue(False)
-            if isinstance(ctrl,(wx.Panel,wx.ScrolledWindow)):
-                if ctrl.GetLabel()==self.GetLabel():
-                    ctrl.Show()
-                else: ctrl.Hide()
+    def setEnable(self, flag: bool=None):
+        ''' Set div of enable. Div can be active If enable.
+            Return if enable.
+            * Para flag: None default for toggling;'''
+        if flag is None:
+            self._flag_enable=not self._flag_enable
+        else:
+            self._flag_enable=flag
+            if flag:
+                self.updateStyle(style={'text':esui.COLOR_TEXT})
+            else:
+                self.updateStyle(style={'text':esui.COLOR_LBACK})
+        self.Refresh()
+        return self._flag_enable
+
+    def setActive(self, active=None) -> bool:
+        if self._flag_enable:
+            return super().setActive(active=active)
         return
 
-    def onPaint(self,e):
-        dc = wx.PaintDC(self)
-        if self.GetValue(): pw=8
-        else:pw=1
-        dc.SetPen(wx.Pen(esui.COLOR_FRONT,width=pw))
-        dc.DrawLine(0,self.Size[1]-1,self.Size[0],self.Size[1]-1)
-        dc.SetTextForeground(esui.COLOR_TEXT)
-        tsize=dc.GetTextExtent(self.GetLabel())
-        dc.DrawText(self.GetLabel(),(self.Size[0]-tsize[0])/2,(self.Size[1]-tsize[1])/2)
+    def _onEnter(self, e: wx.Event):
+        if self._flag_enable:
+            super()._onEnter(e)
+        return
+    pass
+
+class TglBtn(DivBtn):
+    def __init__(self, parent: wx.Window, **argkw):
+        ''' Para:
+            * Argkw select: False default;
+            * Argkw exclusive: False default;'''
+        super().__init__(parent, **argkw)
+        self._flag_exclusive=argkw.get('exclusive',False)
+        if argkw.get('select',False):self.setActive(True)
         return
 
-    def onEnter(self,e):
-        self._flag_hover=True
-        self.SetBackgroundColour(esui.COLOR_ACTIVE)
-        return
-
-    def onLeave(self,e):
-        self._flag_hover=False
-        self.SetBackgroundColour(esui.COLOR_BACK)
+    def _onClk(self,e):
+        if not self._flag_enable: return
+        if self._flag_exclusive:
+            for ctrl in self.Parent.Children:
+                if isinstance(ctrl,TglBtn):
+                    ctrl.setActive(False)
+        super()._onClk(e)
         return
     pass

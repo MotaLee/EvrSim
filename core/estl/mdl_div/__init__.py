@@ -2,7 +2,7 @@
 import copy,wx
 import numpy as np
 from interval import Interval as Itv
-from core import ESC,esui,esevt
+from core import ESC,esui
 from .detail import DetailDialog
 yu=esui.YU
 xu=esui.XU
@@ -21,15 +21,15 @@ class MdlDiv(esui.Div):
         self.addAcpNode=CP.addAcpNode
         self.onKeyDown=CP.onKeyDown
 
-        self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
+        self.Bind(esui.EBIND_COMEVT,self.onComEvt)
         self.Hide()
         return
 
     def onComEvt(self,e):
-        etype=e.GetEventArgs()
-        if etype==esevt.ETYPE_KEY_DOWN:
-            if self.IsShown():self.onKeyDown(e.GetEventArgs(1))
-        elif etype==esevt.ETYPE_OPEN_SIM:
+        etype=e.getEventArgs()
+        if etype==esui.ETYPE_KEY_DOWN:
+            if self.IsShown():self.onKeyDown(e.getEventArgs('eobj'))
+        elif etype==esui.ETYPE_OPEN_SIM:
             self.Hide()
         return
 
@@ -119,7 +119,7 @@ class AcpCanvas(wx.ScrolledCanvas):
         xdc=wx.ClientDC(self)
         dc=wx.BufferedDC(xdc,buffer=self.bitmap_bg)
         dc.Clear()
-        dc.SetPen(wx.Pen(esui.COLOR_ACTIVE))
+        dc.SetPen(wx.Pen(esui.COLOR_HOVER))
         for i in range(1,int(self.canvas_width/snap)):
             lines.append([snap*i+offx,offy,snap*i+offx,self.canvas_width*self.zoom_rate+offy])
             lines.append([offx,snap*i+offy,self.canvas_width*self.zoom_rate+offx,snap*i+offy])
@@ -201,7 +201,7 @@ class AcpCanvas(wx.ScrolledCanvas):
         rm_acp=ESC.clipAcps(self.list_active,self.Parent.mdl)
         for node in self.list_active:
             node.Destroy()
-        esui.IDX.SIDE_DIV.clearDetail()
+        esui.UMR.SIDE_DIV.clearDetail()
         self.Parent.drawMdl()
         return rm_acp
 
@@ -221,7 +221,7 @@ class AcpCanvas(wx.ScrolledCanvas):
     def onClk(self,e):
 
         self.start_evtobj=self
-        mdl=esui.IDX.MDL_DIV.mdl
+        mdl=esui.UMR.MDL_DIV.mdl
         self.spos=e.GetPosition()
         if self.acp_adding:
             acp=ESC.addAcp(self.acp_adding,mdl)
@@ -374,7 +374,6 @@ class AcpNode(esui.Div):
             active={'border_width':5,'border':esui.COLOR_TEXT})
 
         self.acp=acp
-        self.flag_active=False
 
         self.stc_name=esui.StaticText(self,
             (0.5*zyu,0.5*zyu),(2*zyu,2*zyu),acp.getAcpo('acp_name'),
@@ -400,7 +399,7 @@ class AcpNode(esui.Div):
             i+=1
 
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
-        self.Bind(wx.EVT_LEFT_DCLICK,self.onDClk)
+        self.Bind(esui.EBIND_LEFT_DCLK,self.onDClk)
         self.Bind(wx.EVT_LEFT_UP,self.onRls)
         self.Bind(wx.EVT_MOTION,self.onMove)
         self.Bind(wx.EVT_MIDDLE_DOWN,parent.onClkWhl)
@@ -415,12 +414,12 @@ class AcpNode(esui.Div):
             # Single selecting;
             self.Parent.list_active=[self]
             for node in self.Parent.Children:
-                if node!=self:node.toggleActive(active=False)
+                if node!=self:node.setActive(active=False)
         e.Skip()
         return
 
     def onDClk(self,e):
-        ddlg=DetailDialog(esui.IDX.ESMW,(25*xu,10*yu),(50*xu,80*yu),self.acp)
+        ddlg=DetailDialog(esui.UMR.ESMW,(25*xu,10*yu),(50*xu,80*yu),self.acp)
         ddlg.ShowModal()
         return
 
@@ -436,7 +435,7 @@ class AcpNode(esui.Div):
                 self.Parent.first_id,
                 self.Parent.first_port,
                 cid,cport,
-                esui.IDX.MDL_DIV.mdl)
+                esui.UMR.MDL_DIV.mdl)
             self.Parent.first_id=None
             self.Parent.first_port=None
             self.Parent.drawLink()
@@ -465,7 +464,7 @@ class AcpNode(esui.Div):
             for node in self.Parent.list_active:
                 node.Refresh()
                 p=[(node.Position.x)//zr+rx,(node.Position.y)//zr+ry]
-                ESC.setAcp(node.acp,esui.IDX.MDL_DIV.mdl,position=p)
+                ESC.setAcp(node.acp,esui.UMR.MDL_DIV.mdl,position=p)
         self.Parent.drawLink()
         return
 

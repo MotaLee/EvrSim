@@ -1,19 +1,22 @@
-from mod.AroCore import Aro,AroPoint,AroGroup,AroTargets,AroField
-from mod.Dynamics import DpRigidGroup
-# Aro class defination;
-class MassPoint(AroPoint):
-    ''' Addition Arove:
+import numpy
+inf=numpy.inf
+from core import EvrSimCore
+from mod.AroCore import AroTargets,AroField
 
-        velocity, force, mass;'''
+# Aro class defination;
+class MassPoint(EvrSimCore.Aro):
+    ''' Addition Arove: velocity, force, mass;'''
     def __init__(self):
         super().__init__()
+        self.adp='mod.AroCore.AdpPoint'
+        self.position=[0,0,0]
         self.velocity=[0,0,0]
         self.force=[0,0,0]
         self.mass=0
         return
     pass
 
-class RigidBody(Aro):
+class RigidBody(EvrSimCore.AroNode):
     def __init__(self):
         super().__init__()
         self.mass=0
@@ -26,16 +29,6 @@ class RigidBody(Aro):
         self.inertia=[0,0,0]
         self.size=[1,1,1]
         return
-    pass
-
-class RigidGroup(AroGroup,RigidBody):
-    def __init__(self):
-        AroGroup.__init__(self)
-        RigidBody.__init__(self)
-        self.adp='DpRigidGroup'
-
-        return
-
     pass
 
 class PointForce(AroTargets):
@@ -59,11 +52,11 @@ class Moment(AroTargets):
         return
     pass
 
-class Constraint(Aro):
+class Constraint(EvrSimCore.Aro):
     def __init__(self):
         super().__init__()
-        self._Arove_flag['target']+=['master','servant','m_target','s_target']
-        self.adp='DpConstraint'
+        self._flag['target']+=['master','servant','m_target','s_target']
+        self.adp='AdpConstraint'
         self.position=[0,0,0]
         self.UXYZ=[0,0,0]
         self.RXYZ=[0,0,1]
@@ -74,26 +67,23 @@ class Constraint(Aro):
         return
     pass
 
-class Ground(Aro):
+class Ground(RigidBody):
     def __init__(self):
         super().__init__()
-        self.adp='DpGround'
-        self.position=[0,0,0]
-        self.mass='inf'
-        self.inertia=['inf','inf','inf']
-        self.velocity=[0,0,0]
-        self.agl_v=[0,0,0]
+        self.addAroveFlag(enum='style')
+        self.adp='AdpGnd'
+        self.mass=inf
+        self.inertia=[inf,inf,inf]
+        self.style='point' # Enum for point/plane;
         return
-    pass
 
-class PlaneGnd(Ground,RigidBody):
-    def __init__(self):
-        # super().__init__()
-        RigidBody.__init__(self)
-        Ground.__init__(self)
-        self.adp='mod.AroCore.AdpPlane'
-        self.size=[5,5]
+    def onSet(self):
+        if self.style=='point':
+            self.adp='AdpGnd'
+        elif self.style=='plane':
+            self.adp='mod.AroCore.AdpPlane'
         return
+
     pass
 
 class ForceField(AroField):
@@ -107,6 +97,28 @@ class MassCube(RigidBody):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpCube'
-        # self.adp=['mod.AroCore.AdpCube','mod.AroCore.AdpCS']
+        return
+    pass
+
+class BodyCombo(RigidBody):
+    def __init__(self):
+        RigidBody.__init__(self)
+        self.adp='AdpBC'
+        return
+
+    def onAdd(self):
+        from core import ESC
+        r=ESC.addAro(AroClass=ComboNode,AroName='Refs',parent=self.AroID)
+        c=ESC.addAro(AroClass=ComboNode,AroName='Connections',parent=self.AroID)
+        self.children=[r.AroID,c.AroID]
+        return
+    pass
+class ComboNode(EvrSimCore.AroNode):
+    def __init__(self):
+        super().__init__()
+        self.icon={
+            'normal':'res\img\Icon_model.png',
+            'unfold':'res\img\Icon_model.png'}
+        self.addAroveFlag(uneditable='AroName',invisible='icon')
         return
     pass

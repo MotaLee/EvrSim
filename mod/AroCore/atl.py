@@ -1,9 +1,6 @@
 import time
 import wx
-import _glm as glm
-import numpy as np
-from core import ESC,esui,esgl,esevt,estl
-import mod
+from core import ESC,esui,estl
 yu=esui.YU
 
 # Other reliabilities;
@@ -22,95 +19,104 @@ yu=esui.YU
 #         return
 #     pass
 # Tool class defination;
-class AroMenu(estl.CreateMenuTool):
-    'Lv:3: Thrid tool class. Bind event;'
-    def __init__(self,name,parent,p,s,label,items):
-        super().__init__(name,parent,p,s,label,items)
-        self.mod_name=self.Parent.Label
-        self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
+class AroMenu(estl.ToolBase,esui.MenuBtnDiv):
+    ''' Menu to create Aro.
+        * Argkw items: List of Aroes;'''
+    def __init__(self,parent,name,mod,**argkw):
+        esui.MenuBtnDiv.__init__(self,parent,**argkw)
+        estl.ToolBase.__init__(self,name,mod)
+        self.bindPopup(wx.EVT_LEFT_DOWN,self.onClkPopup)
         return
 
     def onClkPopup(self,e):
-        self.HidePopup()
-        aroclass='mod.'+self.mod_name+'.'+self.items[self.popup.ipos]
-        aro=ESC.addAro(aroclass)
-        ESC.setAro(aro.AroID,{'AroName':'New Aro'})
-        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
+        e.Skip()
+        abbrclass=e.EventObject.label
+        if hasattr(ESC,abbrclass):
+            aroclass=getattr(ESC,abbrclass)
+        else:
+            aroclass='mod.'+self.mod+'.'+abbrclass
+        ESC.addAro(AroClass=aroclass,AroName='New Aro')
+        esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
         return
     pass
 
-class AcpMenu(estl.CreateMenuTool):
-    'Lv:3: Thrid tool class. Bind event;'
-    def __init__(self,name,parent,p,s,label,items):
-        super().__init__(name,parent,p,s,label,items)
-        self.mod_name=self.Parent.Label
-        self.pop_ctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkPopup)
+class AcpMenu(estl.ToolBase,esui.MenuBtnDiv):
+    ''' Menu to create Acp.
+        * Argkw items: List of Aroes;'''
+    def __init__(self,parent,name,mod,**argkw):
+        esui.MenuBtnDiv.__init__(self,parent,**argkw)
+        estl.ToolBase.__init__(self,name,mod)
+        self.bindPopup(wx.EVT_LEFT_DOWN,self.onClkPopup)
         return
 
     def onClkPopup(self,e):
-        self.HidePopup()
-        acpclass='mod.'+self.mod_name+'.'+self.items[self.popup.ipos]
-        esui.IDX.MDL_DIV.addAcpNode(acpclass)
+        e.Skip()
+        abbrclass=e.EventObject.label
+        if hasattr(ESC,abbrclass):
+            acpclass=getattr(ESC,abbrclass)
+        else:
+            acpclass='mod.'+self.mod+'.'+abbrclass
+        esui.UMR.MDL_DIV.addAcpNode(acpclass)
         return
     pass
 
-class RunSimBtn(estl.ToggleTool):
-    def __init__(self,name,parent,p,s,label):
-        super().__init__(name,parent,p,s,label)
+class RunSimBtn(estl.ToggleButton):
+    def __init__(self,parent,name,mod,**argkw):
+        super().__init__(parent,name,mod,**argkw)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
-        esevt.sendEvent(esevt.ETYPE_RUN_SIM,target=esui.IDX.ESMW)
-        time_txt=estl.getToolByName('time_txt','AroCore')
-        real_time=estl.getToolByName('real_time','AroCore')
-        if time_txt is not None:
-            if time_txt.timer.IsRunning():
-                time_txt.timer.Stop()
-            else:
-                time_txt.timer.Start(int(1000*ESC.len_timestep))
-        if real_time is not None:
-            if real_time.timer.IsRunning():
-                real_time.timer.Stop()
-            else:
-                real_time.start=time.time()
-                real_time.timer.Start(int(1000*ESC.len_timestep))
+        e.Skip()
+        if ESC.isCoreReady():
+            esui.sendComEvt(esui.ETYPE_RUN_SIM,target=esui.UMR.ESMW)
+            try:
+                from . import txt_real,txt_time
+                if txt_time.timer.IsRunning():
+                    txt_time.timer.Stop()
+                else:
+                    txt_time.timer.Start(1000//ESC.fps)
+                if txt_real.timer.IsRunning():
+                    txt_real.timer.Stop()
+                else:
+                    txt_real.start=time.time()
+                    txt_real.timer.Start(1000//ESC.fps)
+            except BaseException:pass
         return
     pass
 
-class ResetMapBtn(estl.ButtonTool):
-    def __init__(self,name,parent,p,s,label):
-        super().__init__(name,parent,p,s,label)
+class ResetMapBtn(estl.Button):
+    def __init__(self,parent,name,mod,**argkw):
+        super().__init__(parent,name,mod,**argkw)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
     def onClk(self,e):
-        time_txt=estl.getToolByName('time_txt','AroCore')
-        real_time=estl.getToolByName('real_time','AroCore')
-
-        if time_txt is not None:
-            time_txt.clearTimer()
-        if real_time is not None:
-            real_time.clearTimer()
-        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_RESET_SIM)
+        try:
+            from . import txt_real,txt_time
+            if txt_time is not None:txt_time.clearTimer()
+            if txt_real is not None:txt_real.clearTimer()
+        except BaseException:pass
+        esui.sendComEvt(esui.ETYPE_RESET_SIM)
         return
     pass
 
-class SimTimeText(estl.TextTool):
-    def __init__(self,name,parent,p,s,label):
-        super().__init__(name,parent,p,s,label)
+class SimTimeText(esui.DivText):
+    def __init__(self,parent,**argkw):
+        super().__init__(parent,**argkw)
         self.timestamp=0.0
         self.timer=wx.Timer(self)
         self.Bind(wx.EVT_TIMER,self.onTimer,self.timer)
         return
 
     def onTimer(self,e):
-        if ESC.CORE_STATUS.isStop():
+        if ESC.isCoreStop():
             self.timer.Stop()
-            estl.getToolByName('run_btn','AroCore').SetValue(False)
+            from . import btn_run
+            btn_run.SetValue(False)
             return
         if self.timer.IsRunning():
-            self.timestamp+=ESC.len_timestep*ESC.TIME_RATE
+            self.timestamp+=ESC.TIME_RATE/ESC.fps
             m=int(self.timestamp/60)
             s=int(self.timestamp) % 60
             ms=int((self.timestamp-int(self.timestamp))*60)
@@ -120,28 +126,26 @@ class SimTimeText(estl.TextTool):
             else: s=str(s)
             if ms<10:ms='0'+str(ms)
             else: ms=str(ms)
-            self.SetLabel(m+':'+s+':'+ms)
-            self.Refresh()
+            self.setLabel(m+':'+s+':'+ms)
         return
 
     def clearTimer(self):
         self.timestamp=0
-        self.SetLabel('00:00:00')
-        self.Refresh()
+        self.setLabel('00:00:00')
         return
     pass
 
-class RealTimeText(estl.TextTool):
-    def __init__(self,name,parent,p,s,label):
-        super().__init__(name,parent,p,s,label)
+class RealTimeText(esui.DivText):
+    def __init__(self,parent,**argkw):
+        super().__init__(parent,**argkw)
+        self.start=0
         self.timestamp=0.0
         self.timer=wx.Timer(self)
         self.Bind(wx.EVT_TIMER,self.onTimer,self.timer)
-        self.start=0
         return
 
     def onTimer(self,e):
-        if ESC.CORE_STATUS.isStop():
+        if ESC.isCoreStop():
             self.timer.Stop()
             return
         if self.timer.IsRunning():
@@ -155,19 +159,17 @@ class RealTimeText(estl.TextTool):
             else: s=str(s)
             if ms<10:ms='0'+str(ms)
             else: ms=str(ms)
-            self.SetLabel(m+':'+s+':'+ms)
-            self.Refresh()
+            self.setLabel(m+':'+s+':'+ms)
         return
 
     def clearTimer(self):
         self.timestamp=0
         self.start=0
-        self.SetLabel('00:00:00')
-        self.Refresh()
+        self.setLabel('00:00:00')
         return
     pass
 
-class ALibsBtn(estl.ButtonTool):
+class ALibsBtn(estl.Button):
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.show_lib=False
@@ -177,13 +179,13 @@ class ALibsBtn(estl.ButtonTool):
     def onClk(self,e):
         if self.show_lib:return
         else:self.show_lib=True
-        self.tab=esui.IDX.SIDE_DIV.getTab('ALibs')
+        self.tab=esui.UMR.SIDE_DIV.getTab('ALibs')
         # self.tab.SetBackgroundColour(esui.COLOR_LBACK)
         tx=self.tab.Size.x
         ty=self.tab.Size.y
         self.tab.txt_alibs=esui.StaticText(self.tab,(yu,yu),(8*yu,4*yu),'ALibs:',align='left')
         self.tab.btn_add=esui.Btn(self.tab,(tx-5*yu,yu),(4*yu,4*yu),'+')
-        self.tab.input_search=esui.InputText(self.tab,(yu,6*yu),(tx-11*yu,4*yu))
+        self.tab.input_search=esui.InputText(self.tab,style={'p':(yu,6*yu),'s':(tx-11*yu,4*yu)})
         self.tab.btn_search=esui.Btn(self.tab,(tx-9*yu,6*yu),(8*yu,4*yu),'Search')
         self.tab.tree=ALibsTreePlc(self.tab,(yu,11*yu),(tx-2*yu,50*yu))
         self.tab.tree.buildTree()
@@ -200,16 +202,15 @@ class ALibsBtn(estl.ButtonTool):
         except BaseException:return
         if ti.Label in aroci:
             aro=ESC.addAro(classname)
-            ESC.setAro(aro.AroID,{'AroName':'New Aro'})
-            esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
-        else:esui.IDX.MDL_DIV.addAcpNode(classname)
+            ESC.setAro(aro.AroID,AroName='New Aro')
+            esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
+        else:esui.UMR.MDL_DIV.addAcpNode(classname)
         return
     pass
 
-class WrkSpcBtn(estl.ButtonTool):
-    def __init__(self,name,parent,p,s,label):
-        super().__init__(name,parent,p,s,label)
-
+class WrkSpcBtn(estl.Button):
+    def __init__(self,parent,name,mod,**argkw):
+        super().__init__(parent,name,mod,**argkw)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 

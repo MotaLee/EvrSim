@@ -1,36 +1,46 @@
 # libs;
-from core import ESC,esui
+from core import esui
+yu=esui.YU
 # Mod-in import;
-from .octree import OcTree
 from mod.AroCore.atl import AroMenu,AcpMenu
-from .adp import DpRigidGroup,DpMoment,DpConstraint,DpGround
-from .aro import MassPoint,RigidGroup,Moment,ForceField,RigidBody
-from .aro import Constraint,Ground,PointForce,PlaneGnd,MassCube
-from .atl import RGMenu,NewRGBtn,DelRGBtn,ConnectRGBtn,RemoveFromRGBtn,DynamicsTool
-from .acp import IPE
+from .aro import MassPoint,BodyCombo,Moment,ForceField,RigidBody,ComboNode
+from .aro import Constraint,Ground,PointForce,MassCube
+from .adp import AdpBC,AdpConstraint,AdpGnd,AdpMoment
+from .atl import MenuBC,BtnBC,DynamicsTool
 from .bullet import BulletEngine
 # MOD INDEX
 MOD_NAME='Dynamics'
-MOD_VER='0.0.6'
+MOD_VER='0.0.7'
 MOD_PERF={}
-ARO_INDEX=['MassPoint','PointForce','Moment','Ground','Constraint','PlaneGnd','MassCube','ForceField']
-ACP_INDEX=['IPE','CPE','BulletEngine']
-MODEL_INDEX=['ug','PM1','PM2','PM3']
-TP=None
+ARO_INDEX=[
+    'MassPoint','PointForce','Moment','Ground',
+    'Constraint','MassCube','ForceField','BodyCombo']
+ACP_INDEX=['BulletEngine']
+MODEL_INDEX=['ug']
 
 # Tool preset;
-if esui.IDX.hasIndex('TOOL_DIV'):
-    if not esui.IDX.hasIndex('MAP_DIV'):raise ESC.err('Leak of reliabilities.')
+if esui.UMR.hasIndex('TOOL_DIV'):
+    TP=esui.UMR.TOOL_DIV.getModTab('Dynamics')
+    ph=TP.Size.y
 
-    yu=esui.YU
-    TP=esui.IDX.TOOL_DIV.getModTab('Dynamics')
-    psx=esui.IDX.TOOL_DIV.Size[0]
-    dynamic_tool=DynamicsTool('dynamic_tool',TP,(yu,yu),(8*yu,4*yu),'Dynamics')
-    new_obj=AroMenu('new_Obj',TP,(yu,6*yu),(8*yu,4*yu),'New Obj',ARO_INDEX)
-    new_acp=AcpMenu('new_acp',TP,(yu,11*yu),(8*yu,4*yu),'New Acp',ACP_INDEX)
+    txt_dynamic=DynamicsTool(TP,label='Dynamics',
+        style={'p':(yu,ph-3*yu),'s':(8*yu,3*yu)})
+    menu_obj=AroMenu(TP,'menu_obj',MOD_NAME,
+        items=ARO_INDEX,label='New Obj',
+        style={'p':(yu,yu),'s':(8*yu,3*yu)})
+    menu_acp=AcpMenu(TP,'menu_acp',MOD_NAME,
+        items=ACP_INDEX,label='New Acp',
+        style={'p':(yu,5*yu),'s':(8*yu,3*yu)})
 
-    rg_menu=RGMenu('rg_menu',TP,(psx-18*yu,yu),(17*yu,4*yu),'')
-    new_rg=NewRGBtn('new_rg',TP,(psx-18*yu,6*yu),(8*yu,4*yu),'New RG')
-    del_rg=DelRGBtn('del_rg',TP,(psx-9*yu,6*yu),(8*yu,4*yu),'Del RG')
-    connect_rg=ConnectRGBtn('connect_rg',TP,(psx-18*yu,11*yu),(8*yu,4*yu),'Connect')
-    remove_rg=RemoveFromRGBtn('remove_rg',TP,(psx-9*yu,11*yu),(8*yu,4*yu),'Remove')
+    txt_bc=esui.DivText(TP,label='Body Combo',
+        style={'p':(11*yu,ph-3*yu),'s':(13*yu,3*yu)})
+    menu_bc=MenuBC(TP,
+        style={'p':(11*yu,yu),'s':(13*yu,3*yu)})
+    bc_apd=BtnBC(TP,label='Append',
+        style={'p':(11*yu,5*yu),'s':(6*yu,3*yu)})
+    bc_rmv=BtnBC(TP,label='Remove',
+        style={'p':(18*yu,5*yu),'s':(6*yu,3*yu)})
+    bc_cnt=BtnBC(TP,label='Connect',
+        style={'p':(11*yu,9*yu),'s':(6*yu,3*yu)})
+    bc_=BtnBC(TP,label='Todo',
+        style={'p':(18*yu,9*yu),'s':(6*yu,3*yu)})

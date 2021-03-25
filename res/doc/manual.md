@@ -38,7 +38,7 @@ Under the main folder, there are some sub-folders and files:
 
 * core: EvrSim core Sub-systems placed in this folder. Including:
   * esc: EvrSimCore,
-  * esevt: Event relavant,
+  * esui: Event relavant,
   * esgl: OpenGl and drawing relavant,
   * estl: Tool for mod devoloping,
   * esui: UI controls library and variables,

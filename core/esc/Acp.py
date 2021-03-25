@@ -1,6 +1,5 @@
 import numpy as np
 import mod
-from core import esc as ESC
 class AcpAttr(object):
     def __init__(self,name,value=0,**argkw):
         ''' Acp attribute.
@@ -107,6 +106,7 @@ class Acp(object):
             del acpo['port']
             for k,v in vars(self).items():
                 if isinstance(v,AcpAttr):acpo[k]=v.value
+                else:del acpo[k]
             acpo['port']=ports
         else:
             acpo=getattr(self,key).value
@@ -185,14 +185,16 @@ class AcpIterator(Acp):
 
     def iterate(self):
         '''Return 0 when iterator stoped.'''
+        from core.esc import esc as ESC
         if self.current.value>self.end.value and not ESC.flag_realtime:
             return 0
         if self.item.value=='time':
-            self.current.value+=ESC.TIME_RATE*ESC.len_timestep
+            self.current.value+=ESC.TIME_RATE/ESC.fps
         else:self.current.value+=self.step.value
         return 1
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         reqlist=ESC.DATADICT['REQ']
         stepdict=dict()
         curdict=dict()
@@ -217,94 +219,6 @@ class AcpExecutor(Acp):
         return
     pass
 
-# Methods;
-def getAcp(acpid,mdl)->Acp:
-    ''' Get Acp by AcpID. Return None if not found.'''
-    for acp in ESC.ACP_MODELS[mdl]:
-        if acp.acpid.value==acpid:return acp
-    return
-
-def addAcp(acpclass,mdl)->Acp:
-    ''' Add an Acp to model. Return added Acp.'''
-    mod
-    if isinstance(acpclass,str):
-        acp:Acp=eval(acpclass+'()')
-    else:acp:Acp=acpclass()
-
-    list_acpid=[acp.acpid.value for acp in ESC.ACP_MODELS[mdl]]
-    acp.acpid.value=max([0]+list_acpid)+1
-    ESC.ACP_MODELS[mdl].append(acp)
-    return acp
-
-def setAcp(acp,mdl,**acpo):
-    ''' Set Acp with acpo dict.
-    * Para acp: Accept AcpID/Acp;
-    * Para acpo: keyword/acpo;'''
-    if isinstance(acp,int):acp=getAcp(acp,mdl)
-    if 'acpo' in acpo:acpo.update(acpo['acpo'])
-    acp.setAcpo(**acpo)
-    return
-
-def delAcp(acp,mdl)->Acp:
-    ''' Delete an Acp. Return deleted Acp.
-    * Para acp: Accept AcpID/Acp;'''
-    if isinstance(acp,int):acp=getAcp(acp,mdl)
-    for pid,port in acp.port.value.items():
-        for lacpid,lpid in port.link:
-            lacp=getAcp(lacpid,mdl)
-            lacp.setPort(lpid,link=(acp.acpid.value,pid))
-            # Not recommand: setAcp(lacpid,mdl,port={lpid:{link:(acp.acpid.value,pid)}})
-    ESC.ACP_MODELS[mdl].remove(acp)
-    return acp
-
-def clipAcps(acps:list,mdl,rmlink=False):
-    if isinstance(acps[0],int):
-        acps=[getAcp(acp) for acp in acps]
-    for acp in acps:
-        for pid,port in acp.port.value.items():
-            for lacpid,lpid in port.link:
-                lacp=getAcp(lacpid,mdl)
-                if lacp not in acps or not rmlink:
-                    lacp.setPort(lpid,link=(acp.acpid.value,pid))
-        ESC.ACP_MODELS[mdl].remove(acp)
-    return acps
-
-def loadAcp(mdl,**acpo):
-    ''' Load an Acp from Acpo. Acpo must contain acpid/AcpClass.'''
-    acp=addAcp(acpo['AcpClass'],mdl)
-    acp.setAcpo(**acpo)
-    return acp
-
-def cntAcp(stid,stport,edid,edport,mdl):
-    ''' Connect Acp ports.
-
-        Return 1 for connection while 0 for disconnetion.
-
-        Repeat ports to remove this connection.
-
-        Inport only accepts one while outport can accept more;'''
-    acp_st=getAcp(stid,mdl)
-    acp_ed=getAcp(edid,mdl)
-    tuple_st=(stid,stport)
-    tuple_ed=(edid,edport)
-    if acp_st.port.value[stport].io==acp_ed.port.value[edport].io:
-        ESC.err('Link illgal.')
-    if acp_st.port.value[stport].io=='in':
-        tpl_in=tuple_st
-        tpl_out=tuple_ed
-    else:
-        tpl_in=tuple_ed
-        tpl_out=tuple_st
-    acp_in=getAcp(tpl_in[0],mdl)
-    forelink=acp_in.port.value[tpl_in[1]].link
-    if len(forelink)!=0:
-        if forelink[0]!=tpl_out:
-            acp_in.setPort(tpl_in[1],link=forelink[0])
-    acp_st.setPort(stport,link=tuple_ed)
-    acp_ed.setPort(edport,link=tuple_st)
-
-    return
-
 class AcpSelector(Acp):
     def __init__(self):
         ''' Select Arove in last map snapshot.
@@ -321,6 +235,7 @@ class AcpSelector(Acp):
 
     def AcpProgress(self):
         'ESC.ARO_QUEUE[-1] needed.'
+        from core.esc import esc as ESC
         reqlist=ESC.DATADICT['REQ']
         slctdict=dict()
         resdict=dict()
@@ -366,6 +281,7 @@ class AcpProvider(Acp):
 
     def preProgress(self):
         arolist=list()
+        from core.esc import esc as ESC
         for ARO in ESC.getFullMap():
             ABBRCLASS=ARO.AroClass[ARO.AroClass.rfind('.')+1:]
             AROVE=ARO.__dict__
@@ -375,6 +291,7 @@ class AcpProvider(Acp):
         return
 
     def postProgress(self):
+        from core.esc import esc as ESC
         indict=ESC.DATADICT[self.port.value[1].link[0]]
         reqlist=ESC.DATADICT['REQ']
         for aroid,itemvalue in indict.items():
@@ -384,7 +301,7 @@ class AcpProvider(Acp):
                     data=itemvalue[0][0]
                 else:
                     data=itemvalue[0]
-                ESC.setAro(aroid,{self.item.value:data})
+                ESC.setAro(aroid,arove={self.item.value:data})
         return
     pass
 
@@ -405,6 +322,7 @@ class AcpLimitor(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         indata=ESC.DATADICT[self.port.value[1].link[0]]
         for inkey,invalue in indata.items():
             for i in range(0,len(invalue)):
@@ -423,7 +341,7 @@ class AcpLimitor(Acp):
         return
     pass
 
-class AcpPMTD(Acp):
+class AcpEval(Acp):
     def __init__(self):
         ''' PMTD Function. Accept single value list input.
         * Attr expression: Expression to calculate;
@@ -439,6 +357,7 @@ class AcpPMTD(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         max_dict=dict()
         sym_dict=dict()
         symindex='abcde'
@@ -473,6 +392,7 @@ class AcpVector3(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         xdict=ESC.DATADICT[self.port.value[1].link[0]]
         ydict=ESC.DATADICT[self.port.value[2].link[0]]
         zdict=ESC.DATADICT[self.port.value[3].link[0]]
@@ -484,7 +404,7 @@ class AcpVector3(Acp):
                     vec3_dict[aroid]=list()
                 vec3=[xlist[i][0],ydict[aroid][i][0],zdict[aroid][i][0]]
                 vec3_dict[aroid]=[vec3]
-        ESC.DATADICT.update({(self.acpid.value,4):vec3_dict})
+        ESC.DATADICT.update({(self.acpid.value,0):vec3_dict})
         return
 
     pass
@@ -502,7 +422,8 @@ class AcpDepartor3(Acp):
         return
 
     def AcpProgress(self):
-        vec3_dict=ESC.DATADICT[self.port.value[1].link[0]]
+        from core.esc import esc as ESC
+        vec3_dict=ESC.DATADICT[self.port.value[0].link[0]]
         xdict=dict()
         ydict=dict()
         zdict=dict()
@@ -531,6 +452,7 @@ class AcpConst(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         if type(self.value.value)!=list:out=[self.value.value]
         else:out=self.value.value
         reqlist=ESC.DATADICT['REQ']
@@ -549,6 +471,7 @@ class AcpNorm(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         vec_dict=ESC.DATADICT[self.port.value[1].link[0]]
         out_dict=dict()
         for aroid,vec_list in vec_dict.items():
@@ -568,6 +491,7 @@ class AcpSum(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         in_dict=ESC.DATADICT[self.port.value[1].link[0]]
         out_dict=dict()
         for aroid,dlist in in_dict.items():
@@ -587,6 +511,7 @@ class AcpCross(Acp):
         return
 
     def AcpProgress(self):
+        from core.esc import esc as ESC
         v1dict=ESC.DATADICT[self.port.value[1].link[0]]
         v2dict=ESC.DATADICT[self.port.value[2].link[0]]
         output_dict=dict()

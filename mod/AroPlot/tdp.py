@@ -1,14 +1,10 @@
 import _glm as glm
 import numpy as np
-import OpenGL.GL as gl
-from core import ESC,esui,esgl
-TDP=esgl.ToolDrawPart
-class TdpXyzAxis(TDP):
+from core import esui,esgl
+class TdpXyzAxis(esgl.ToolDrawPart):
     def __init__(self,tool):
         super().__init__(tool)
-        self.gl_type=gl.GL_LINES
-        self.dict_layout['color']=4
-        self.VA=np.array([
+        VA=np.array([
             [0,0,0,     1,0,0,1],
             [.5,0,0,    1,0,0,1],
             [0,0,0,     0,1,0,1],
@@ -16,61 +12,64 @@ class TdpXyzAxis(TDP):
             [0,0,0,     0,0,1,1],
             [0,0,.5,    0,0,1,1]],
             dtype=np.float32)
-        self.EA=np.array([[0,1],[2,3],[4,5]],dtype=np.uint32)
+        EA=np.array([[0,1],[2,3],[4,5]],dtype=np.uint32)
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,faces=EA)
         return
     pass
 
-class TdpGrid(TDP):
+class TdpGrid(esgl.ToolDrawPart):
     # gap=0.5;
-    def __init__(self,tool,panel):
-        super().__init__(tool)
-        self.gl_type=gl.GL_LINES
-        self.dict_layout['color']=4
-        self.EA=np.array([],dtype=np.uint32)
-        self.VA=np.zeros([44,7],dtype=np.float32)
-        for i in range(0,21,2):
-            self.VA[i]=[-5/2,0,i/4-2.5,.5,.5,.5,1]
-            self.VA[i+1]=[5/2,0,i/4-2.5,.5,.5,.5,1]
-            self.VA[i+22]=[i/4-2.5,0,-5/2,.5,.5,.5,1]
-            self.VA[i+23]=[i/4-2.5,0,5/2,.5,.5,.5,1]
-        if panel=='xz':
-            self.trans=glm.mat4(1.0)
-        elif panel=='yz':
-            self.trans=glm.rotate(glm.mat4(1),glm.radians(90),glm.vec3(0,0,1))
-        elif panel=='xy':
-            self.trans=glm.rotate(glm.mat4(1),glm.radians(90),glm.vec3(1,0,0))
-        return
-    pass
-
-class TdpViewBall(TDP):
     def __init__(self,tool):
         super().__init__(tool)
-        self.gl_type=gl.GL_LINES
+        EA=np.array([],dtype=np.uint32)
+        VA=np.zeros([44,7],dtype=np.float32)
+        for i in range(0,21,2):
+            VA[i]=[-5/2,0,i/4-2.5,.5,.5,.5,1]
+            VA[i+1]=[5/2,0,i/4-2.5,.5,.5,.5,1]
+            VA[i+22]=[i/4-2.5,0,-5/2,.5,.5,.5,1]
+            VA[i+23]=[i/4-2.5,0,5/2,.5,.5,.5,1]
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,faces=EA)
+        return
+    pass
+
+class TdpViewBall(esgl.ToolDrawPart):
+    def __init__(self,tool):
+        super().__init__(tool)
         self.dict_fix['fix']=True
         self.dict_fix['pos']=[0,65*esui.YU,10*esui.XU,10*esui.YU]
-        self.dict_layout['color']=4
-        self.VA=np.array([
+        VA=np.array([
             [0,0,0,     1,0,0,1],
-            [.5,0,0,    1,0,0,1],
+            [.3,0,0,    1,0,0,1],
             [0,0,0,     0,1,0,1],
-            [0,.5,0,    0,1,0,1],
+            [0,.3,0,    0,1,0,1],
             [0,0,0,     0,0,1,1],
-            [0,0,.5,    0,0,1,1]],
+            [0,0,.3,    0,0,1,1]],
             dtype=np.float32)
-        self.EA=np.array([[0,1],[2,3],[4,5],[1,3],[1,5],[3,5]],dtype=np.uint32)
+        EA=np.array([[0,1],[2,3],[4,5],[1,3],[1,5],[3,5]],dtype=np.uint32)
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,faces=EA)
         return
 
     pass
 
-class DpRatioRuler(TDP):
+class DpRatioRuler(esgl.ToolDrawPart):
     pass
 
-class TdpTrack(TDP):
+class TdpTrack(esgl.ToolDrawPart):
     def __init__(self,tool):
         super().__init__(tool)
-        self.gl_type=gl.GL_LINES
-        self.dict_layout['color']=4
-        self.VA=np.array([],dtype=np.float32)
-        self.EA=np.array([],dtype=np.uint32)
+        self.draw_type=esgl.DT_LINE
+        # self.dict_layout['color']=4
+        self.aroid=-1
+        self.flag_alive=True
+        self.col=[1,1,1,1]
         return
     pass

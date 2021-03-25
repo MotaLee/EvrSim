@@ -3,6 +3,40 @@
 ---
 ## Details
 
+### 0.0.15 - 2021/03/25
+
+* esc:
+    * __Intergrated module to a class__;
+    * Optimized Aro relavant system;
+    * Renamed AcpPMTD to AcpEval;
+    * Removed attr 'ARO_MAP' which replaced by MAP_QUEUE;
+    * Add method 'onAdd' for Aro;
+    * Add parameter 'oncall' for method AddAro/setAro/delAro, True default;
+* Mod:
+    * AroCore: Rewrited 'AroMenu'/'AcpMenu';
+    * Dynamics: Removed 'PlaneGnd' and intergrated it to 'Ground';
+* esui:
+    * Removed class 'Plc'/'ScrolledPlc'/'BorderlessSlctBtn'/'SelectMenuBtn'/'MenuBtn';
+    * Added class 'ComboDiv'/'PopupDiv'/'MenuBtnDiv'/;
+    * Rewrited some class using Div;
+    * Intergrated esevt;
+    * Optimized event relavant and added new function 'sendComEvt';
+    * Removed method 'regToolEvent' for Tool Div and Map Div, and Moved this method to EsWindow;
+    * Renamed class 'Index' to 'UIManager', attr 'IDX' to 'UMR';
+    * Added image loading to UIManager;
+    * Extended icon function of TreeItemDiv. Add 'icon' dict to Aro to set icon in different situation;
+* esgl:
+    * __Intergrated module to a class__;
+    * Changed EP/AP/UP from np.array to list;
+    * Optimized drawpart;
+* estl:
+    * Intergrated head_div/cmd_div;
+    * Removed tool class Text replaced by DivText;
+* App:
+    * SmartToeSleeve: Intergated mod and sim into app and fixed bugs;
+
+---
+
 ### 0.0.14 - 2021/03/03
 
 * App:
@@ -18,6 +52,8 @@
     * Renamed folder 'model' in sim to 'mdl';
 * estl:
     * Intergrated estab/esmdl;
+
+---
 
 ### 0.0.13 - 2021/02/20
 
@@ -171,7 +207,7 @@
     * Rebinded the method 'ESC.bug', and now using this method will display the bug information in Command panel;
     * Unbind the relation of other panels, and now use event to open/close;
     * Renamed 'COM_PLC' to 'CMD_PLC' in esui;
-11. Core module 'esevt':
+11. Core module 'esui':
     * Added new events 'EVT_OPEN_CMD' and 'EVT_CLOSE_CMD';
     * Optimized variable names;
 12. Core module 'esgl':
@@ -224,13 +260,13 @@
     * AroCore: Viewball HUD added;
     * AroCore: Tool 'Rst' multi-refreshing bug fixed;
     * AroPlot: new module 'AroPlot' added;
-    * Dynamics: Aro class 'RigidGroup' and its relavant tools added;
+    * Dynamics: Aro class 'BodyCombo' and its relavant tools added;
     * Dynamics: Aro class 'Moment' and its drawpart added;
 9. Core module 'esc':
     * ESC packaged instead of a single file;
     * Varialbe USER_SETTING unstable bug fixed, and now loading mods'setting before the sim's when opening the sim;
-10. Core module 'esevt':
-    * Event 'EVT_COMMON_EVENT'/'EVT_UPDATE_MAP'/'EVT_UPDATE_MODEL' added;
+10. Core module 'esui':
+    * Event 'EBIND_COMEVT'/'EVT_UPDATE_MAP'/'EVT_UPDATE_MODEL' added;
     * Common event dealing achieved by sending it and special event type as args, then all panels would respond it;
 11. Libs:
     * PyGLM: upgraded to 1.99.1, and fixed bugs with numpy;

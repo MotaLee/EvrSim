@@ -2,10 +2,9 @@
 # -*- coding: UTF-8 -*-
 '### EvrSim Terminal'
 # system libs;
-import sys,os
-sys.path.append(os.getcwd())
+import EvrSim
 from core import ESC
-from EvrSim import EST_VER
+
 'todo: As subprogress of EvrSimWx;'
 
 class ESTerminal(object):
@@ -15,7 +14,7 @@ class ESTerminal(object):
         self.FLAG_EXIT=False
         self.COM_NEXT=''
         ESC.setApp('EST')
-        print('EvrSim Terminal '+EST_VER)
+        print('EvrSim Terminal '+EvrSim.EST_VER)
         return
 
     def running(self):

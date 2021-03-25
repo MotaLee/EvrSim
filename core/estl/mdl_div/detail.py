@@ -9,11 +9,11 @@ class DetailDialog(esui.EsDialog):
         self.div_detail=esui.ScrollDiv(self,style={
             'p':(yu,6*yu),
             's':(self.Size.x/2-1.5*yu,self.Size[1]-12*yu),
-            'border':esui.COLOR_ACTIVE})
+            'border':esui.COLOR_HOVER})
         self.div_port=esui.ScrollDiv(self,style={
             'p':(self.Size.x/2+0.5*yu,6*yu),
             's':(self.Size.x/2-1.5*yu,self.Size[1]-12*yu),
-            'border':esui.COLOR_ACTIVE})
+            'border':esui.COLOR_HOVER})
 
         self.conbtn.Bind(wx.EVT_LEFT_DOWN,self.onConfirm)
         self.showDetail()
@@ -23,15 +23,15 @@ class DetailDialog(esui.EsDialog):
         set_dcit=dict()
         for ctrl in self.div_detail.Children:
             if isinstance(ctrl,(esui.InputText,esui.MultilineText)):
-                v=ctrl.GetValue()
+                v=ctrl.getValue()
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
             elif type(ctrl)==esui.SltBtn:
                 v_eval=ctrl.GetValue()
             else:continue
             set_dcit[ctrl.Name]=v_eval
-        ESC.setAcp(self.acp,esui.IDX.MDL_DIV.mdl,acpo=set_dcit)
-        esui.IDX.MDL_DIV.drawMdl(refresh=True)
+        ESC.setAcp(self.acp,esui.UMR.MDL_DIV.mdl,acpo=set_dcit)
+        esui.UMR.MDL_DIV.drawMdl(refresh=True)
         self.EndModal(1)
         return
 
@@ -52,15 +52,15 @@ class DetailDialog(esui.EsDialog):
             else:stl=0
 
             if attr.flag_long:
-                esui.MultilineText(DP,(yu,(i+1)*4*yu),(DP.Size[0]-2*yu,12*yu),
-                    hint=str(attr.value),cn=name,exstl=stl)
+                esui.MultilineText(DP,hint=str(attr.value),cn=name,readonly=stl,
+                    style={'p':(yu,(i+1)*4*yu),'s':(DP.Size[0]-2*yu,12*yu)})
                 i+=3
             elif isinstance(attr.value,bool):
                 esui.SltBtn(DP,(14*yu,(i*4+0.5)*yu),
                     (3*yu,3*yu),'√',cn=name,select=attr.value)
             else:
-                esui.InputText(DP,(14*yu,(i*4+0.5)*yu),
-                    (DP.Size[0]-15*yu,3.5*yu),hint=str(attr.value),cn=name,exstl=stl)
+                esui.InputText(DP,hint=str(attr.value),cn=name,readonly=stl,
+                    style={'p':(14*yu,(i*4+0.5)*yu),'s':(DP.Size[0]-15*yu,3.5*yu)})
             i+=1
 
         esui.StaticText(PP,(yu,yu),(8*yu,4*yu),'IO Ports:',align='left')

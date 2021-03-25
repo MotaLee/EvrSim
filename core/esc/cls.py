@@ -1,6 +1,6 @@
 # Class;
-import json
-from core import esc as ESC
+import multiprocessing as mp
+from multiprocessing.queues import Queue
 class TreeNode(object):
     def __init__(self,**argkw):
         ''' Para argkw: nid/label/parent/children/depth/data'''
@@ -64,6 +64,7 @@ class EsTree(object):
             * Para node: Accept TreeNode,
                 The node's nid/parent/chidren/depth needn't to be set.
             * Para parent: Accept nid/label/TreeNode/None.'''
+        from core.esc import esc as ESC
         self.max_id+=1
         node.nid=self.max_id
         if parent is not None:
@@ -86,6 +87,7 @@ class EsTree(object):
     def delNode(self,node):
         ''' Delete a node and its subtree.
             * Para node: Accept nid/label/TreeNode.'''
+        from core.esc import esc as ESC
         if not isinstance(node,self.NodeClass):
             node=self.getNode(node)
         if node is None:return ESC.err('Node not found.')
@@ -140,64 +142,99 @@ class EsMesh(object):
     'todo'
     pass
 
-class Aro(object):
-    ''' Core Aro class.
-
-        Variable started with '_' wont save to map.'''
+class EsQueue(Queue):
     def __init__(self):
-        self._Arove_flag={
-            'invisible':['_Arove_flag','AroID'],
-            'uneditable':['adp','AroClass'],
-            'longdata':['desc'],
-            'target':[]}
-        self._adp=list()
-        # Preset Arove;
-        self.AroID=0
-        # self.AroClass=self.__module__+'.'+type(self).__name__
-        self.AroClass=str(self.__class__)
-        self.adp=''
-        # User changeable Arove;
-        self.AroName=''
-        self.desc=''
-        self.enable=True
-        self.visable=True
+        super().__init__(ctx=mp.get_context())
+        return
+    pass
+class EsProcess(mp.Process):
+    def __init__(self,**argkw):
+        ''' EvrSim running process.
+            * Para argkw: stdin/stdout;'''
+        self.stdin=EsQueue()
+        self.stdout=EsQueue()
+        self.flag_exit=False
+        super().__init__(target=self.running, daemon=True)
         return
 
-    def onInit(self,arove={}):
-        ''' This method will be called in ESC.initAro'''
-        new_arove=dict(arove)
-        for k,v in arove.items():
-            if k not in self.__dict__:
-                del new_arove[k]
-        self.__dict__.update(new_arove)
+    def running(self):
+        ''' Empty.'''
         return
 
-    def onSet(self,arove={}):
-        ''' This method will be called in ESC.setAro'''
+    def send(self,msg:str):
+        try:
+            self.stdin.put(msg)
+            out=True
+        except BaseException:out=False
+        return out
+
+    def recv(self):
+        try:
+            out=self.stdout.get(timeout=0.1)
+        except TimeoutError:out=None
+        return out
+    pass
+
+class EsEnum(object):
+    def __init__(self,items:list,current=None,prev=None):
+        ''' * Para items: Set of enum;
+            * Para currnt: Inital item, None default for select the 1st item as current;
+            * Para prev: Inital previous item, None default for the same with current;
+            '''
+        self.items=items
+        if current is None:
+            self.current=self.items[0]
+        else:self.set(current)
+        if prev is None:
+            self.prev=self.current
+        else:self.prev=prev
         return
 
-    def onDel(self):
-        ''' This method will be called in ESC.delAro'''
+    def set(self,item):
+        if item in self.items:
+            self.prev=self.current
+            self.current=item
+        return
+
+    def get(self):return self.current
+
+    def getPrev(self):return self.prev
+    def rollback(self):self.current=self.prev
+
+    def val(self,item):return item==self.current
+    pass
+class SimTree(EsTree):
+    def __init__(self,tree):
+        super().__init__(tree=tree)
+        self.node_perf=self.getNode('Perference')
+        self.node_map=self.getNode('Map')
+        self.node_model=self.getNode('Model')
+        self.node_mod=self.getNode('Mod')
         return
     pass
 
+class ModTree(EsTree):
+    def __init__(self,modname):
+        super().__init__()
+        from core.esc import esc as ESC
+        modptr=ESC.getModAttr(modname)
+        root=self.appendNode(None,self.NodeClass(
+            label=modptr.MOD_NAME,data=modptr.MOD_VER))
+        self.node_perf=self.appendNode(root,self.NodeClass(
+            label='Perference',data=modptr.MOD_PERF))
+        self.node_aro=self.appendNode(root,self.NodeClass(
+            label='Aro',data=modptr.ARO_INDEX))
+        self.node_acp=self.appendNode(root,self.NodeClass(
+            label='Acp',data=modptr.ACP_INDEX))
+        self.node_mdl=self.appendNode(root,self.NodeClass(
+            label='Model',data=modptr.MODEL_INDEX))
 
-class CoreStatus(object):
-    def __init__(self) -> None:
-        self.value=0    # Enum for ['READY':0,'BUSY':1,'STOP':2,'STEP':3];
+        for aro in self.node_aro.data:
+            self.appendNode(self.node_aro,self.NodeClass(label=aro))
+        for acp in self.node_acp.data:
+            self.appendNode(self.node_acp,self.NodeClass(label=acp))
+        for mdl in self.node_mdl.data:
+            self.appendNode(self.node_mdl,self.NodeClass(label=mdl))
         return
 
-    def isReady(self):
-        return self.value==0
-    def isBusy(self):
-        return self.value==1
-    def isStop(self):
-        return self.value==2
-
-    def setReady(self):
-        self.value=0
-    def setBusy(self):
-        self.value=1
-    def setStop(self):
-        self.value=2
     pass

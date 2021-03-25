@@ -1,5 +1,10 @@
-'Copyright 2020 Mota Lee'
-''' This program is free software: you can redistribute it and/or modify
+''' ## EvrSim Main Program.
+    ---
+    ### Usage
+    * Command 'python EvrSim.py app'. Para 'app' can be 'EST'/'Editor' or other user's app.
+    ---
+    Copyright 2020-2021 @Mota Lee.
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -12,19 +17,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.'''
 import sys,os
-import wx
-sys.path.append(os.getcwd())
-sys.path.append(os.getcwd()+'\\res\\lib')
-os.environ['PATH']+=';'+os.getcwd()+'\\res\\lib'
-sys.path.append(os.getcwd()+'\\res\\lib\\dll')
-os.environ['PATH']+=';'+os.getcwd()+'\\res\\lib\\dll'
+cwd=os.getcwd()
+PATHS=[cwd,cwd+'\\res\\lib',cwd+'\\res\\lib\\dll']
+for path in PATHS:
+    sys.path.append(path)
+    os.environ['PATH']+=';'+path
 # EvrSim global variable;
-ES_VER='0.0.14'
+ES_VER='0.0.15'
 EST_VER = '0.0.5'
-ES_UPDATE=20201204
+EDITOR_VER='0.0.13'
 ES_PY_VER_MIN='3.8.0'
 ES_PY_VER_MAX='3.8.7'
-ES_MOD=['AroCore','Dynamics','AroPlot']
+ES_MOD=['AroCore','Dynamics','AroPlot','AroGame']
 # Pip installation;
 ES_LIBS=[
     'wxpython',
@@ -41,11 +45,13 @@ ES_INTERGRATED_LIBS=[
 ]
 
 if __name__ == "__main__":
+    import wx
+    import mod,app
     ESAPP=wx.App()
     if 'Editor'==sys.argv[1]:
         from app.Editor import EvrSimEditor
         # Main enterance;
-        wxmw=EvrSimEditor(es_ver=ES_VER)
+        wxmw=EvrSimEditor()
         ESAPP.MainLoop()
     elif 'EST'==sys.argv[1]:
         from app.EST import ESTerminal
@@ -53,8 +59,8 @@ if __name__ == "__main__":
         est=ESTerminal()
         est.running()
     else:
-        ESAPP=wx.App()
-        # _local=locals()
-        exec('from app.'+sys.argv[1]+' import ESMW')
-        # ESMW=_local['ESMW']
+        from core import ESC,esui
+        ESC.setApp(sys.argv[1])
+        exec('import app.'+sys.argv[1]+'',globals(),locals())
+        esui.UMR.ESMW.lauchApp()
         ESAPP.MainLoop()

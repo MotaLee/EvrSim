@@ -1,6 +1,6 @@
 import wx
 import mod
-from core import ESC,esui,esevt
+from core import ESC,esui
 yu=esui.YU
 xu=esui.XU
 
@@ -9,34 +9,23 @@ class ToolDiv(esui.TabDiv):
         argkw['style'].update({'border_bottom':esui.COLOR_FRONT})
         super().__init__(parent,**argkw)
         self.list_tab=list()
-        self.list_evtool=list()
         self.flag_single=False
-        self.Bind(esevt.EVT_COMMON_EVENT,self.onComEvt)
+        self.Bind(esui.EBIND_COMEVT,self.onComEvt)
         self.Hide()
         return
 
     def onComEvt(self,e):
-        etype=e.GetEventArgs()
-        if etype==esevt.ETYPE_OPEN_CMD:
+        etype=e.getEventArgs()
+        if etype==esui.ETYPE_OPEN_CMD:
             self.Hide()
-        elif etype==esevt.ETYPE_CLOSE_CMD:
+        elif etype==esui.ETYPE_CLOSE_CMD:
             self.Show()
-        elif etype==esevt.ETYPE_OPEN_SIM:
+        elif etype==esui.ETYPE_OPEN_SIM:
             self.Show()
-        elif etype==esevt.ETYPE_LOAD_MOD:
+        elif etype==esui.ETYPE_LOAD_MOD:
             self.Show()
             self.toggleTab()
-        # else:
-        for tool in self.list_evtool:
-            esevt.sendEvent(etype,target=tool)
-        return
 
-    def regToolEvent(self,tool):
-        if tool not in self.list_evtool:
-            self.list_evtool.append(tool)
-            tool.SetExtraStyle(wx.WS_EX_BLOCK_EVENTS)
-        else:
-            self.list_evtool.remove(tool)
         return
 
     def getModTab(self,modname):

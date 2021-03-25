@@ -2,7 +2,7 @@
     "name":"default",
     "glEnable":["GL_DEPTH_TEST","GL_BLEND","GL_LINE_SMOOTH"],
     "DICT_FLAG":{
-        "WIREFRAME":true
+        "WIREFRAME":false
         },
     "global":{}
 }

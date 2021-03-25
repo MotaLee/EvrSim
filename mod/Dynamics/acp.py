@@ -42,7 +42,7 @@ class IPE(ESC.AcpExecutor):
             Mmass=np.linalg.inv(a*np.identity(3)
                 +1/Im*MIm
                 +1/Is*MIs)
-            bias=-0.2/ESC.len_timestep*(pt-pj)
+            bias=-0.2*ESC.fps*(pt-pj)
 
             i=0
             IT=5
@@ -55,15 +55,15 @@ class IPE(ESC.AcpExecutor):
                 ws=np.array(getattr(servant,'agl_v',[0,0,0]))
                 dv=vm+np.cross(wm,rm)-vs-np.cross(ws,rs)
                 p=np.dot(Mmass,(dv+bias))
-                fp=p/ESC.len_timestep
-                master.velocity-=fp/master.mass*ESC.len_timestep
-                servant.velocity+=fp/servant.mass*ESC.len_timestep
-                master.agl_v-=np.cross(rm,fp)/Im*ESC.len_timestep
-                servant.agl_v+=np.cross(rs,fp)/Is*ESC.len_timestep
+                fp=p*ESC.fps
+                master.velocity-=fp/master.mass/ESC.fps
+                servant.velocity+=fp/servant.mass/ESC.fps
+                master.agl_v-=np.cross(rm,fp)/Im/ESC.fps
+                servant.agl_v+=np.cross(rs,fp)/Is/ESC.fps
                 i+=1
 
-            ESC.setAro(master.AroID,{'velocity':master.velocity.tolist(),'agl_v':master.agl_v.tolist()})
-            ESC.setAro(servant.AroID,{'velocity':servant.velocity.tolist(),'agl_v':servant.agl_v.tolist()})
+            ESC.setAro(master.AroID,**{'velocity':master.velocity.tolist(),'agl_v':master.agl_v.tolist()})
+            ESC.setAro(servant.AroID,**{'velocity':servant.velocity.tolist(),'agl_v':servant.agl_v.tolist()})
         return
     pass
 
@@ -111,17 +111,17 @@ class IPE(ESC.AcpExecutor):
 #         if body.mass==0 or body.mass==np.inf:return {}
 #         'todo: inertia'
 #         Ita=[body.mass/6]*3
-#         position=(np.array(body.position)+np.array(body.velocity)/esgl.FPS).tolist()
+#         position=(np.array(body.position)+np.array(body.velocity)/ESC.fps).tolist()
 #         v_aglv=glm.vec3(body.agl_v)
 #         if glm.l1Norm(v_aglv)!=0:
-#             rmat=glm.rotate(glm.mat4(1.0),glm.l2Norm(v_aglv)/esgl.FPS,v_aglv)
+#             rmat=glm.rotate(glm.mat4(1.0),glm.l2Norm(v_aglv)/ESC.fps,v_aglv)
 #             x2=rmat*glm.vec4(body.LCS[0]+[1.0])
 #             y2=rmat*glm.vec4(body.LCS[1]+[1.0])
 #             z2=rmat*glm.vec4(body.LCS[2]+[1.0])
 #             LCS=[list(x2)[0:3],list(y2)[0:3],list(z2)[0:3]]
 #             # print(y2)
 #         else:LCS=body.LCS
-#         velocity=(np.array(body.velocity)+np.array(body.force)/body.mass/esgl.FPS).tolist()
+#         velocity=(np.array(body.velocity)+np.array(body.force)/body.mass/ESC.fps).tolist()
 #         agl_v=np.array(body.agl_v)
 #         moment=np.array([0,0,0])
 #         dI=np.array([
@@ -129,7 +129,7 @@ class IPE(ESC.AcpExecutor):
 #             (Ita[2]-Ita[0])*agl_v[2]*agl_v[0],
 #             (Ita[0]-Ita[1])*agl_v[0]*agl_v[1]])
 #         agl_acc=(dI+moment)/Ita
-#         agl_v=(agl_v+agl_acc/esgl.FPS).tolist()
+#         agl_v=(agl_v+agl_acc/ESC.fps).tolist()
 #         force=np.array([0,0,0])
 #         for force in self._forces:
 #             if force.target==body.AroID:

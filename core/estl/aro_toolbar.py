@@ -1,137 +1,144 @@
-import wx,interval
+import wx
 import _glm as glm
 import numpy as np
-from core import ESC,esui,esgl,esevt,estl
-# AroDrawPart=esgl.drawpart.AroDrawPart
+from core import ESC,esui,esgl
+GLC=esgl.glc
 yu=esui.YU
-
-class AroToolbar(estl.UIGLTool):
+class AroToolbar(esui.Div):
     def __init__(self):
-        super().__init__('AroToolbar',(0,0),(4*yu,esui.IDX.MAP_DIV.Size.y))
-        self.SetBackgroundColour(esui.COLOR_LBACK)
-        self.host=esui.IDX.MAP_DIV
+        super().__init__(esui.UMR.MAP_DIV,style={
+                'p':(0,0),'bgc':esui.COLOR_LBACK,
+                's':(4*yu,GLC.GLDIV_HEIGHT)})
+        self.host=esui.UMR.MAP_DIV
         self.spos=(0,0)
-        self.state_select=['None','Pick']    # enum with [None, Pick, Rect, Picktop]
-        self.show_tab=False
+        # self.queue_select=['None','Pick']    # enum with [None, Pick, Rect, Picktop]
+        self.enum_slt=ESC.EsEnum(['deact','pick','rect','picktop'],prev='pick')
+        self.flag_tab_shown=False
 
-        self.head=esui.Btn(self,(0,0),(4*yu,2*yu),'Aro')
-        self.btn_slct=esui.SltBtn(self,(0,2*yu),(4*yu,4*yu),'Slt',option={'border':False})
-        # self.btn_rslct=esui.BlSelectBtn(self,(0,6*yu),(4*yu,4*yu),'RS')
-        self.btn_del=esui.Btn(self,(0,10*yu),(4*yu,4*yu),'Del',option={'border':False,'ext':True})
-        self.btn_mov=esui.SltBtn(self,(0,14*yu),(4*yu,4*yu),'Mov',option={'border':False})
+        self.head=esui.DivBtn(self,label='Aro',style={'p':(0,0),'s':(4*yu,2*yu)})
+        self.btn_slct=esui.TglBtn(self,label='Slt',
+            style={'p':(0,2*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
+        self.btn_del=esui.DivBtn(self,label='Del',
+            style={'p':(0,10*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
+        self.btn_mov=esui.TglBtn(self,label='Mov',
+            style={'p':(0,6*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
 
-        self.btn_viw=esui.BorderlessMenuBtn(self,(0,self.Size.y-8*yu),(4*yu,4*yu),'Viw',
-            ['Origin','Oxy','Oxz','Oyz','Fit','Center'])
-        self.btn_prj=esui.BorderlessMenuBtn(self,(0,self.Size.y-4*yu),(4*yu,4*yu),'Prj',
-            ['Orth','Prep'])
+        self.btn_viw=esui.MenuBtnDiv(self,label='Viw',no_border=True,
+            style={'p':(0,self.Size.y-8*yu),'s':(4*yu,4*yu)},
+            items=['Origin','Oxy','Oxz','Oyz','Fit','Center'])
+        self.btn_prj=esui.MenuBtnDiv(self,label='Prj',no_border=True,
+            style={'p':(0,self.Size.y-4*yu),'s':(4*yu,4*yu)},
+            items=['Orth','Prep'])
 
-        self.btn_slct.Bind(wx.EVT_LEFT_DOWN,self.onClkSlct)
-        self.btn_slct.Bind(wx.EVT_LEFT_DCLICK,self.onDClkSlct)
+        self.btn_slct.Bind(esui.EBIND_LEFT_CLK,self.onClkSlct)
+        self.btn_slct.Bind(esui.EBIND_LEFT_DCLK,self.onDClkSlct)
         # self.mov_btn.Bind(wx.EVT_LEFT_DOWN,self.onClkMoveBtn)
-        self.btn_del.Bind(wx.EVT_LEFT_DOWN,self.onClkDel)
-        self.btn_viw.PopupControl.lctrl.Bind(wx.EVT_LEFT_DCLICK,self.onDClkViewPopup)
-        self.btn_viw.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkViewPopup)
-        self.btn_prj.PopupControl.lctrl.Bind(wx.EVT_LEFT_DOWN,self.onClkProjPopup)
+        self.btn_del.Bind(esui.EBIND_LEFT_CLK,self.onClkDel)
+        self.btn_viw.bindPopup(esui.EBIND_LEFT_DCLK,self.onDClkViewPopup)
+        self.btn_viw.bindPopup(esui.EBIND_LEFT_CLK,self.onClkViewPopup)
+        self.btn_prj.bindPopup(esui.EBIND_LEFT_CLK,self.onClkProjPopup)
 
         self.host.Bind(wx.EVT_MOUSEWHEEL,self.onRoWhlGL)
-        self.host.Bind(wx.EVT_LEFT_DOWN,self.onClkGL)
-        self.host.Bind(wx.EVT_LEFT_DCLICK, self.onDClkGL)
+        self.host.Bind(esui.EBIND_LEFT_CLK,self.onClkGL)
+        self.host.Bind(esui.EBIND_LEFT_DCLK, self.onDClkGL)
         self.host.Bind(wx.EVT_LEFT_UP, self.onRlsGL)
         self.host.Bind(wx.EVT_MOTION,self.onMoveGL)
         self.host.Bind(wx.EVT_MIDDLE_DOWN,self.onClkWhlGL)
         return
 
     def onClkGL(self,e):
-        self.host.SetFocus()
+        e.Skip()
         cpos=e.GetPosition()
-        cx,cy=esgl.normPos(cpos)
         self.spos=cpos
-        if self.state_select[0]=='Pick':
+        if self.enum_slt.val('pick'):
             if e.controlDown:   # Multi-selecting with ctrl;
                 'todo'
             else:
-                esgl.ARO_SELECTION=list()
-                esgl.selectADP(cpos[0],cpos[1])
-                if len(esgl.ARO_SELECTION)==1:
-                    esgl.highlight()
-                elif len(esgl.ARO_SELECTION)!=0:
-                    ClkPopupPlc(self.host,cpos,esgl.ARO_SELECTION)
+                GLC.clearSelection()
+                selection=GLC.selectAdp(cpos[0],cpos[1])
+                if len(selection)<=1:GLC.highlightAdp()
+                else:SelectPopup(self.host,cpos,selection)
         else:pass
-        esgl.drawGL()
+        GLC.drawGL()
         return
 
     def onClkWhlGL(self,e):
-        self.spos=e.GetPosition()
         e.Skip()
+        self.spos=e.GetPosition()
         return
 
     def onRoWhlGL(self,e):
         t=np.sign(e.WheelRotation)
-        if esgl.WHEEL_DIS==-10 and t>0:return
-        if esgl.WHEEL_DIS==15 and t<0:return
+        if GLC.WHEEL_DIS==-10 and t>0:return
+        if GLC.WHEEL_DIS==15 and t<0:return
         cpos=e.GetPosition()
-        cx,cy=esgl.normPos(cpos)
+        cx,cy=GLC.cvtPosToCoord(cpos)
 
-        v_ae=esgl.EP-esgl.AP
+        ep=np.array(GLC.EP)
+        ap=np.array(GLC.AP)
+        v_ae=ep-ap
         z1=(v_ae)/np.linalg.norm(v_ae)    # ev_ae;
-        x1=np.cross(esgl.UP,z1)
+        x1=np.cross(np.array(GLC.UP),z1)
         x1=x1/np.linalg.norm(x1)
         y1=np.cross(z1,x1)
         y1=y1/np.linalg.norm(y1)
-        v_ac=0.414/esgl.ZS*np.array([cx*esgl.ASPECT_RATIO,cy,0])
+        v_ac=0.414/GLC.SPEED_ZOOM*np.array([cx*GLC.RATIO_WH,cy,0])
         v_ac=v_ac[0]*x1+v_ac[1]*y1
-        esgl.AP=esgl.AP+t*v_ac-t/esgl.ZS*z1
-        esgl.EP=esgl.EP+t*v_ac-t/esgl.ZS*z1
-        esgl.WHEEL_DIS-=t
-        esgl.projMode()
-        esgl.lookAt()
+        GLC.AP=(ap+t*v_ac-t/GLC.SPEED_ZOOM*z1).tolist()
+        GLC.EP=(ep+t*v_ac-t/GLC.SPEED_ZOOM*z1).tolist()
+        GLC.WHEEL_DIS-=t
+        # GLC.setProjMode()
+        GLC.lookAt()
         e.Skip()
         return
 
     def onDClkGL(self,e):
-        if len(esgl.ARO_SELECTION)==1:
-            esui.IDX.SIDE_DIV.showDetail(esgl.ARO_SELECTION[0].AroID)
+        selection=GLC.getSelection()
+        if len(selection)==1:
+            esui.UMR.SIDE_DIV.showDetail(selection[0].AroID)
         return
 
     def onRlsGL(self,e):
-        if self.state_select[0]=='Rect':
-            esgl.ARO_SELECTION=[]
+        if self.enum_slt.val('rect'):
+            GLC.clearSelection()
             cpos=e.GetPosition()
-            cx,cy=esgl.normPos(cpos)
-            sx,sy=esgl.normPos(self.spos)
-            for adp in esgl.DICT_ADP.getAllAdp():
+            cx,cy=GLC.cvtPosToCoord(cpos)
+            sx,sy=GLC.cvtPosToCoord(self.spos)
+            for adp in GLC.getAllAdp():
                 if not hasattr(adp.Aro,'position'):continue
                 slct=False
                 for p in adp.VA:
-                    p_2d=esgl.getPosFromVertex(adp,p)
-                    c1=p_2d[0] in interval.Interval(cx,sx)
-                    c2=p_2d[1] in interval.Interval(cy,sy)
+                    p_2d=GLC.getPosFromVtx(adp,p)
+                    c1=p_2d[0] in ESC.Itv(cx,sx)
+                    c2=p_2d[1] in ESC.Itv(cy,sy)
                     if c1 and c2:
-                        esgl.ARO_SELECTION.append(adp.Aro)
+                        GLC.ARO_SELECTION.append(adp.Aro)
                         adp.highlight=True
                         slct=True
                         break
                 if not slct:adp.highlight=False
             self.spos=cpos
-            esgl.drawGL()
+            GLC.drawGL()
         return
 
     def onMoveGL(self,e):
         cpos=e.GetPosition()
         spos=self.spos
-        if e.leftIsDown and self.state_select[0]=='Rect':
-            esgl.drawGL()
+        if e.leftIsDown and self.enum_slt.val('rect'):
+            GLC.drawGL()
             dc=wx.ClientDC(self.host)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.Pen(esui.COLOR_FRONT))
             dc.DrawRectangle(spos[0],spos[1],
                 cpos[0]-spos[0],cpos[1]-spos[1])
         elif e.middleIsDown:
-            esgl.UP=np.array([0,1,0])
-            dx=(cpos.x-spos.x)/self.host.Size.y*glm.pi()
-            dy=(spos.y-cpos.y)/self.host.Size.y*glm.pi()
+            GLC.UP=[0,1,0]
+            dx=(cpos.x-spos.x)/self.Size.y*glm.pi()
+            dy=(spos.y-cpos.y)/self.Size.y*glm.pi()
             self.spos=cpos
-            v_ae=esgl.EP-esgl.AP
+            ep=np.array(GLC.EP)
+            ap=np.array(GLC.AP)
+            v_ae=ep-ap
             r=np.linalg.norm(v_ae)
             tmp=v_ae[1]/r
             if abs(tmp)>1: tmp=1
@@ -151,154 +158,113 @@ class AroToolbar(estl.UIGLTool):
             v_ae=np.array([r*glm.sin(theta)*glm.cos(psi),
                 r*glm.cos(theta),
                 r*glm.sin(theta)*glm.sin(psi)])
-            esgl.EP=v_ae+esgl.AP
-            esgl.lookAt()
+            GLC.EP=(v_ae+ap).tolist()
+            GLC.lookAt()
         e.Skip()
         return
 
     def onClkSlct(self,e):
-        if self.state_select[0]=='None':
-            self.state_select[0]=self.state_select[1]
-        else:
-            self.state_select[0]='None'
-
-        # if self.selecting:
-        #     self.selecting=False
-        # else:
-        #     self.selecting=True
         e.Skip()
+        if self.enum_slt.val('deact'):
+            self.enum_slt.rollback()
+        else:
+            self.enum_slt.set('deact')
         return
 
     def onDClkSlct(self,e):
-        if self.show_tab:return
-        else:self.show_tab=True
-        self.tab=esui.IDX.SIDE_DIV.getTab('Options')
+        if self.flag_tab_shown:return
+        else:self.flag_tab_shown=True
+        self.tab=esui.UMR.SIDE_DIV.getTab('Options')
         tx=self.tab.Size.x
         esui.StaticText(self.tab,(yu,yu),(12*yu,4*yu),'Selecting Options:',align='left')
         btn_con=esui.Btn(self.tab,(tx-5*yu,yu),(4*yu,4*yu),'√')
-        ops=['Pick','Rect','Picktop']
-        menu_option=esui.SelectMenuBtn(
-            self.tab,(yu,6*yu),(tx-2*yu,4*yu),self.state_select[1],ops)
+        ops=['pick','rect','picktop']
+        menu_option=esui.MenuBtnDiv(self.tab,items=ops,select=True,
+            label=self.enum_slt.getPrev(),style={'p':(yu,6*yu),'s':(tx-2*yu,4*yu)})
 
         def onClkSlctCon(e):
-            self.show_tab=False
-            self.state_select=[ops[int(menu_option.Value)]]*2
+            self.flag_tab_shown=False
+            self.enum_slt.set(ops[int(menu_option.Value)])
             self.btn_slct.SetValue(True)
-            esui.IDX.SIDE_DIV.delTab('Options')
+            esui.UMR.SIDE_DIV.delTab('Options')
 
         btn_con.Bind(wx.EVT_LEFT_DOWN,onClkSlctCon)
         self.tab.Show()
         return
 
-    def onClkMove(self,e):
-        if esui.IDX.MAP_DIV.moving:
-            esui.IDX.MAP_DIV.moving=False
-        else:
-            esui.IDX.MAP_DIV.moving=True
-        e.Skip()
-        return
-
     def onClkDel(self,e):
-        for aro in esgl.ARO_SELECTION:
-            ESC.delAro(aro.AroID)
-        esgl.ARO_SELECTION=list()
-        esevt.sendEvent(esevt.ETYPE_COMEVT,esevt.ETYPE_UPDATE_MAP)
+        selection=GLC.getSelection()
+        for aro in selection:ESC.delAro(aro.AroID)
+        GLC.clearSelection()
+        esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
         e.Skip()
         return
 
     def onClkViewPopup(self,e):
-        ppc=self.btn_viw.PopupControl
-        if ppc.ipos==0:     # origin;
-            esgl.EP=np.array([5,5,5])
-            esgl.AP=np.array([0,0,0])
-            esgl.UP=np.array([0,1,0])
-            esgl.WHEEL_DIS=0
-        elif ppc.ipos==1:   # Oxy;
-            esgl.EP=np.array([0,0,5])
-            esgl.AP=np.array([0,0,0])
-            esgl.UP=np.array([0,1,0])
-            esgl.WHEEL_DIS=0
-        elif ppc.ipos==2:   # Oxz;
-            esgl.EP=np.array([0,-5,0])
-            esgl.AP=np.array([0,0,0])
-            esgl.UP=np.array([0,0,1])
-            esgl.WHEEL_DIS=0
-        elif ppc.ipos==3:   # Oyz;
-            esgl.EP=np.array([-5,0,0])
-            esgl.AP=np.array([0,0,0])
-            esgl.UP=np.array([0,1,0])
-            esgl.WHEEL_DIS=0
-        elif ppc.ipos==4:   # Fit;
-            pass
-        elif ppc.ipos==5:   # Center;
-            pass
-        elif ppc.ipos==6:     # Grid;
-            pass
-        esgl.lookAt()
         e.Skip()
+        pi=e.EventObject.popup_index
+        if pi==0:     # origin;
+            GLC.lookAt([5,5,5],[0,0,0],[0,1,0])
+            GLC.WHEEL_DIS=0
+        elif pi==1:   # Oxy;
+            GLC.lookAt([0,0,5],[0,0,0],[0,1,0])
+            GLC.WHEEL_DIS=0
+        elif pi==2:   # Oxz;
+            GLC.lookAt([0,-5,0],[0,0,0],[0,1,0])
+            GLC.WHEEL_DIS=0
+        elif pi==3:   # Oyz;
+            GLC.lookAt([-5,0,0],[0,0,0],[0,1,0])
+            GLC.WHEEL_DIS=0
+        elif pi==4:   # Fit;
+            pass
+        elif pi==5:   # Center;
+            pass
+        elif pi==6:     # Grid;
+            pass
         return
 
     def onDClkViewPopup(self,e):
-        ppc=self.btn_viw.PopupControl
-        if ppc.ipos==1:     # Oxy;
-            esgl.EP=np.array([0,0,-5])
-            esgl.UP=np.array([0,1,0])
-        elif ppc.ipos==2:   # Oxz;
-            esgl.EP=np.array([0,5,0])
-            esgl.UP=np.array([0,0,1])
-        elif ppc.ipos==3:   # Oyz;
-            esgl.EP=np.array([5,0,0])
-            esgl.UP=np.array([0,1,0])
+        pi=e.EventObject.popup_index
+        if pi==1:     # Oxy;
+            GLC.lookAt([0,0,-5],[0,0,0],[0,1,0])
+        elif pi==2:   # Oxz;
+            GLC.lookAt([0,5,0],[0,0,0],[0,1,0])
+        elif pi==3:   # Oyz;
+            GLC.lookAt([5,0,0],[0,0,0],[0,1,0])
         else: return
-        esgl.AP=np.array([0,0,0])
-        esgl.WHEEL_DIS=0
-        esgl.lookAt()
+        GLC.WHEEL_DIS=0
         e.Skip()
         return
 
     def onClkProjPopup(self,e):
-        ppc=self.btn_prj.PopupControl
-        if ppc.ipos==0:esgl.projMode(False)
-        elif ppc.ipos==1:esgl.projMode(False)
-        esgl.lookAt()
+        pi=e.EventObject.popup_index
+        if pi==0:GLC.setProjMode(False)
+        elif pi==1:GLC.setProjMode(False)
+        GLC.lookAt()
         e.Skip()
         return
     pass
 
-class ClkPopupPlc(esui.PopupPlc):
-    def __init__(self,parent,p,items):
-        super().__init__(parent,p,(10*yu,10*yu))
+class SelectPopup(esui.IndePopupDiv):
+    def __init__(self,parent,cpos,items):
+        super().__init__(parent,style={'p':(0,0),'s':(10*yu,len(items)*4*yu)})
         self.items=items
-        self.SetSize(10*yu,(len(items)*4+1)*yu)
         for i in range(0,len(self.items)):
-            self.ItemText(self,(yu,(4*i+.5)*yu),(self.Size.x-2*yu,4*yu-2),self.items[i])
+            item=esui.Div(self,label=self.items[i].AroName,
+                style={'p':(yu,4*i*yu+1),'s':(self.Size.x-2*yu,3*yu)})
+        self.bindPopup(wx.EVT_MOTION,self.onMoveItem)
+        self.bindPopup(wx.EVT_LEFT_DOWN,self.onClkItem)
+        self.Position((self.parent.Position.x+cpos[0],self.parent.Position.y+cpos[1]),(0,0))
+        self.Show()
         return
 
-    class ItemText(esui.StaticText):
-        def __init__(self,parent,p,s,item):
-            super().__init__(parent,p,s,item.AroName,align='left')
-            self.item=item
-            self.Bind(wx.EVT_LEAVE_WINDOW,self.onLeave)
-            self.Bind(wx.EVT_MOTION,self.onMove)
-            self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
-            return
+    def onClkItem(self,e):
+        e.Skip()
+        self.DestroyLater()
+        return
 
-        def onClk(self,e):
-            e.Skip()
-            esgl.highlight(self.item)
-            self.Parent.DestroyLater()
-            return
-
-        def onMove(self,e):
-            e.Skip()
-            dc=wx.ClientDC(self)
-            dc.SetPen(wx.Pen(esui.COLOR_FRONT))
-            dc.DrawLine(0,self.Size.y-1,self.Parent.Size.x-yu,self.Size.y-1)
-            esgl.highlight(self.item)
-            return
-
-        def onLeave(self,e):
-            self.Refresh(eraseBackground=False)
-            return
-        pass
+    def onMoveItem(self,e):
+        e.Skip()
+        GLC.highlightAdp(ESC.getAro(e.EventObject.label))
+        return
     pass
