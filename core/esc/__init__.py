@@ -1,38 +1,23 @@
-import os,numpy,shutil,interval
-import mod,app
-inf=numpy.inf
-# from .aro import Aro
-# from .acp import Acp
-class EvrSimCore(object):
-    ''' ## EvrSim Core
-        Communicate with memory and files.
-        '''
+# Import
+if True:
+    import os,numpy,shutil
+    import mod,app
+    inf=numpy.inf
+    from interval import Interval as Itv
+
     from .cls import EsTree,TreeNode,EsProcess,EsQueue,SimTree,ModTree,EsEnum
-    from .aro import Aro,AroNode,AroGroup,AroSpace
+    from .aro import Aro,AroGroup,AroSpace
     from .acp import Acp,AcpAttr,AcpPort
     from .acp import AcpSelector,AcpProvider,AcpIterator,AcpExecutor,AcpSetter,AcpGetter
-    from .acp import AcpLimitor,AcpEval,AcpVector3,AcpDepartor3,AcpConst,AcpCross
-    Itv=interval.Interval
+    from .acp import AcpLimitor,AcpEval,AcpVector3,AcpDepartor3,AcpConst,AcpCross,AcpMean
 
+class EvrSimCore(object):
+    ''' ## EvrSim Core
+        * Communicate with memory and files.'''
     def __init__(self):
-        self.ES_APP=''
-        self.CORE_STATUS=0    # Enum for ['READY':0,'BUSY':1,'STOP':2,'STEP':3];
-        self.SIM_NAME=''
-        self.SIM_TREE=None
-        self.MOD_TREE_DICT=dict()
-        self.TIME_RATE=1
-        self.MODEL_ENABLE=list()
-        # Maps and models;
-        self.MAP_ORDER=list()
-        self.MAP_QUEUE=[dict()]
-        self.MAP_ACTIVE=''
-        self.MAP_LIST=list()
-        self.ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[...]}
-        self.ACPS_PREPARED={'Providers':dict(),'Executors':dict(),'Iterators':dict()}
-        self.DATADICT=dict()
-        self.COMPILED_MODEL=None
         # User changeable setting;
         self.flag_realtime=True
+        self.flag_preset=True
         self.flag_record=False
         self.len_sim_queue=2
         self.fps=30
@@ -43,6 +28,24 @@ class EvrSimCore(object):
             'Queue length':'len_sim_queue',
             'Max Acp depth':'max_acp_depth',
             'Time step':'fps'}
+
+        self.ES_APP=''
+        self.STATUS=0    # Enum for ['READY':0,'BUSY':1,'STOP':2,'STEP':3];
+        self.SIM_NAME=''
+        self.SIM_TREE=None
+        self.MOD_TREE_DICT=dict()
+        self.TIME_RATE=1
+        self.MODEL_ENABLE=list()
+        # Maps and models;
+        self.MAP_ORDER=list()
+        self.MAP_QUEUE=[dict()]
+        self.MAP_ACTIVE=''
+        self.MAP_LIST=list()
+        self.MAP_BUF=list()
+        self.ACP_MODELS=dict()     # {(modName,modelName):[acplist...]} | {'simInModelName':[...]}
+        self.DATADICT=dict()
+        self.CPL_MODEL=None     # dict
+
         return
 
 # Static
@@ -70,10 +73,9 @@ class EvrSimCore(object):
             name=cls.__name__
 
         return module[0:module.rfind('.')]+'.'+name
-
 # Method
     def initCore(self):
-        self.CORE_STATUS=0
+        self.STATUS=0
         self.SIM_NAME=''
         self.SIM_TREE=None
         self.MOD_TREE_DICT=dict()
@@ -96,15 +98,22 @@ class EvrSimCore(object):
     def setApp(self,app):
         self.ES_APP=app
         return
-
+    def enableModel(self,mdl):
+        ''' Set model enable.
+            * Para mdl: New mdl for adding, or repeating mdl for deleting;
+            * Para process: 'sim' default;'''
+        if mdl in self.MODEL_ENABLE:
+            self.MODEL_ENABLE.remove(mdl)
+        else:
+            self.MODEL_ENABLE.append(mdl)
+        return
 # Core status
-    def isCoreReady(self):return self.CORE_STATUS==0
-    def isCoreBusy(self):return self.CORE_STATUS==1
-    def isCoreStop(self):return self.CORE_STATUS==2
-    def setCoreReady(self):self.CORE_STATUS=0
-    def setCoreBusy(self):self.CORE_STATUS=1
-    def setCoreStop(self):self.CORE_STATUS=2
-
+    def isCoreReady(self):return self.STATUS==0
+    def isCoreBusy(self):return self.STATUS==1
+    def isCoreStop(self):return self.STATUS==2
+    def setCoreReady(self):self.STATUS=0
+    def setCoreBusy(self):self.STATUS=1
+    def setCoreStop(self):self.STATUS=2
 # Aro
     def addAro(self,oncall=True,**arove):
         ''' Add an Aro. Return Aro if succeed.
@@ -115,7 +124,7 @@ class EvrSimCore(object):
         if not isinstance(aroclass,str):
             aroclass=self.getCls(aroclass)
             arove['AroClass']=aroclass
-        aro:EvrSimCore.Aro=eval(aroclass+'()')
+        aro:Aro=eval(aroclass+'()')
         aroid=arove.get('AroID',-1)
         if aroid==-1:
             if len(self.MAP_ORDER)==0:aro.AroID=1
@@ -126,6 +135,8 @@ class EvrSimCore(object):
         if aro.AroID not in self.MAP_ORDER:
             self.MAP_ORDER.append(aro.AroID)
         if oncall:aro.onAdd()
+        self.clearCPL()
+        self.clearMapBuffer()
         return aro
     def getAro(self,idx,queue=-1):
         ''' Get Aro or check parameter.
@@ -133,8 +144,8 @@ class EvrSimCore(object):
             * Para idx: Accept AroID/Aro/AroName;
             * Para queue: -1 default for getting from the last map snapshot;
             '''
-        out:EvrSimCore.Aro=None
-        if isinstance(idx,EvrSimCore.Aro):out=idx
+        out:Aro=None
+        if isinstance(idx,Aro):out=idx
         elif isinstance(idx,int):
             if idx in self.MAP_QUEUE[queue]:
                 out=self.MAP_QUEUE[queue][idx]
@@ -144,14 +155,16 @@ class EvrSimCore(object):
         return out
     def setAro(self,aro,oncall=True,**arove):
         ''' Set Arove with Arove dict.
-            Invisible or uneditable Arove wont be set, eg: AroID/AroClass.
+            Invisible or lock Arove wont be set, eg: AroID/AroClass.
             Special var name: inf.
             * Argkw `arove`: A dict is acceptable;
             '''
         aro=self.getAro(aro)
+        self.clearMapBuffer()
         if 'arove' in arove:arove.update(arove['arove'])
         for k,v in arove.items():
             if not hasattr(aro,k):continue
+            self.addMapBuffer(aro,k)
             setattr(aro,k,v)
         if oncall:aro.onSet()
         return
@@ -175,11 +188,52 @@ class EvrSimCore(object):
         aro=self.addAro(oncall=False,**arove)
         return aro
     def delAro(self,aro,oncall=True):
+        self.clearCPL()
+        self.clearMapBuffer()
         aro=self.getAro(aro)
         del self.MAP_QUEUE[-1][aro.AroID]
+        self.MAP_ORDER.remove(aro.AroID)
         if oncall:aro.onDel()
         return aro
+    def linkAro(self,parent,children):
+        ''' Link Aroes. Change parent/children Arove.'''
+        p=self.getAro(parent)
+        if not isinstance(children,list):children=[children]
+        c=[self.getAro(c) for c in children]
+        id_c=[_aro.AroID for _aro in c]
 
+        for aroid in id_c:
+            if aroid not in p.children:
+                p.children.append(aroid)
+            else:p.children.remove(aroid)
+        self.updateLink(p)
+
+        for _aro in c:
+            if _aro.parent==p.AroID:
+                _aro.parent=-1
+            else:
+                _aro.parent=p.AroID
+            self.updateLink(_aro)
+        if c[0].AroID in p.children:
+            self.sortAro(c,p)
+
+        return
+    def getLinkAro(self,aro,attr):
+        ''' Get linked Aro with attr name.
+            Return Aro or list;'''
+        aro=self.getAro(aro)
+        if attr not in aro._ptr:
+            self.updateLink(aro)
+        out:Aro=aro._ptr[attr]
+        return out
+    def updateLink(self,aro):
+        for attrname in aro._flag['link']:
+            attr=getattr(aro,attrname)
+            if isinstance(attr,int):
+                aro._ptr[attrname]=ESC.getAro(attr)
+            elif isinstance(attr,list):
+                aro._ptr[attrname]=[ESC.getAro(aroid) for aroid in attr]
+        return
 # Acp
     def getAcp(self,acpid,mdl)->Acp:
         ''' Get Acp by AcpID. Return None if not found.'''
@@ -190,10 +244,11 @@ class EvrSimCore(object):
         ''' Add an Acp to model. Return added Acp.'''
         import core
         if isinstance(acpclass,str):
-            acp:self.Acp=eval(acpclass+'()')
-        else:acp:self.Acp=acpclass()
+            acp:Acp=eval(acpclass+'()')
+        else:acp:Acp=acpclass()
 
         list_acpid=[acp.acpid.value for acp in self.ACP_MODELS[mdl]]
+        acp.mdl.value=mdl
         acp.acpid.value=max([0]+list_acpid)+1
         self.ACP_MODELS[mdl].append(acp)
         return acp
@@ -227,9 +282,9 @@ class EvrSimCore(object):
                         lacp.setPort(lpid,link=(acp.acpid.value,pid))
             self.ACP_MODELS[mdl].remove(acp)
         return acps
-    def loadAcp(self,mdl,**acpo):
+    def loadAcp(self,**acpo):
         ''' Load an Acp from Acpo. Acpo must contain acpid/AcpClass.'''
-        acp=self.addAcp(acpo['AcpClass'],mdl)
+        acp=self.addAcp(acpo['AcpClass'],acpo['mdl'])
         acp.setAcpo(**acpo)
         return acp
     def cntAcp(self,stid,stport,edid,edport,mdl):
@@ -257,8 +312,13 @@ class EvrSimCore(object):
         acp_st.setPort(stport,link=tuple_ed)
         acp_ed.setPort(edport,link=tuple_st)
         return
-
 # Map
+    def addMapBuffer(self,aro,arove):
+        atpl=(aro.AroID,arove)
+        if atpl not in self.MAP_BUF:
+            self.MAP_BUF.append(atpl)
+        return self.MAP_BUF.index(atpl)
+    def clearMapBuffer(self):self.MAP_BUF.clear()
     def newMapFile(self,mapname):
         if not self.isSimOpened():self.err('Sim not opened.')
         if mapname not in self.MAP_LIST:
@@ -294,7 +354,7 @@ class EvrSimCore(object):
                     temp=arove[k]
                     del arove[k]
                     arove[v]=temp
-            self.addAro(**arove)
+            self.addAro(oncall=False,**arove)
         return
     def saveMapFile(self,mapname=''):
         'Lv1: Update map;'
@@ -369,7 +429,6 @@ class EvrSimCore(object):
         return
     def getMapOrder(self):
         return self.MAP_ORDER
-
 # Model
     def getModelPath(self,mdl):
         ''' Get model path even not existed.
@@ -401,7 +460,7 @@ class EvrSimCore(object):
             # Build index and key dict;
             acp_index=[acp.acpid.value for acp in self.ACP_MODELS[model]]
             key_dict=dict()
-            acp:self.Acp
+            acp:Acp
             txt='ACP_INDEX='+str(acp_index)+'\n'
             for acp in self.ACP_MODELS[model]:
                 acpo=acp.getAcpo()
@@ -437,7 +496,7 @@ class EvrSimCore(object):
                 if idx in acpo:
                     acpo[attr]=acpo[idx]
                     del acpo[idx]
-            self.loadAcp(mdl,**acpo)
+            self.loadAcp(**acpo)
         return
     def renameModelFile(self,mdlname,newname):
         'Rename model in sim.'
@@ -456,7 +515,6 @@ class EvrSimCore(object):
         os.rename('sim/'+self.SIM_NAME+'/model/'+mdlname+'.py','sim/'+self.SIM_NAME+'/model/'+newname+'.py')
         self.saveSim()
         return
-
 # Sim
     def newSim(self,simname,src='_Template'):
         'Lv1: Create new sim by copying para src dir without opening;'
@@ -473,20 +531,20 @@ class EvrSimCore(object):
             shutil.rmtree('sim/'+simname)
         else: return self.err('Sim not found.')
         return
-    def openSim(self,simname):
+    def openSim(self,simname,path='sim/'):
         'Lv2: Open sim, and load mod and setting;'
         self.initCore()
         if self.isSimOpened(): return self.err('Sim already opened.')
 
         self.SIM_NAME=simname
         if simname in os.listdir('sim/'):
-            path='sim/'+simname+'/sim.py'
-            shutil.copy(path,'sim/'+simname+'/_sim.py')
-            SIM_FD=open(path,'r+')
+            sim_path=path+simname+'/sim.py'
+            shutil.copy(sim_path,path+simname+'/_sim.py')
+            SIM_FD=open(sim_path,'r+')
         elif simname in os.listdir('app/'):
-            path='app/'+simname+'/sim.py'
-            shutil.copy(path,'app/'+simname+'/_sim.py')
-            SIM_FD=open(path,'r+')
+            sim_path='app/'+simname+'/sim.py'
+            shutil.copy(sim_path,'app/'+simname+'/_sim.py')
+            SIM_FD=open(sim_path,'r+')
         else: return self.err('Sim not found.')
 
         # Read sim index;
@@ -495,7 +553,7 @@ class EvrSimCore(object):
         _locals=dict()
         exec(simtxt,globals(),_locals)
 
-        self.SIM_TREE=self.SimTree(_locals['SIM_TREE'])
+        self.SIM_TREE=SimTree(_locals['SIM_TREE'])
         self.loadMod(self.SIM_TREE.node_mod.data)
         self.setSim(self.SIM_TREE.node_perf.data)
         self.MAP_LIST=self.SIM_TREE.node_map.data
@@ -503,7 +561,6 @@ class EvrSimCore(object):
         self.loadMapFile(self.MAP_ACTIVE)
         for mdl in self.SIM_TREE.node_model.data:
             self.loadModelFile((self.SIM_NAME,mdl))
-
         return
     def closeSim(self,save=False):
         'Lv2: Close current sim and load default setting;'
@@ -543,170 +600,152 @@ class EvrSimCore(object):
         SIM_FD.close()
         return
     def resetSim(self):
-        self.ACPS_PREPARED['Providers']=dict()
         self.loadMapFile()
         return
-
 # Run
-    def CollectAcps(self):
-        for model,acplist in self.ACP_MODELS.items():
-            if model not in self.MODEL_ENABLE:continue
-            for acp in acplist:
-                if isinstance(acp,self.AcpIterator):
-                    if acp.item not in self.ACPS_PREPARED['Iterators']:
-                        self.ACPS_PREPARED['Iterators'][acp.item]=list()
-                    if acp not in self.ACPS_PREPARED['Iterators'][acp.item]:
-                        self.ACPS_PREPARED['Iterators'][acp.item].append(acp)
-                elif isinstance(acp,self.AcpProvider):
-                    if model not in self.ACPS_PREPARED['Providers']:
-                        self.ACPS_PREPARED['Providers'][model]=list()
-                    self.ACPS_PREPARED['Providers'][model].append(acp)
-                elif isinstance(acp,self.AcpExecutor):
-                    if model not in self.ACPS_PREPARED['Executors']:
-                        self.ACPS_PREPARED['Executors'][model]=list()
-                    self.ACPS_PREPARED['Executors'][model].append(acp)
+    def clearCPL(self):
+        self.CPL_MODEL=None
         return
-    def reqAcp(self,acp:Acp,mdl):
-        ''' Request Acp.'''
-        # Needed var;
-        datadict=self.DATADICT
-        stack=list()
-        track=list()
-        stack.append(acp)
-
-        # Main travesal;
-        while len(stack)!=0:
-            # if len(stack)>self.max_acp_depth:self.err('Acp too deep.')
-            acp=stack[-1]
-            acpid=acp.getAcpo('acpid')
-            # Requesting check;
-            if hasattr(acp,'preProgress'):acp.preProgress()
-            # IOports check;
-            out_ready=True
-            for port in acp.getPort(io='out'):
-                if (acpid,port.pid) not in datadict:
-                    out_ready=False
-                    break
-            in_ready=True
-            for port in acp.getPort(io='in'):
-
-                if port.link[0] not in datadict:
-                    in_ready=False
-                    stack.append(self.getAcp(port.link[0][0],mdl))
-                    break
-            # Checked;
-            if out_ready and in_ready:
-                # All ready, post progress;
-                try:
-                    if hasattr(acp,'postProgress'):
-                        acp.postProgress()
-                except BaseException as e:
-                    self.setCoreStop()
-                    self.err('Post progressing in '+acp.getAcpo('acp_name')+' '+str(e))
-                stack.pop()
-                track.append(acp)
-            elif in_ready:
-                # Inport all ready, calculate Acp;
-                try:
-                    if hasattr(acp,'AcpProgress'):
-                        acp.AcpProgress()
-                except BaseException as e:
-                    self.setCoreStop()
-                    self.err('Acp progressing in '+acp.getAcpo('acp_name')+' '+str(e))
-            continue
-
-        return track
-    def runCompiledSim(self):
+    def runFrame(self):
         # s=time.time()
-        if self.COMPILED_MODEL is None:self.compileModel()
-        set_dict=dict()
-        for ii in self.COMPILED_MODEL['ITOR']:
-            ii:self.AcpIterator
-            ii.iterate()
-
-        for oi in self.COMPILED_MODEL['OUTPUT']:
-            aroid=oi[0]
-            self.DATADICT={'REQ':[aroid]}
-            arove=self.COMPILED_MODEL['AROVE_INDEX'][oi[1]]
-            for acp in self.COMPILED_MODEL['TRACK_INDEX'][oi[2]]:
-                if isinstance(acp,self.AcpProvider):
-                    out=self.DATADICT[acp.port.value[1].link[0]][aroid]
-                    if len(out[0])==1:out=out[0][0]
-                    else:out=out[0]
-                elif isinstance(acp,self.AcpSelector):
-                    reslist=self.COMPILED_MODEL['INPUT'][(id(acp),aroid)]
-                    resdata=list()
-                    for resid in reslist:
-                        data=getattr(self.getAro(resid),acp.getAcpo('item'))
-                        if not isinstance(data,list):data=[data]
-                        resdata.append(data)
-                    if len(resdata)==0:resdata=[acp.getAcpo('default')]
-                    self.DATADICT.update({(acp.getAcpo('acpid'),1):{aroid:resdata}})
+        if self.CPL_MODEL is None:
+            self.compileModel()
+        cpl=self.CPL_MODEL
+        if cpl!=None:
+            set_dict=dict()
+            self.DATADICT.clear()
+            for itor in cpl['ITOR']:itor.iterate()
+            for aii in cpl['AII']:
+                aroid=aii[0]
+                arove=cpl['AVI'][aii[1]]
+                api=aii[2]
+                if api not in self.DATADICT:
+                    self.DATADICT[cpl['API'][api]]=[getattr(self.getAro(aroid),arove)]
                 else:
-                    if hasattr(acp,'AcpProgress'):acp.AcpProgress()
-            if aroid not in set_dict:set_dict[aroid]=dict()
-            set_dict[aroid].update({arove:out})
+                    self.DATADICT[cpl['API'][api]].append(getattr(self.getAro(aroid),arove))
 
-        for aroid,arove in set_dict.items():
-            self.setAro(aroid,**arove)
-        for ei in self.COMPILED_MODEL['EXCR']:
-            ei:self.AcpExecutor
-            ei.execute()
-        if not self.isCoreStop():
-            self.setCoreReady()
+            for aoi in cpl['AOI']:
+                aroid=aoi[0]
+                arove=cpl['AVI'][aoi[1]]
+                track=cpl['ATI'][aoi[2]]
+                for api in track:
+                    apit=cpl['API'][api]
+                    mdl=(apit[0],apit[1])
+                    acpid=apit[2]
+                    acp=self.getAcp(acpid,mdl)
+                    if isinstance(acp,AcpSetter):
+                        port:AcpPort=acp.getPort(name=arove)[0]
+                        sttr_apit=(mdl[0],mdl[1],port.link[0][0],port.link[0][1])
+                        out=self.DATADICT[sttr_apit][0]
+                    # elif isinstance(acp,AcpGetter):
+                    #     pass
+                    # else:
+                    if hasattr(acp,'AcpProgress'):
+                        self.DATADICT[apit]=acp.AcpProgress()
+                if aroid not in set_dict:
+                    set_dict[aroid]=dict()
+
+            self.clearMapBuffer()
+            for aroid,arove in set_dict.items():
+                self.setAro(aroid,**arove)
+            for excr in cpl['EXCR']:excr.execute()
+        if not self.isCoreStop():self.setCoreReady()
         # print(time.time()-s)
         return
-    def compileModel(self,mdl=None):
-        self.CollectAcps()
-        pvdrs=self.ACPS_PREPARED['Providers']
-        excrs=self.ACPS_PREPARED['Executors']
-        itors=self.ACPS_PREPARED['Iterators']
+    def compileModel(self):
+        self.SIGE={'Sttr':list(),'Gttr':list(),'Excr':list(),'Itor':list()}
+        AII=list()  # Input index
+        AOI=list()  # Output index
+        AVI=list()  # Arove index
+        ATI=list()  # Track index
+        API=list()  # Port index
+        for mdl,acplist in self.ACP_MODELS.items():
+            if  mdl not in self.MODEL_ENABLE:continue
+            for acp in acplist:
+                kind=''
+                if isinstance(acp,AcpIterator):kind='Itor'
+                elif isinstance(acp,AcpSetter):kind='Sttr'
+                elif isinstance(acp,AcpGetter):kind='Gttr'
+                elif isinstance(acp,AcpExecutor):kind='Excr'
+                if kind:self.SIGE[kind].append(acp)
 
-        INPUT=dict()
-        OUTPUT=list()
-        EXCR=list()
-        ITOR=list()
-        AROVE_INDEX=list()
-        TRACK_INDEX=list()
+        for gttr in self.SIGE['Gttr']:
+            gttr:AcpGetter
+            mdl=gttr.getAcpo('mdl')
+            gttr_aii=list()
+            for ARO in self.getFullMap():
+                # ARO:Aro
+                ABBRCLASS=ARO.AbbrClass
+                AROVE=ARO.__dict__
+                target=eval(gttr.getAcpo('expression'))
+                if target:gttr_aii.append(ARO.AroID)
+            for port in gttr.getPort(io='out'):
+                if port.name not in AVI:AVI.append(port.name)
+                apit=(mdl[0],mdl[1],gttr.getAcpo('acpid'),port.pid)
+                API.append(apit)
+                avi=AVI.index(port.name)
+                api=API.index(apit)
+                AII+=[(aroid,avi,api) for aroid in gttr_aii]
 
-        for model,pvdrlist in pvdrs.items():
-            for pvdr in pvdrlist:
-                self.DATADICT=dict()
-                track=self.reqAcp(pvdr,model)
-                reqlist=self.DATADICT['REQ']
-                if pvdr.item.value in AROVE_INDEX:
-                    api=AROVE_INDEX.index(pvdr.item.value)
-                else:
-                    AROVE_INDEX.append(pvdr.item.value)
-                    api=len(AROVE_INDEX)-1
-                if track in TRACK_INDEX:
-                    ati=TRACK_INDEX.index(track)
-                else:
-                    TRACK_INDEX.append(track)
-                    ati=len(TRACK_INDEX)-1
-                for aroid in reqlist:
-                    OUTPUT.append([aroid,api,ati])
-                    for acp in track:
-                        if isinstance(acp,self.AcpSelector):
-                            resdict=self.DATADICT[(acp.getAcpo('acpid'),'RES')]
-                            INPUT.update({(id(acp),aroid):resdict[aroid]})
-        for model,excrlist in excrs.items():
-            for _excr in excrlist:
-                EXCR.append(_excr)
-        for model,itorlist in itors.items():
-            for _itor in itorlist:
-                ITOR.append(_itor)
-        self.COMPILED_MODEL={
-            'INPUT':INPUT,
-            'OUTPUT':OUTPUT,
-            'EXCR':EXCR,
-            'ITOR':ITOR,
-            'AROVE_INDEX':AROVE_INDEX,
-            'TRACK_INDEX':TRACK_INDEX}
+        for sttr in self.SIGE['Sttr']:
+            sttr:AcpSetter
+            sttr_mdl=sttr.getAcpo('mdl')
+            sttr_aoi=list()
+            for ARO in self.getFullMap():
+                # ARO:Aro
+                ABBRCLASS=ARO.AbbrClass
+                AROVE=ARO.__dict__
+                target=eval(gttr.getAcpo('expression'))
+                if target:sttr_aoi.append(ARO.AroID)
+            for port in sttr.getPort(io='in'):
+                port:AcpPort
+                if port.name not in AVI:AVI.append(port.name)
+                avi=AVI.index(port.name)
+                track=list()
+                visited=list()
+                stack=[(sttr,port)]
+                while len(stack)!=0:
+                    sacp=stack[-1][0]
+                    sport=stack[-1][1]
+                    acpid=sacp.getAcpo('acpid')
+                    mdl=sacp.getAcpo('mdl')
+                    # IOports check;
+                    out_ready=True
+                    for oport in sacp.getPort(io='out'):
+                        if (acpid,oport.pid) not in visited:
+                            out_ready=False
+                            break
+                    in_ready=True
+                    for iport in sacp.getPort(io='in'):
+                        if iport.link[0] not in visited:
+                            in_ready=False
+                            tacp=self.getAcp(iport.link[0][0],mdl)
+                            tport=tacp.getPort(pid=iport.link[0][1])[0]
+                            stack.append((tacp,tport))
+                            break
+                    # Checked;
+                    if out_ready and in_ready:
+                        stack.pop()
+                        api=(mdl[0],mdl[1],acpid,sport.pid)
+                        if api not in API:API.append(api)
+                        ati=API.index(api)
+                        track.append(ati)
+                    elif in_ready:
+                        # Inport all ready, calculate Acp;
+                        visited+=[(acpid,oport.pid) for oport in sacp.getPort(io='out')]
+                    continue
+                ATI.append(track)
+                ati=len(ATI)-1
+                AOI+=[(aroid,avi,ati) for aroid in sttr_aoi]
 
+        cpl={'EXCR':tuple(self.SIGE['Excr']),
+            'ITOR':tuple(self.SIGE['Itor']),
+            'AII':AII,'AOI':AOI,
+            'AVI':AVI,'ATI':ATI,'API':API}
+        self.CPL_MODEL=cpl
         self.resetSim()
-        return
 
+        return cpl
 # Mod
     def setMod(self):
         return
@@ -718,7 +757,7 @@ class EvrSimCore(object):
                 self.SIM_TREE.node_mod.data.append(modname)
             if modname not in self.MOD_TREE_DICT:
                 exec('import mod.'+modname)
-                self.MOD_TREE_DICT[modname]=self.ModTree(modname)
+                self.MOD_TREE_DICT[modname]=ModTree(modname)
 
                 mod_setting=eval('mod.'+modname+'.MOD_PERF')
                 self.setSim(mod_setting,usercall=False)
@@ -742,4 +781,5 @@ class EvrSimCore(object):
         return ret
 
     pass
-esc=EvrSimCore()
+
+ESC=EvrSimCore()

@@ -1,17 +1,5 @@
-from core import ESC
-
-class AroTargets(ESC.Aro):
-    ''' Aro with targets.
-
-        Addition Arove: targets;'''
-    def __init__(self):
-        super().__init__()
-        self._flag['target'].append('targets')
-        self.targets=list()     # AroID list;
-        return
-    pass
-
-class AroPoint(ESC.Aro):
+from core import esc
+class AroPoint(esc.Aro):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpPoint'
@@ -19,7 +7,7 @@ class AroPoint(ESC.Aro):
         return
     pass
 
-class AroImage(ESC.Aro):
+class AroImage(esc.Aro):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpImage'

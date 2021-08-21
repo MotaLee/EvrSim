@@ -1,5 +1,7 @@
 import numpy as np
-from core import ESC,esgl
+# import _glm as glm
+from core import esgl
+from mod.AroCore import AdpBody
 class AdpBC(esgl.AroDrawPart):
     def __init__(self,aroid):
         super().__init__(aroid)
@@ -83,5 +85,74 @@ class AdpGnd(esgl.AroDrawPart):
             layout=[esgl.VtxLayout('color')],
             vertices=VA,faces=EA)
         self.updateAdp()
+        return
+    pass
+
+class AdpRefPoint(esgl.AroDrawPart):
+    def __init__(self, aroid):
+        super().__init__(aroid)
+        self.dict_fix['fix']=True
+        self.dict_fix['size']=True
+        self.dict_fix['orient']=True
+        s=0.1
+        n=0.01
+        VA=np.array([
+            [s-n,s-n,0],[s-n,n,0],[n,s-n,0],
+            [-s+n,s-n,0],[-s+n,n,0],[-n,s-n,0],
+            [-s+n,-s+n,0],[-s+n,-n,0],[-n,-s+n,0],
+            [s-n,-s+n,0],[s-n,-n,0],[n,-s+n,0],
+            ],dtype=np.float32)
+        CA=np.array([self.Aro.color],dtype=np.float32)
+        CA=np.tile(CA,(12,1))
+        alpha=np.ones(12).astype(np.float32)
+        VA=np.column_stack((VA,CA,alpha))
+        EA=np.array([[0,1,2],[3,4,5],[6,7,8],[9,10,11]],dtype=np.uint32)
+        self.addMesh(
+            draw_type=esgl.DT_TRI,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,faces=EA)
+        self.updateAdp()
+        return
+    pass
+
+class AdpBeam2D(AdpBody):
+    def __init__(self, aroid):
+        super().__init__(aroid)
+        aro=self.Aro
+        vai,eai,f=esgl.genCircleArr(aro.radius)
+        vao,eao,f=esgl.genCircleArr(aro.radius*2)
+        VA=np.vstack((vai,vao))
+        EA=np.vstack([eai,eao+len(vai)])
+        CA=np.array([aro.color],dtype=np.float32)
+        CA=np.tile(CA,(VA.shape[0],1))
+        alpha=np.ones((VA.shape[0],1)).astype(np.float32)
+        VA=np.hstack((VA,CA,alpha))
+
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,edges=EA,
+            trans=esgl.transMat(vec=aro.ptf))
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=VA,edges=EA,
+            trans=esgl.transMat(vec=aro.pts))
+
+        var,e,f=esgl.genRectArr()
+
+        self.addMesh(
+            draw_type=esgl.DT_LINE,
+            layout=[esgl.VtxLayout('color')],
+            vertices=esgl.stackColorArr(var,aro.color),
+            edges=np.array([0,1,2,3],dtype=np.uint32),
+            trans=esgl.transMat(option='scale',vec=[aro.length,aro.radius*4,1]))
+        self.updateAdp()
+        return
+
+    def updateAdp(self):
+        super().updateAdp()
+
+        self.flag_update=True
         return
     pass

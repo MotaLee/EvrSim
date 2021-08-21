@@ -17,7 +17,7 @@ SIM_TREE={
         "label": "Perference",
         "children": None,
         "parent": 1,
-        "data":  {'MODEL_ENABLE': [('SmartToeSleeve', 'sts')], 'MAP_ACTIVE': 'init'},
+        "data":  {'MODEL_ENABLE': [], 'MAP_ACTIVE': 'init'},
         "depth": 1
     },
     "3": {
@@ -31,12 +31,9 @@ SIM_TREE={
     "4": {
         "nid": 4,
         "label": "Model",
-        "children": [
-            8
-        ],
+        "children":None,
         "parent": 1,
         "data": [
-            "sts"
         ],
         "depth": 1
     },
@@ -58,14 +55,6 @@ SIM_TREE={
         "label": "init",
         "children": None,
         "parent": 3,
-        "data": None,
-        "depth": 2
-    },
-    "8": {
-        "nid": 8,
-        "label": "sts",
-        "children": None,
-        "parent": 4,
         "data": None,
         "depth": 2
     },

@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 import wx
-from core import ESC,esui,esgl
-GLC=esgl.glc
+from core import ESC,esui,esgl,esc
+GLC=esgl.GLC
 yu=esui.YU
-
+UMR=esui.UMR
 
 class SideDiv(esui.TabDiv):
     def __init__(self, parent, **argkw):
@@ -13,7 +13,7 @@ class SideDiv(esui.TabDiv):
         self.hideTab('Detail')
         self.toggleTab()
 
-        self.updateAroTree=self.div_mgr.tree_map.buildTree
+        self.buildMapTree=self.div_mgr.tree_map.buildTree
         self.showDetail=self.div_detail.showDetail
         self.clearDetail=self.div_detail.clearDetail
         self.Bind(esui.EBIND_COMEVT,self.onComEvt)
@@ -23,10 +23,10 @@ class SideDiv(esui.TabDiv):
     def onComEvt(self,e:esui.ESEvent):
         etype=e.getEventArgs()
         if etype==esui.ETYPE_UPDATE_MAP:
-            self.updateAroTree()
+            self.buildMapTree()
             self.div_mgr.tree_sim.updateTree()
         elif etype==esui.ETYPE_RESET_SIM:
-            self.updateAroTree()
+            self.buildMapTree()
         elif etype==esui.ETYPE_OPEN_SIM:
             self.div_mgr.tree_sim.buildTree()
             self.div_mgr.tree_map.buildTree()
@@ -113,13 +113,14 @@ class MgrDiv(esui.ScrollDiv):
     def onClkEnable(self,e):
         enable_list=list(ESC.MODEL_ENABLE)
         for div in self.tree_mdl.getChildren():
+            div:MdlItemDiv
             if div.flag_selected and div.depth!=0:
-                mdl=self.tree_mdl.getModelTuple(div)
-                flag_enabled=mdl in ESC.MODEL_ENABLE
-                if flag_enabled:enable_list.remove(mdl)
-                else:enable_list.append(mdl)
+                flag_enabled=div.mdl in ESC.MODEL_ENABLE
+                if flag_enabled:enable_list.remove(div.mdl)
+                else:enable_list.append(div.mdl)
+                break
         ESC.setSim({'MODEL_ENABLE':enable_list})
-        self.tree_mdl.drawBadges()
+        div.checkModelStatus()
         e.Skip()
         return
 
@@ -162,10 +163,11 @@ class SimItemDiv(esui.TreeItemDiv):
         if self.plabel=='Map':
             if self.label!=ESC.MAP_ACTIVE:
                 ESC.loadMapFile(self.label)
+                ESC.setSim({'MAP_ACTIVE':self.label})
                 esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
             else:esui.toggleWorkspace(target='ARO')
         elif self.plabel=='Model':
-            esui.UMR.MDL_DIV.drawMdl((ESC.SIM_NAME,self.label))
+            UMR.MDL_DIV.drawMdl((ESC.SIM_NAME,self.label))
             esui.toggleWorkspace(target='ACP')
         e.Skip()
         return
@@ -174,7 +176,7 @@ class SimTreeDiv(esui.TreeDiv):
     def __init__(self,parent,**argkw):
         super().__init__(parent,**argkw)
         self.ItemClass=SimItemDiv
-        # self.ItemClass.setClass(s=(self.Size[0]-yu,3*yu))
+        self.ItemClass.setClass(s=(self.Size[0]-yu,3*yu))
         self.stl_en={
             'p':(self.Size[0]-3*yu,0.75*yu),
             's':(1.5*yu,1.5*yu),
@@ -209,7 +211,6 @@ class SimTreeDiv(esui.TreeDiv):
             node=tree.getNode(nid)
             self.addItem(node=node)
         self.drawTree()
-        # self.drawBadges()
         return
 
     def updateTree(self):
@@ -248,7 +249,7 @@ class MapItemDiv(esui.TreeItemDiv):
 
     def onDClk(self,e):
         aro=ESC.getAro(self.nid)
-        esui.UMR.SIDE_DIV.showDetail(aro)
+        UMR.SIDE_DIV.showDetail(aro)
         e.Skip()
         return
 
@@ -274,9 +275,10 @@ class MapItemDiv(esui.TreeItemDiv):
 class MapTreeDiv(esui.TreeDiv):
     def __init__(self,parent,**argkw):
         super().__init__(parent,**argkw)
-        self.csr_rEnter=esui.UMR.getCursor(path='res/img/Icon_rEnter.png')
+        self.csr_rEnter=UMR.getCursor(path='res/img/Icon_rEnter.png')
         self._flag_dragging=False
         self.ItemClass=MapItemDiv
+        self.ItemClass.setClass(s=(self.Size[0]-yu,3*yu))
         self.timer_sort=wx.Timer(self)
         self.Bind(wx.EVT_TIMER,self.sortTree,self.timer_sort)
         self.Hide()
@@ -292,11 +294,10 @@ class MapTreeDiv(esui.TreeDiv):
         for aroid in ESC.getMapOrder():
             if aroid in self.dict_nid:continue
             aro=ESC.getAro(aroid)
-            children= getattr(aro,'children',None)
-            if children is None:
+            if aro.children==[]:
                 self.addItem(nid=aro.AroID,label=aro.AroName,
                     icon=getattr(aro,'icon',dict()),
-                    parent=-1,children=children,depth=1)
+                    parent=-1,children=None,depth=1)
                 continue
             tstack=[aroid]
             while len(tstack)!=0:
@@ -304,12 +305,12 @@ class MapTreeDiv(esui.TreeDiv):
                 aro=ESC.getAro(node)
                 if node not in self.dict_nid:
                     self.addItem(nid=aro.AroID,label=aro.AroName,
-                        parent=getattr(aro,'parent',None),
-                        children=getattr(aro,'children',None),
+                        parent=aro.parent,
+                        children=list(aro.children),
                         icon=getattr(aro,'icon',dict()),
                         depth=len(tstack))
                 allow_popout=True
-                if hasattr(aro,'children'):
+                if len(aro.children)!=0:
                     for child in aro.children:
                         if child not in self.dict_nid:
                             allow_popout=False
@@ -321,7 +322,6 @@ class MapTreeDiv(esui.TreeDiv):
         self.drawTree()
         return
 
-
     def sortTree(self,e=None):
         list_new=[self.dict_nid[-1]]
         for aroid in ESC.getMapOrder():
@@ -331,17 +331,48 @@ class MapTreeDiv(esui.TreeDiv):
         return
     pass
 
+class MdlItemDiv(esui.TreeItemDiv):
+    def __init__(self,parentdiv,**argkw):
+        super().__init__(parentdiv,**argkw)
+        self.mdl:tuple=argkw.get('mdl',())
+
+        self.badge_sim=esui.Div(self,
+            style={
+                'p':(self.Parent.Size.x-4*yu,0.5*yu),
+                's':(3*yu,3*yu),
+                'border':esui.COLOR_FRONT},
+            active={'bgc':esui.COLOR_FRONT})
+
+        self.checkModelStatus()
+        self.Bind(esui.EBIND_LEFT_DCLK,self.onDClk)
+        return
+
+    def onDClk(self,e):
+        if self.mdl==():return
+        esui.toggleWorkspace(target='ACP')
+        UMR.MDL_DIV.drawMdl(self.mdl)
+        e.Skip()
+        return
+
+    def checkModelStatus(self):
+        if self.mdl in ESC.MODEL_ENABLE:
+            self.badge_sim.setActive(True)
+        else:
+            self.badge_sim.setActive(False)
+        return
+    pass
 class MdlTreeDiv(esui.TreeDiv):
     def __init__(self,parent,**argkw):
         super().__init__(parent,**argkw)
-        self.ItemClass.setClass(parent=self,s=(self.Size[0]-yu,3*yu))
+        self.ItemClass=MdlItemDiv
+        self.ItemClass.setClass(s=(self.Size[0]-yu,3*yu))
         self.stl_en={
             'p':(self.Size[0]-3*yu,0.75*yu),
-            's':(1.5*yu,1.5*yu),
+            's':(yu,1.5*yu),
             'bgc':esui.COLOR_FRONT}
         self.stl_dis={
             'p':(self.Size[0]-3*yu,0.75*yu),
-            's':(1.5*yu,1.5*yu),
+            's':(yu,1.5*yu),
             'border':esui.COLOR_FRONT}
         self.Hide()
         return
@@ -352,46 +383,17 @@ class MdlTreeDiv(esui.TreeDiv):
         self.dict_nid=dict()
         self.delChildren()
         self.addItem(nid=0,label=ESC.SIM_NAME,children=list())
-        for mdl in ESC.SIM_TREE.node_model.data:
+        for model in ESC.SIM_TREE.node_model.data:
             self.addItem(
                 nid=len(self.list_item),depth=1,
-                label=mdl,parent=0)
+                label=model,parent=0,mdl=(ESC.SIM_NAME,model))
         for mod in ESC.SIM_TREE.node_mod.data:
             pnid=len(self.list_item)
             self.addItem(nid=pnid,label=mod,children=list())
-            for mdl in ESC.MOD_TREE_DICT[mod].node_mdl.data:
+            for model in ESC.MOD_TREE_DICT[mod].node_mdl.data:
                 self.addItem(nid=len(self.list_item),depth=1,
-                label=mdl,parent=pnid)
+                label=model,parent=pnid,mdl=(mod,model))
         self.drawTree()
-        self.drawBadges()
-        return
-
-    def afterDraw(self):
-        for item in self.getChildren():
-            if item.parent is not None:
-                item.Bind(esui.EBIND_LEFT_DCLK,self.onDClkItem)
-        return
-
-    def onDClkItem(self,e):
-        mdl=self.getModelTuple(e.EventObject)
-        esui.toggleWorkspace(target='ACP')
-        esui.UMR.MDL_DIV.drawMdl(mdl)
-        e.Skip()
-        return
-
-    def getModelTuple(self,div):
-        pitem=self.dict_nid[div.parent]
-        return (pitem.label,div.label)
-
-    def drawBadges(self):
-        for ctrl in self.getChildren():
-            ctrl.DestroyChildren()
-            if ctrl.depth==0:mod=ctrl.label
-            if ctrl.depth==1:
-                if (mod,ctrl.label) in ESC.MODEL_ENABLE:
-                    ctrl.dict_badge['enable mdl']=esui.Div(ctrl,style=dict(self.stl_en))
-                else:
-                    ctrl.dict_badge['enable mdl']=esui.Div(ctrl,style=dict(self.stl_dis))
         return
     pass
 
@@ -399,99 +401,170 @@ class DetailDiv(esui.Div):
     def __init__(self,parent,**argkw):
         super().__init__(parent,**argkw)
         self.aro=None
+        self.list_history=[]
+        self.list_base=['AroID','AroName','visible',
+            'enable','parent','children','AbbrClass',
+            'AroClass','adp','desc']
+        self.dict_ext=dict()
+        esui.StaticText(self,(yu,yu),(8*yu,4*yu),'Detail:',align='left')
+        # self.btn_for=esui.DivBtn(self,label='>>',enable=False,
+        #     style={'p':(self.Size.x-20*yu,yu),'s':(4*yu,4*yu)})
+        # self.btn_back=esui.DivBtn(self,label='<<',enable=False,
+        #     style={'p':(self.Size.x-15*yu,yu),'s':(4*yu,4*yu)})
+        self.btn_con=esui.DivBtn(self,label='√',
+            style={'p':(self.Size.x-12*yu,yu),'s':(3*yu,4*yu)})
+        self.btn_pcon=esui.DivBtn(self,label='P',
+            style={'p':(self.Size.x-9*yu,yu),'s':(3*yu,4*yu)})
+        self.btn_can=esui.DivBtn(self,label='×',
+            style={'p':(self.Size.x-5*yu,yu),'s':(4*yu,4*yu)})
 
-        self.btn_con=esui.Btn(self,(self.Size[0]-10*yu,yu),(4*yu,4*yu),txt='√')
-        self.btn_can=esui.Btn(self,(self.Size[0]-5*yu,yu),(4*yu,4*yu),txt='×')
-        self.div_detail=esui.ScrollDiv(self,style={
+        self.div_arove=esui.ScrollDiv(self,style={
             'p':(0,6*yu),
-            's':(self.Size[0],self.Size[1]-6*yu),
+            's':(self.Size.x,self.Size.y-6*yu),
             'bgc':esui.COLOR_LBACK})
+        self.txt_aroid=esui.DivText(self.div_arove,label='AroID',
+            style={'p':(yu,0),'s':(6*yu,3*yu)})
+        self.btn_aroid=esui.DivBtn(self.div_arove,
+            style={'p':(yu,4*yu),'s':(6*yu,4*yu)})
+        self.txt_aroname=esui.DivText(self.div_arove,label='AroName',
+            style={'p':(8*yu,0),'s':(6*yu,3*yu)})
+        self.input_aroname=esui.InputText(self.div_arove,cn='AroName',
+            style={'p':(8*yu,4*yu),'s':(self.Size.x-9*yu,4*yu)})
+        self.btn_enable=esui.TglBtn(self.div_arove,label='Enable',
+            style={'p':(yu,9*yu),'s':(self.Size.x/2-1.5*yu,3*yu)})
+        self.btn_visible=esui.TglBtn(self.div_arove,label='Visible',
+            style={'p':(self.Size.x/2+yu/2,9*yu),'s':(self.Size.x/2-1.5*yu,3*yu)})
+        self.txt_abbrclass=esui.DivText(self.div_arove,label='AbbrClass',
+            style={'p':(yu,13*yu),'s':(6*yu,3*yu),'align':'left'})
+        self.input_abbrclass=esui.InputText(self.div_arove,readonly=True,
+            style={'p':(8*yu,13*yu),'s':(self.Size.x-9*yu,3*yu)})
+        self.txt_adp=esui.DivText(self.div_arove,label='ADP',
+            style={'p':(yu,17*yu),'s':(6*yu,3*yu),'align':'left'})
+        self.input_adp=esui.InputText(self.div_arove,readonly=True,
+            style={'p':(8*yu,17*yu),'s':(self.Size.x-9*yu,3*yu)})
+        self.txt_parent=esui.DivText(self.div_arove,label='Parent',
+            style={'p':(yu,21*yu),'s':(6*yu,3*yu),'align':'left'})
+        self.btn_parent=esui.DivBtn(self.div_arove,
+            style={'p':(8*yu,21*yu),'s':(self.Size.x-9*yu,3*yu)})
+        self.txt_children=esui.DivText(self.div_arove,label='Children',
+            style={'p':(yu,25*yu),'s':(6*yu,3*yu),'align':'left'})
+        self.btn_children=esui.MenuBtnDiv(self.div_arove,
+            style={'p':(8*yu,25*yu),'s':(self.Size.x-9*yu,3*yu)})
+        self.txt_desc=esui.DivText(self.div_arove,label='Desc',
+            style={'p':(yu,29*yu),'s':(6*yu,3*yu),'align':'left'})
+        self.input_desc=esui.MultilineText(self.div_arove,cn='desc',
+            style={'p':(yu,33*yu),'s':(self.Size.x-2*yu,9*yu)})
+
         self.btn_con.Bind(esui.EBIND_LEFT_CLK,self.onClkConfirm)
         self.btn_can.Bind(esui.EBIND_LEFT_CLK,self.onClkCancel)
         return
 
     def onClkConfirm(self,e):
         arove=dict()
-        for ctrl in self.div_detail.getChildren():
+        for ctrl in self.div_arove.getChildren():
+            if ctrl.cn=='':continue
             if isinstance(ctrl,(esui.InputText,esui.MultilineText)):
+                if ctrl.isReadonly():continue
                 v=ctrl.getValue()
                 try: v_eval=eval(v)
                 except BaseException:v_eval=v
-            elif type(ctrl)==esui.SltBtn:
-                v_eval=ctrl.GetValue()
-            elif type(ctrl)==esui.Btn and hasattr(ctrl,'value'):
-                v_eval=ctrl.value
+            elif isinstance(ctrl,esui.TglBtn):
+                v_eval=ctrl.isActive()
             else:continue
-            arove[ctrl.Name]=v_eval
+            if v_eval!=getattr(self.aro,ctrl.cn):
+                arove[ctrl.cn]=v_eval
         ESC.setAro(self.aro.AroID,**arove)
-        # esui.UMR.MAP_DIV.readMap()
+        # esui.sendComEvt(esui.ETYPE_RUN_PRESET)
         esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
-        esui.HintText(self,label='Updated.',style={'p':(self.Size[0]-14*yu,yu),'s':(8*yu,4*yu)})
+        esui.HintText(self,label='Updated.',
+            style={'p':(self.Size[0]-20*yu,yu),'s':(8*yu,4*yu)})
         return
 
     def onClkCancel(self,e):
-        esui.UMR.SIDE_DIV.hideTab('Detail')
-        esui.UMR.SIDE_DIV.toggleTab('Manager')
+        UMR.SIDE_DIV.hideTab('Detail')
+        UMR.SIDE_DIV.toggleTab('Manager')
         return
 
     def showDetail(self,aro=None):
-        DP=self.div_detail
-        DP.delChildren()
-        esui.UMR.SIDE_DIV.toggleTab('Detail')
-        if aro is None:aro=GLC.getSelection()[0]
-        elif isinstance(aro,int):aro=ESC.getAro(aro)
-        self.aro=aro
-        esui.StaticText(self,(yu,0),(8*yu,4*yu),aro.AroName+' Detail:',align='left')
-        i=0
-        for k,v in aro.__dict__.items():
-            if k[0]=='_':continue
-            if k in aro._flag['invisible']:continue
-            esui.StaticText(DP,(yu,i*4*yu),(12*yu,4*yu),k+':',align='left')
-            if k not in aro._flag['uneditable']:stl=0
-            else:stl=wx.TE_READONLY
+        UMR.SIDE_DIV.toggleTab('Detail')
+        if aro is None:aro:esc.Aro=GLC.getSelection()[0]
+        self.aro=ESC.getAro(aro)
+        self.clearDetail()
 
-            if k in aro._flag['longdata']:
-                esui.MultilineText(DP,hint=str(v),cn=k,readonly=stl,
-                    style={'p':(yu,(i+1)*4*yu),'s':(DP.Size[0]-2*yu,12*yu)})
+        self.btn_aroid.setLabel(aro.AroID)
+        self.input_aroname.setValue(aro.AroName)
+        self.btn_visible.setActive(aro.visible)
+        self.btn_enable.setActive(aro.enable)
+        self.input_abbrclass.setValue(aro.AbbrClass)
+        self.input_adp.setValue(aro.adp)
+        self.input_desc.setValue(aro.desc)
+        if aro.parent==-1:
+            self.btn_parent.setLabel('(None)')
+        else:
+            p=ESC.getLinkAro(aro,'parent')
+            self.btn_parent.setLabel(str(p.AroID)+' : '+p.AroName)
+        if len(aro.children)==0:
+            self.btn_children.setLabel('(Empty)')
+        else:
+            children=ESC.getLinkAro(aro,'children')
+            self.btn_children.setItems([
+                str(aro.AroID)+' : '+aro.AroName
+                for aro in children])
+            self.btn_children.setLabel(str(len(children))+' items')
+
+        ys=43*yu
+        i=0
+        for k,v in vars(aro).items():
+            if k in self.list_base or k in aro._flag['hide']:continue
+            key=esui.DivText(self.div_arove,label=k,
+                style={'p':(yu,ys+i*4*yu),'s':(6*yu,3*yu),'align':'left'})
+
+            if k in aro._flag['long']:
+                value=esui.MultilineText(self.div_arove,
+                    hint=str(v),cn=k,
+                    readonly=k in aro._flag['lock'],
+                    style={'p':(yu,ys+(i+1)*4*yu),'s':(self.Size.x-2*yu,12*yu)})
                 i+=3
-            elif k in aro._flag['target']:
-                if isinstance(v,list):v=v[0]
-                tar=ESC.getAro(v)
-                tb1=esui.Btn(DP,(14*yu,(i*4+0.5)*yu),(DP.Size.x-22*yu,3*yu),tar.AroName,cn=k)
-                tb1.value=v
-                tb2=esui.Btn(DP,(DP.Size.x-7.5*yu,(i*4+0.5)*yu),(3*yu,3*yu),'⇵',cn=k)
-                tb3=esui.Btn(DP,(DP.Size.x-4*yu,(i*4+0.5)*yu),(3*yu,3*yu),'×',cn=k)
-                tb2.host=tb1
-                tb3.host=tb1
-                tb2.Bind(esui.EBIND_LEFT_CLK,self.onChangeTarget)
-                tb3.Bind(esui.EBIND_LEFT_CLK,self.onRemoveTarget)
-            elif type(v)==bool:
-                esui.SltBtn(DP,(14*yu,(i*4+0.5)*yu),(3*yu,3*yu),'√',cn=k,select=v)
+            elif k in aro._flag['link']:
+                if isinstance(v,list):
+                    value=esui.MenuBtnDiv(self.div_arove,
+                        style={'p':(8*yu,i*4*yu),'s':(self.Size.x-9*yu,3*yu)})
+                    links=ESC.getLinkAro(aro,k)
+                    value.setItems([
+                        str(aro.AroID)+' : '+aro.AroName
+                        for aro in links])
+                    value.setLabel(str(len(links))+' items')
+                else:
+                    link=ESC.getLinkAro(aro,k)
+                    if link is None:string='(Empty)'
+                    else:string=str(link.AroID)+' : '+link.AroName
+                    value=esui.DivBtn(self.div_arove,label=string,
+                        style={'p':(8*yu,4*i*yu),'s':(self.Size.x-9*yu,3*yu)})
+            elif isinstance(v,bool):
+                value=esui.TglBtn(self.div_arove,select=v,cn=k,
+                    style={'p':(8*yu,ys+(i*4+0.5)*yu),'s':(3*yu,3*yu)})
             else:
-                esui.InputText(DP,hint=str(v),cn=k,readonly=stl,
-                    style={'p':(14*yu,(i*4+0.5)*yu),'s':(DP.Size[0]-15*yu,3.5*yu)})
+                value=esui.InputText(self.div_arove,
+                    hint=str(v),cn=k,
+                    readonly=k in aro._flag['lock'],
+                    style={'p':(8*yu,ys+i*4*yu),'s':(self.Size.x-9*yu,3.5*yu)})
             i+=1
-        DP.updateMaxSize()
+            self.dict_ext[k]=(key,value)
+        self.div_arove.updateMaxSize()
         return
 
     def clearDetail(self):
-        self.div_detail.delChildren()
+        for tpl in self.dict_ext.values():
+            tpl[0].Destroy()
+            tpl[1].Destroy()
+        self.dict_ext.clear()
         return
 
-    def onChangeTarget(self,e):
-        'todo: better picking'
-        host=e.EventObject.host
-        selection=GLC.getSelection()
-        aro=selection[0]
-        host.value=aro.AroID
-        host.SetLabel(aro.AroName)
-        host.Refresh()
-        return
+    def onClkLink(self,e):
+        'todo: click link'
+        label=e.EventObject.label
 
-    def onRemoveTarget(self,e):
-        host=e.EventObject.host
-        host.value=None
-        host.SetLabel('')
-        host.Refresh()
+        aroid=label[0:label.find('.')]
+        self.showDetail(aroid)
         return
     pass

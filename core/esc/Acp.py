@@ -41,6 +41,7 @@ class Acp(object):
         self.desc    =AcpAttr('Desc','',long=True)
         self.fix_in  =AcpAttr('Fix Input',True,visible=False,save=False)
         self.fix_out =AcpAttr('Fix Output',True,visible=False,save=False)
+        self.mdl     =AcpAttr('Model',tuple(),visible=False)
         self.port    =AcpAttr('Port',dict(),visible=False)
         self.AcpClass=AcpAttr('AcpClass',
             self.__module__+'.'+type(self).__name__,
@@ -119,10 +120,10 @@ class Acp(object):
             * Para io: In argkw. Enum for in/out;
             '''
         if 'pid' in argkw:
-            return list(self.port.value[argkw['pid']])
+            return [self.port.value[argkw['pid']]]
         if 'name' in argkw:
             for port in self.port.value.values():
-                if port.name==argkw['name']:return list(port)
+                if port.name==argkw['name']:return [port]
         if 'io' in argkw:
             ports=list()
             for port in self.port.value.values():
@@ -148,7 +149,7 @@ class AcpSetter(Acp):
         super().__init__()
         ''' Input Port name correspond to Arove display name.'''
         self.expression=AcpAttr('Aro Expression','')
-        self.fix_out.value=False
+        self.fix_in.value=False
         return
     pass
 
@@ -157,7 +158,7 @@ class AcpGetter(Acp):
         super().__init__()
         ''' Output Port name correspond to Arove display name.'''
         self.expression=AcpAttr('Aro Expression','')
-        self.fix_in.value=False
+        self.fix_out.value=False
         return
 
     pass
@@ -185,7 +186,7 @@ class AcpIterator(Acp):
 
     def iterate(self):
         '''Return 0 when iterator stoped.'''
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         if self.current.value>self.end.value and not ESC.flag_realtime:
             return 0
         if self.item.value=='time':
@@ -194,7 +195,7 @@ class AcpIterator(Acp):
         return 1
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         reqlist=ESC.DATADICT['REQ']
         stepdict=dict()
         curdict=dict()
@@ -235,7 +236,7 @@ class AcpSelector(Acp):
 
     def AcpProgress(self):
         'ESC.ARO_QUEUE[-1] needed.'
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         reqlist=ESC.DATADICT['REQ']
         slctdict=dict()
         resdict=dict()
@@ -281,7 +282,7 @@ class AcpProvider(Acp):
 
     def preProgress(self):
         arolist=list()
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         for ARO in ESC.getFullMap():
             ABBRCLASS=ARO.AroClass[ARO.AroClass.rfind('.')+1:]
             AROVE=ARO.__dict__
@@ -291,7 +292,7 @@ class AcpProvider(Acp):
         return
 
     def postProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         indict=ESC.DATADICT[self.port.value[1].link[0]]
         reqlist=ESC.DATADICT['REQ']
         for aroid,itemvalue in indict.items():
@@ -322,7 +323,7 @@ class AcpLimitor(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         indata=ESC.DATADICT[self.port.value[1].link[0]]
         for inkey,invalue in indata.items():
             for i in range(0,len(invalue)):
@@ -349,7 +350,7 @@ class AcpEval(Acp):
         * In 2: symbol b, up to 5 input;
         * Out 0: Value out;'''
         super().__init__()
-        self.fix_out.value=True
+        self.fix_in.value=False
         self.expression=AcpAttr('Expression','',long=True)  # Use symbol a and b to do PMTD;
         self.addPort(pid=0,name='Out',io='out')
         self.addPort(pid=1,name='In a',io='in')
@@ -357,7 +358,7 @@ class AcpEval(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         max_dict=dict()
         sym_dict=dict()
         symindex='abcde'
@@ -392,7 +393,7 @@ class AcpVector3(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         xdict=ESC.DATADICT[self.port.value[1].link[0]]
         ydict=ESC.DATADICT[self.port.value[2].link[0]]
         zdict=ESC.DATADICT[self.port.value[3].link[0]]
@@ -422,7 +423,7 @@ class AcpDepartor3(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         vec3_dict=ESC.DATADICT[self.port.value[0].link[0]]
         xdict=dict()
         ydict=dict()
@@ -452,7 +453,7 @@ class AcpConst(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         if type(self.value.value)!=list:out=[self.value.value]
         else:out=self.value.value
         reqlist=ESC.DATADICT['REQ']
@@ -471,7 +472,7 @@ class AcpNorm(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         vec_dict=ESC.DATADICT[self.port.value[1].link[0]]
         out_dict=dict()
         for aroid,vec_list in vec_dict.items():
@@ -491,7 +492,7 @@ class AcpSum(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         in_dict=ESC.DATADICT[self.port.value[1].link[0]]
         out_dict=dict()
         for aroid,dlist in in_dict.items():
@@ -511,7 +512,7 @@ class AcpCross(Acp):
         return
 
     def AcpProgress(self):
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         v1dict=ESC.DATADICT[self.port.value[1].link[0]]
         v2dict=ESC.DATADICT[self.port.value[2].link[0]]
         output_dict=dict()
@@ -527,4 +528,30 @@ class AcpCross(Acp):
             i+=1
         ESC.DATADICT.update({(self.acpid.value,0):output_dict})
         return
+    pass
+
+class AcpMean(Acp):
+    def __init__(self):
+        super().__init__()
+        self.fix_in.value=False
+        self.addPort(pid=0,name='Out',io='out')
+        self.addPort(pid=1,name='In 1',io='in')
+        self.addPort(pid=2,name='In 2',io='in')
+        return
+
+    def AcpProgress(self):
+        from core.esc import ESC
+        data=list()
+        for port in self.getPort(io='in'):
+            apit=(self.mdl.value[0],self.mdl.value[1],port.link[0][0],port.link[0][1])
+            data.append(ESC.DATADICT[apit])
+        if len(data)==1:
+            pass
+        else:
+            npd=np.array(data[0])
+            for i in range(1,len(data)):
+                npd+=np.array(data[i])
+            npd=npd/len(data)
+            out=npd.tolist()
+        return out
     pass

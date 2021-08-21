@@ -3,7 +3,7 @@ import wx
 import wx.glcanvas as wg
 # Built-in libs;
 from core import ESC,esgl,esui
-GLC=esgl.glc
+GLC=esgl.GLC
 class GLDiv(wg.GLCanvas):
     ''' Aro OpenGL Canvas.
         Para accepts: `backgroundColor`: tuple4.'''
@@ -14,18 +14,21 @@ class GLDiv(wg.GLCanvas):
         GLC.RATIO_WH=self.Size.x/self.Size.y
         GLC.GLDIV_WIDTH=self.Size.x
         GLC.GLDIV_HEIGHT=self.Size.y
+        GLC.BGC=argkw.get('bgc',(0,0,0,1))
 
         self.Bind(esui.EBIND_COMEVT,self.onComEvt)
         self.Bind(wx.EVT_PAINT, self.onPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         # Initilize opengl;
         self.context = wg.GLContext(self)
+        # GLC.GL_CONTEXT=self.context
         self.SetCurrent(self.context)
         GLC.initGL()
         self.Hide()
         return
 
     def readMap(self,clear=False):
+        # esgl.GLTR.send('draw')
         GLC.readMap(clear)
         return
 
@@ -39,6 +42,8 @@ class GLDiv(wg.GLCanvas):
             self.Show()
         elif subtype==esui.ETYPE_RESET_SIM:
             ESC.resetSim()
+            self.readMap()
+        elif subtype==esui.ETYPE_STEP_SIM:
             self.readMap()
         return
 

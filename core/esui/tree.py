@@ -1,5 +1,5 @@
 import wx
-from core import ESC,esui
+from core import ESC,esc,esui
 yu=esui.YU
 xu=esui.XU
 
@@ -8,7 +8,7 @@ class TreeItemDiv(esui.Div):
 
     @classmethod
     def setClass(cls,**argkw):
-        ''' Para argkw: parent/s.'''
+        ''' Para argkw: s;'''
         cls.s=argkw.get('s')
         return
 
@@ -16,7 +16,7 @@ class TreeItemDiv(esui.Div):
         ''' * Para argkw: node/tid/label/depth/parent/children/icon'''
         super().__init__(parentdiv,style={'s':self.s})
         self.node=argkw.get('node',None)
-        if isinstance(self.node,ESC.TreeNode):
+        if isinstance(self.node,esc.TreeNode):
             self.nid=self.node.nid
             self.label=self.node.label
             self.depth=self.node.depth
@@ -116,7 +116,7 @@ class TreeDiv(esui.ScrollDiv):
         self.dict_nid[item.nid]=item
         return
 
-    def buildTree(self,tree:ESC.EsTree=None):
+    def buildTree(self,tree:esc.EsTree=None):
         'Need to be overrided, fill item_list with instances of TreeItem;'
         return
 

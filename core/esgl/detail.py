@@ -44,12 +44,12 @@ class DetailDialog(esui.EsDialog):
         esui.StaticText(DP,(yu,0),(8*yu,4*yu),'General:',align='left')
         i=1
         for k,v in aro.__dict__.items():
-            if k in aro._flag['invisible']:continue
+            if k in aro._flag['hide']:continue
             esui.StaticText(DP,(yu,i*4*yu),(12*yu,4*yu),k+':',align='left')
-            if k not in aro._flag['uneditable']:stl=0
+            if k not in aro._flag['lock']:stl=0
             else:stl=wx.TE_READONLY
 
-            if k in aro._flag['longdata']:
+            if k in aro._flag['long']:
                 esui.MultilineText(DP,hint=str(v),cn=k,readonly=stl,
                     style={'p':(yu,(i+1)*4*yu),'s':(DP.Size[0]-2*yu,12*yu)})
                 i+=3

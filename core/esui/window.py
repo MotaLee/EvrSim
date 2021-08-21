@@ -21,12 +21,13 @@ class EsWindow(wx.Frame):
     def onComEvt(self,e:wx.Event):
         e.Skip()
         etype=e.getEventArgs()
-        if etype==esui.ETYPE_RUN_SIM:
-            # self.onOpenSim(e)
-            self.runSim()
-            pass
-        for tool in self.list_evtool:
-            esui.sendEvent(etype,target=tool)
+        if etype==esui.ETYPE_RUN_SIM:self.runSim()
+        if etype==esui.ETYPE_RUN_PRESET:
+            'todo'
+            # ESC.runFrame('preset')
+            esui.sendComEvt(esui.ETYPE_STEP_SIM)
+
+        for tool in self.list_evtool:esui.sendEvent(etype,target=tool)
         return
 
     def runSim(self):
@@ -44,7 +45,7 @@ class EsWindow(wx.Frame):
             esui.UMR.MAP_DIV.readMap()
         elif ESC.isCoreReady():
             esui.UMR.MAP_DIV.readMap()
-            ESC.runCompiledSim()
+            ESC.runFrame()
             esui.sendComEvt(esui.ETYPE_STEP_SIM)
         return
 

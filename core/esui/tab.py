@@ -16,7 +16,8 @@ class TabBtn(esui.Div):
         super().__init__(parent,**argkw)
         if len(self.label)>10:self.SetToolTip(self.label)
         self._flag_close=argkw.get('close',False)
-        self.updateStyle(style={'bgc':esui.COLOR_BACK},
+        self.updateStyle(
+            style={'s':(8*yu,4*yu),'bgc':esui.COLOR_BACK},
             hover={'bgc':esui.COLOR_HOVER},
             active={'bgc':esui.COLOR_LBACK})
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)

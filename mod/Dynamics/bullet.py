@@ -1,9 +1,9 @@
-import _pybullet as pb
+# import _pybullet as pb
 import numpy as np
-from core import ESC,esgl
-GLC=esgl.glc
+from core import ESC,esc,esgl
+GLC=esgl.GLC
 from .aro import RigidBody,ForceField
-class BulletEngine(ESC.AcpExecutor):
+class BulletEngine(esc.AcpExecutor):
     def __init__(self):
         super().__init__()
         # self.Client = pb.connect(pb.GUI)    # or p.DIRECT for non-graphical version
@@ -26,7 +26,7 @@ class BulletEngine(ESC.AcpExecutor):
         for aroid,bodyid in self.arobodys.items():
             pb.applyExternalForce(objectUniqueId=bodyid,
                 linkIndex=-1,
-                forceObj=force_allfield.tolist(),
+                forceObj=list(force_allfield),
                 posObj=ESC.getAro(aroid).position,
                 flags=pb.WORLD_FRAME)
         pb.stepSimulation()

@@ -23,9 +23,9 @@ for path in PATHS:
     sys.path.append(path)
     os.environ['PATH']+=';'+path
 # EvrSim global variable;
-ES_VER='0.0.15'
+ES_VER='0.1.0'
 EST_VER = '0.0.5'
-EDITOR_VER='0.0.13'
+EDITOR_VER='0.0.14'
 ES_PY_VER_MIN='3.8.0'
 ES_PY_VER_MAX='3.8.7'
 ES_MOD=['AroCore','Dynamics','AroPlot','AroGame']
@@ -43,24 +43,35 @@ ES_INTERGRATED_LIBS=[
     'pybullet'
     'pyassimp'
 ]
-
+global ESAPP
+ESAPP=sys.argv[1]
 if __name__ == "__main__":
-    import wx
-    import mod,app
-    ESAPP=wx.App()
-    if 'Editor'==sys.argv[1]:
+    if ESAPP=='QTE':
+        from app.QTE import ESMW,ESQTAPP
+        ESMW.show()
+        ESQTAPP.exec()
+    elif ESAPP=='Editor':
+        import wx
+        import mod,app
+        ESWXAPP=wx.App()
         from app.Editor import EvrSimEditor
-        # Main enterance;
         wxmw=EvrSimEditor()
-        ESAPP.MainLoop()
+        ESWXAPP.MainLoop()
     elif 'EST'==sys.argv[1]:
         from app.EST import ESTerminal
         # Main enterance;
         est=ESTerminal()
         est.running()
+    elif 'setup'==sys.argv[1]:
+        'todo'
+        print('Setup completed, please rerun EvrSim.')
+        exit()
     else:
+        import wx
+        import mod,app
+        ESWXAPP=wx.App()
         from core import ESC,esui
         ESC.setApp(sys.argv[1])
         exec('import app.'+sys.argv[1]+'',globals(),locals())
         esui.UMR.ESMW.lauchApp()
-        ESAPP.MainLoop()
+        ESWXAPP.MainLoop()

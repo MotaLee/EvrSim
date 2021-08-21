@@ -45,7 +45,7 @@ class NewDialog(EsDialog):
         return
 
     def onConfirm(self,e):
-        sim_name=self.nametcc.GetValue()
+        sim_name=self.nametcc.getValue()
         file_list=os.listdir('sim/')
         for f in file_list:
             if sim_name==f:

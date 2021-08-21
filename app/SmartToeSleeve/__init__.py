@@ -82,34 +82,34 @@ class EvrSimSTS(esui.EsWindow):
         UMR.TOOL_DIV.toggleSingleMode(STS_NAME)
         TPY=TP.Size.y
         'deco'
-        btn_run=RunSimBtn(TP,'','',style={'p':(yu,yu),'s':(9*yu,9*yu)},label='▶')
-        btn_rst=ResetMapBtn(TP,'','',style={'p':(11*yu,yu),'s':(8*yu,4*yu)},label='重置')
-        txt_pip=esui.DivText(TP,style={'p':(20*yu,yu),'s':(10*yu,4*yu)},label='管内压力：')
-        input_pip=estl.Input(TP,'',SIM_NAME,style={'p':(30*yu,yu),'s':(8*yu,4*yu)},hint='0')
-        txt_mpa1=esui.DivText(TP,style={'p':(38*yu,yu),'s':(4*yu,4*yu)},label='MPa')
-        txt_rdm=esui.DivText(TP,style={'p':(20*yu,6*yu),'s':(10*yu,4*yu)},label='随机波动：')
-        input_rdm=estl.Input(TP,'',SIM_NAME,style={'p':(30*yu,6*yu),'s':(8*yu,4*yu)},hint='0')
-        txt_mpa2=esui.DivText(TP,style={'p':(38*yu,6*yu),'s':(4*yu,4*yu)},label='MPa')
+        # btn_run=RunSimBtn(TP,'','',style={'p':(yu,yu),'s':(9*yu,9*yu)},label='▶')
+        # btn_rst=ResetMapBtn(TP,'','',style={'p':(11*yu,yu),'s':(8*yu,4*yu)},label='重置')
+        # txt_pip=esui.DivText(TP,style={'p':(20*yu,yu),'s':(10*yu,4*yu)},label='管内压力：')
+        # input_pip=estl.Input(TP,'',SIM_NAME,style={'p':(30*yu,yu),'s':(8*yu,4*yu)},hint='0')
+        # txt_mpa1=esui.DivText(TP,style={'p':(38*yu,yu),'s':(4*yu,4*yu)},label='MPa')
+        # txt_rdm=esui.DivText(TP,style={'p':(20*yu,6*yu),'s':(10*yu,4*yu)},label='随机波动：')
+        # input_rdm=estl.Input(TP,'',SIM_NAME,style={'p':(30*yu,6*yu),'s':(8*yu,4*yu)},hint='0')
+        # txt_mpa2=esui.DivText(TP,style={'p':(38*yu,6*yu),'s':(4*yu,4*yu)},label='MPa')
 
-        bar1=estl.Bar(TP,'',SIM_NAME,style={'p':(43.5*yu,2*yu),'s':(yu/3,TPY-4*yu)})
+        # bar1=estl.Bar(TP,'',SIM_NAME,style={'p':(43.5*yu,2*yu),'s':(yu/3,TPY-4*yu)})
 
-        txt_ps=esui.DivText(TP,style={'p':(45*yu,yu),'s':(10*yu,4*yu)},label='启动压力：')
-        input_ps=estl.Input(TP,'',SIM_NAME,style={'p':(55*yu,yu),'s':(8*yu,4*yu)},hint='75')
-        txt_mpa3=esui.DivText(TP,style={'p':(63*yu,yu),'s':(4*yu,4*yu)},label='MPa')
-        txt_pd=esui.DivText(TP,style={'p':(45*yu,6*yu),'s':(10*yu,4*yu)},label='延时压力：')
-        input_pd=estl.Input(TP,'',SIM_NAME,style={'p':(55*yu,6*yu),'s':(8*yu,4*yu)},hint='105')
-        txt_mpa4=esui.DivText(TP,style={'p':(63*yu,6*yu),'s':(4*yu,4*yu)},label='MPa')
+        # txt_ps=esui.DivText(TP,style={'p':(45*yu,yu),'s':(10*yu,4*yu)},label='启动压力：')
+        # input_ps=estl.Input(TP,'',SIM_NAME,style={'p':(55*yu,yu),'s':(8*yu,4*yu)},hint='75')
+        # txt_mpa3=esui.DivText(TP,style={'p':(63*yu,yu),'s':(4*yu,4*yu)},label='MPa')
+        # txt_pd=esui.DivText(TP,style={'p':(45*yu,6*yu),'s':(10*yu,4*yu)},label='延时压力：')
+        # input_pd=estl.Input(TP,'',SIM_NAME,style={'p':(55*yu,6*yu),'s':(8*yu,4*yu)},hint='105')
+        # txt_mpa4=esui.DivText(TP,style={'p':(63*yu,6*yu),'s':(4*yu,4*yu)},label='MPa')
 
-        bar2=estl.Bar(TP,'',SIM_NAME,style={'p':(68.5*yu,2*yu),'s':(yu/3,TPY-4*yu)})
+        # bar2=estl.Bar(TP,'',SIM_NAME,style={'p':(68.5*yu,2*yu),'s':(yu/3,TPY-4*yu)})
 
-        txt_time=esui.DivText(TP,style={'p':(70*yu,yu),'s':(10*yu,4*yu)},label='延时时长：')
-        input_rdm=estl.Input(TP,'',SIM_NAME,style={'p':(80*yu,yu),'s':(8*yu,4*yu)},hint='45')
-        txt_min=esui.DivText(TP,style={'p':(88*yu,yu),'s':(4*yu,4*yu)},label='Min')
+        # txt_time=esui.DivText(TP,style={'p':(70*yu,yu),'s':(10*yu,4*yu)},label='延时时长：')
+        # input_rdm=estl.Input(TP,'',SIM_NAME,style={'p':(80*yu,yu),'s':(8*yu,4*yu)},hint='45')
+        # txt_min=esui.DivText(TP,style={'p':(88*yu,yu),'s':(4*yu,4*yu)},label='Min')
 
         UMR.TOOL_DIV.toggleTab(STS_NAME)
         UMR.MAP_DIV.readMap()
-        esgl.glc.setProjMode(False)
-        esgl.glc.lookAt([0,0,5],[0,0,0])
+        esgl.GLC.setProjMode(False)
+        esgl.GLC.lookAt([0,0,5],[0,0,0])
         return
     pass
 

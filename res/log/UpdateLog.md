@@ -3,6 +3,26 @@
 ---
 ## Details
 
+### 0.0.16 - 2021/08/21
+
+* esc:
+    * Removed AroNode. Added Arove 'parent'/'children' to Aro;
+    * Separated module esc with instance ESC;
+* Mod:
+    * Fited esqui simply;
+* esqui:
+    * Added a new module 'esqt';
+* esgl:
+    * Added new function 'cvtRGB';
+    * Fited esqui simply;
+* estl:
+    * Added new class 'MsgDiv';
+    * Removed the method 'err' for CmdDiv;
+    * Fited esqui simply;
+* App:
+    * Editor: Applied MsgDiv;
+    * QTE: Added a new app named 'QTE' using PySide6 to rebuild editor;
+
 ### 0.0.15 - 2021/03/25
 
 * esc:

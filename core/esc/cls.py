@@ -64,7 +64,7 @@ class EsTree(object):
             * Para node: Accept TreeNode,
                 The node's nid/parent/chidren/depth needn't to be set.
             * Para parent: Accept nid/label/TreeNode/None.'''
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         self.max_id+=1
         node.nid=self.max_id
         if parent is not None:
@@ -87,7 +87,7 @@ class EsTree(object):
     def delNode(self,node):
         ''' Delete a node and its subtree.
             * Para node: Accept nid/label/TreeNode.'''
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         if not isinstance(node,self.NodeClass):
             node=self.getNode(node)
         if node is None:return ESC.err('Node not found.')
@@ -216,7 +216,7 @@ class SimTree(EsTree):
 class ModTree(EsTree):
     def __init__(self,modname):
         super().__init__()
-        from core.esc import esc as ESC
+        from core.esc import ESC as ESC
         modptr=ESC.getModAttr(modname)
         root=self.appendNode(None,self.NodeClass(
             label=modptr.MOD_NAME,data=modptr.MOD_VER))

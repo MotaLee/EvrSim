@@ -14,33 +14,36 @@ class DivBase(object):
 
         self.parent=parent
         self.label=argkw.get('label','')
-        self.style=copy.deepcopy(esui.STL_DFT)
+        self.style=copy.deepcopy({'p':(0,0),'s':(0,0),'bgc':esui.COLOR_BACK})
         self.style_active=dict()
         self.style_hover=dict()
         self.updateStyle(**argkw)
 
-        if 'cn' in argkw:self.SetName(argkw['cn'])
+        self.cn=argkw.get('cn','')
+        self.SetName(self.cn)
         if 'tip' in argkw:self.SetToolTip(argkw['tip'])
-        self.cn=self.GetName()
 
         self.Bind(wx.EVT_LEFT_DOWN,self._onClk)
         self.Bind(wx.EVT_ENTER_WINDOW,self._onEnter)
         self.Bind(wx.EVT_LEAVE_WINDOW,self._onLeave)
         self.Bind(wx.EVT_PAINT,self._onPaint)
-        if self.style['bgc']!='':
+        if self.style['bgc']!='TRANSPARENT':
             self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         self.Refresh()
         return
 
     def _onPaint(self,e):
-        dc=wx.PaintDC(self)
+        if self.style['bgc']!='TRANSPARENT':
+            dc=wx.BufferedPaintDC(self)
+        else:
+            dc=wx.PaintDC(self)
         _style=copy.deepcopy(self.style)
         if self._flag_hover:
             _style.update(self.style_hover)
         if self._flag_active:
             _style.update(self.style_active)
 
-        if _style['bgc']=='':
+        if _style['bgc']=='TRANSPARENT':
             pen=wx.TRANSPARENT_PEN
             brush=wx.TRANSPARENT_BRUSH
         else:
@@ -108,6 +111,9 @@ class DivBase(object):
                 path=self.style['bgi'],
                 w=self.Size[0],
                 h=self.Size[1])
+
+        if self.style['bgc']!='TRANSPARENT':
+            self.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         self.Refresh()
         return
 
@@ -122,14 +128,12 @@ class DivBase(object):
         e.Skip()
         self._flag_hover=True
         self.Refresh()
-        # self.rePaint()
         return
 
     def _onLeave(self,e:wx.Event):
         e.Skip()
         self._flag_hover=False
         self.Refresh()
-        # self.rePaint()
         return
 
     def setActive(self,active=None)->bool:
@@ -152,19 +156,9 @@ class DivBase(object):
 
     def setLabel(self,label):
         ' Set label and refresh.'
-        self.label=label
-        self.Refresh()
-        # self.rePaint()
-        return
-
-    def rePaint(self):
-        if self.style['bgc']=='':
-            mask=wx.Panel(self,pos=(0,0),size=(100,100))
-            mask.Destroy()
+        self.label=str(label)
         self.Refresh()
         return
-
-
     pass
 
 class Div(DivBase,wx.Panel):
@@ -178,8 +172,8 @@ class Div(DivBase,wx.Panel):
             * style: A dict allowed following keys:
                     * `p`: position, zreos default. `(int,int)`;
                     * `s`: size, zreos default. `(int,int)`;
-                    * `bgc`: background color, COLOR_LBACK default. Empty for transparent;
-                    * `fgc`: foreground color, COLOR_FRONT default. Empty for transparent;
+                    * `bgc`: background color, COLOR_LBACK default. Or TRANSPARENT;
+                    * `fgc`: foreground color, COLOR_FRONT default;
                     * `bgi`: background image path;
                     * `border`: all border color;
                     * `border_width`: all border width;
@@ -197,12 +191,13 @@ class Div(DivBase,wx.Panel):
 
     pass
 
-class ScrollDiv(Div):
+class ScrollDiv(DivBase,wx.ScrolledWindow):
     def __init__(self, parent: wx.Window, **argkw):
         ''' Scrollable div.
             * `axis` : 'Y' default for vertical scroll, 'X' for horizontal;
             * `bar` : if display scroll bar,False default;'''
-        super().__init__(parent, **argkw)
+        wx.ScrolledWindow.__init__(self,parent)
+        DivBase.__init__(self,parent, **argkw)
         self.rx=0   # Current x;
         self.ry=0   # Current y;
         self.mx=self.Size[0]    # Max width;
@@ -214,8 +209,12 @@ class ScrollDiv(Div):
             's':(yu/2,self.Size[1]-2*yu),
             'bgc':esui.COLOR_FRONT})
         self._list_block=[self.div_bar]
-
+        if self.axis=='Y':self.SetExtraStyle(wx.VSCROLL)
+        else:self.SetExtraStyle(wx.HSCROLL)
         if not self._flag_bar:self.div_bar.Hide()
+        # self.SetScrollbar()
+        self.SetScrollRate(1,1)
+        self.ShowScrollbars(wx.SHOW_SB_NEVER,wx.SHOW_SB_NEVER)
         self.Bind(wx.EVT_MOUSEWHEEL,self.onRotWhl)
         self.Bind(wx.EVT_LEAVE_WINDOW,self._onLeave)
         return
@@ -225,8 +224,9 @@ class ScrollDiv(Div):
         dy=int(dy*yu)
         self.rx+=dx
         self.ry+=dy
-        for ctrl in self.Children:
-            ctrl.SetPosition((ctrl.Position[0]-dx,ctrl.Position[1]-dy))
+        # for ctrl in self.Children:
+            # ctrl.SetPosition((ctrl.Position[0]-dx,ctrl.Position[1]-dy))
+        self.Scroll(self.rx,self.ry)
         return
 
     def updateMaxSize(self):
@@ -242,6 +242,7 @@ class ScrollDiv(Div):
             self.div_bar.SetSize(self.Size[1]**2/self.mx,yu/2)
         else:
             self.div_bar.SetSize(yu/2,self.Size[1]**2/self.my)
+        self.SetVirtualSize(self.mx,self.my)
         self.Refresh()
         return
 
@@ -375,12 +376,14 @@ class ComboDiv(DivBase,wx.ComboCtrl):
 
 class IndePopupDiv(DivBase,wx.PopupWindow):
     def __init__(self,parent,**argkw):
-        argkw['style']['border']=esui.COLOR_FRONT
         wx.PopupWindow.__init__(self,parent)
         DivBase.__init__(self,parent,**argkw)
         self.SetExtraStyle(wx.PU_CONTAINS_CONTROLS)
+        self.setPopupPos(self.style['p'])
+        self.updateStyle(style={'border':esui.COLOR_FRONT})
         self.parent.Bind(wx.EVT_LEFT_DOWN,self._onLostFocus)
         return
+
     def bindPopup(self,evt,method):
         ''' Bind event for children in popup.'''
         for child in self.getChildren():
@@ -391,6 +394,13 @@ class IndePopupDiv(DivBase,wx.PopupWindow):
         e.Skip()
         self.parent.Unbind(wx.EVT_LEFT_DOWN,handler=self._onLostFocus)
         self.DestroyLater()
+        return
+
+    def setPopupPos(self,p):
+        pp=self.parent.Position
+        p=(pp.x+p[0],pp.y+p[1])
+        self.updateStyle(style={'p':p})
+        self.Position(p,(0,0))
         return
     pass
 

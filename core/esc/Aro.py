@@ -1,26 +1,31 @@
-import numpy as np
+import numpy
 import mod,app
-inf=np.inf
+inf=numpy.inf
 class Aro(object):
     ''' Core Aro class.
         '''
     def __init__(self):
         self._flag={
-            'unsave':['_flag'],
-            'invisible':['_flag','AroID'],
-            'uneditable':['adp','AroClass'],
-            'longdata':['desc'],
-            'target':[],
+            'unsave':['_flag','_ptr'],
+            'hide':['_flag','_ptr','_input','_output'],
+            'lock':['adp','AroClass','AroID','AbbrClass'],
+            'long':['desc'],
+            'link':['parent','children'],
             'enum':[]}
+        self._ptr=dict()
+        self._input=[]
+        self._output=[]
         # Preset Arove;
         self.AroID=0
-        self.AroClass=self.__module__+'.'+type(self).__name__
+        self.AbbrClass=type(self).__name__
+        self.AroClass=self.__module__+'.'+self.AbbrClass
         self.adp=''
-        # User changeable Arove;
+        self.parent=-1    # AroID;
+        self.children=list()    # AroID list;
         self.AroName=''
         self.desc=''
         self.enable=True
-        self.visable=True
+        self.visible=True
         return
 
     def onAdd(self):
@@ -33,13 +38,15 @@ class Aro(object):
         ''' This method will be called in ESC.delAro'''
         return
 
-    def addAroveFlag(self,**argkw):
+    def addFlag(self,**argkw):
         ''' Add flag of Arove using argkw=Arove | [Arove..].
+            Call after Arove defination.
             * Argkw unsave: Not save to map;
-            * Argkw invisible: Not display in editor;
+            * Argkw hide: Not display in editor;
             * Argkw uneditble: Uneditable in editor;
-            * Argkw longdata: Dislay as longdata in editor;
+            * Argkw long: Dislay as long in editor;
             * Argkw enum: As enum;
+            * Argkw auto: As auto;
             '''
         for k,vl in argkw.items():
             if not isinstance(vl,list):vl=[vl]
@@ -50,31 +57,18 @@ class Aro(object):
         return
     pass
 
-class AroNode(Aro):
-    ''' Aro node with tree structure.
-        * Addition Arove: parent, children;'''
-    def __init__(self):
-        super().__init__()
-        self.parent=-1    # AroID;
-        self.children=list()    # AroID list;
-        self.addAroveFlag(invisible=['parent','children'])
-        return
-    pass
-
-class AroSpace(AroNode):
+class AroSpace(Aro):
     '''Addition Arove: space_set;'''
     def __init__(self):
         super().__init__()
-        self._flag['invisible'].append('space_list')
         self.space_list=list()
         return
     pass
 
-class AroGroup(AroNode):
+class AroGroup(Aro):
     '''Addition Arove: link_dict;'''
     def __init__(self):
         super().__init__()
-        self._flag['invisible'].append('group_dict')
         self.group_dict=dict()  # {AroID:AroID list}
         return
     pass

@@ -1,0 +1,90 @@
+Box,MainWindow{background-color: COLOR_LBACK;}
+
+StaticText{
+    color:COLOR_TEXT;
+    font-family:TEXT_FONT;
+    background: transparent;
+    /* border-style:solid;
+    border-width:1px;
+    border-color:COLOR_FRONT; */
+}
+
+Btn{
+    background-color: COLOR_LBACK;
+    color:COLOR_TEXT;
+    border-style:solid;
+    border-width:1px;
+    border-color:COLOR_FRONT;
+}
+Btn[border='False']{border-color:COLOR_LBACK;}
+Btn:hover{background-color: COLOR_HOVER;}
+Btn:pressed{
+    background-color: COLOR_FRONT;
+    color:COLOR_LBACK;
+}
+
+Menu{
+    background-color: COLOR_LBACK;
+    color:COLOR_TEXT;
+    border-style:solid;
+    border-width:1px;
+    border-color:COLOR_FRONT;
+}
+Menu::item{
+    background-color: COLOR_LBACK;
+    margin:[[YU/2]]px;
+    min-width:[[8*YU]]px;
+    min-height:[[4*YU]]px;
+    border-bottom-style:solid;
+    border-bottom-width:1px;
+    border-bottom-color:COLOR_LBACK;
+}
+Menu::item:selected{border-bottom-color:COLOR_FRONT;}
+
+Dialog{
+    border-style:solid;
+    border-width:1px;
+    border-color:COLOR_FRONT;
+}
+
+TableView{
+    color:COLOR_TEXT;
+    background-color: COLOR_BACK;
+    border-style:solid;
+    border-width:1px;
+    border-color:COLOR_HOVER;
+    gridline-color:COLOR_BACK;
+}
+TableView::item{
+    margin:20px;
+    /* border-style:solid;
+    border-width:1px;
+    border-color:COLOR_FRONT; */
+    }
+/* TableView::item:hover{background-color:COLOR_HOVER;} */
+TableView::item:selected{background-color: COLOR_BACK;}
+
+Tab{background-color: COLOR_BACK;}
+TabPane::pane{
+    background-color: COLOR_LBACK;
+    border-bottom-style:solid;
+    border-bottom-width:1px;
+    border-bottom-color:COLOR_FRONT;
+}
+QTabBar::tab{
+    min-width:[[8*YU]]px;
+    max-width:[[12*YU]]px;
+    min-height:[[4*YU]]px;
+    color:COLOR_TEXT;
+    background-color: COLOR_LBACK;
+}
+QTabBar::tab:hover:!selected{background-color: COLOR_HOVER;}
+QTabBar::tab:selected{background-color: COLOR_LBACK;}
+QTabBar::tab:!selected{background-color: COLOR_BACK;}
+
+HeadBar{
+    padding:[[YU//2]]px;
+    border-bottom-style:solid;
+    border-bottom-width:1px;
+    border-bottom-color:COLOR_FRONT;
+}

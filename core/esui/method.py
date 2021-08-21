@@ -10,6 +10,7 @@ def toggleWorkspace(target=None):
         esui.UMR.MDL_DIV.drawConnection()
     elif not status or target=='ARO':
         esui.UMR.MAP_DIV.Show()
+        esui.UMR.MAP_DIV.SetFocus()
         esui.UMR.MDL_DIV.Hide()
     return
 

@@ -1,6 +1,6 @@
-from core import ESC
+from core import esc
 
-class VAcp(ESC.Acp):
+class VAcp(esc.Acp):
     def __init__(self):
         super().__init__()
 

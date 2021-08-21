@@ -1,9 +1,10 @@
 import wx
-import _glm as glm
 import numpy as np
-from core import ESC,esui,esgl
-GLC=esgl.glc
+from core import esc,esui,esgl
+ESC=esc.ESC
+GLC=esgl.GLC
 yu=esui.YU
+glm=esgl.glm
 class AroToolbar(esui.Div):
     def __init__(self):
         super().__init__(esui.UMR.MAP_DIV,style={
@@ -12,16 +13,16 @@ class AroToolbar(esui.Div):
         self.host=esui.UMR.MAP_DIV
         self.spos=(0,0)
         # self.queue_select=['None','Pick']    # enum with [None, Pick, Rect, Picktop]
-        self.enum_slt=ESC.EsEnum(['deact','pick','rect','picktop'],prev='pick')
+        self.enum_slt=esc.EsEnum(['deact','pick','rect','picktop'],prev='pick')
         self.flag_tab_shown=False
 
         self.head=esui.DivBtn(self,label='Aro',style={'p':(0,0),'s':(4*yu,2*yu)})
         self.btn_slct=esui.TglBtn(self,label='Slt',
-            style={'p':(0,2*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
+            style={'p':(0,2*yu),'s':(4*yu,4*yu),'border':'','bgc':'TRANSPARENT'})
         self.btn_del=esui.DivBtn(self,label='Del',
-            style={'p':(0,10*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
+            style={'p':(0,10*yu),'s':(4*yu,4*yu),'border':'','bgc':'TRANSPARENT'})
         self.btn_mov=esui.TglBtn(self,label='Mov',
-            style={'p':(0,6*yu),'s':(4*yu,4*yu),'border':'','bgc':''})
+            style={'p':(0,6*yu),'s':(4*yu,4*yu),'border':'','bgc':'TRANSPARENT'})
 
         self.btn_viw=esui.MenuBtnDiv(self,label='Viw',no_border=True,
             style={'p':(0,self.Size.y-8*yu),'s':(4*yu,4*yu)},
@@ -44,6 +45,7 @@ class AroToolbar(esui.Div):
         self.host.Bind(wx.EVT_LEFT_UP, self.onRlsGL)
         self.host.Bind(wx.EVT_MOTION,self.onMoveGL)
         self.host.Bind(wx.EVT_MIDDLE_DOWN,self.onClkWhlGL)
+        self.host.SetFocus()
         return
 
     def onClkGL(self,e):
@@ -95,7 +97,7 @@ class AroToolbar(esui.Div):
     def onDClkGL(self,e):
         selection=GLC.getSelection()
         if len(selection)==1:
-            esui.UMR.SIDE_DIV.showDetail(selection[0].AroID)
+            esui.UMR.SIDE_DIV.showDetail(selection[0])
         return
 
     def onRlsGL(self,e):
@@ -109,8 +111,8 @@ class AroToolbar(esui.Div):
                 slct=False
                 for p in adp.VA:
                     p_2d=GLC.getPosFromVtx(adp,p)
-                    c1=p_2d[0] in ESC.Itv(cx,sx)
-                    c2=p_2d[1] in ESC.Itv(cy,sy)
+                    c1=p_2d[0] in esc.Itv(cx,sx)
+                    c2=p_2d[1] in esc.Itv(cy,sy)
                     if c1 and c2:
                         GLC.ARO_SELECTION.append(adp.Aro)
                         adp.highlight=True
@@ -193,11 +195,11 @@ class AroToolbar(esui.Div):
         return
 
     def onClkDel(self,e):
+        e.Skip()
         selection=GLC.getSelection()
         for aro in selection:ESC.delAro(aro.AroID)
         GLC.clearSelection()
         esui.sendComEvt(esui.ETYPE_UPDATE_MAP)
-        e.Skip()
         return
 
     def onClkViewPopup(self,e):
@@ -254,7 +256,7 @@ class SelectPopup(esui.IndePopupDiv):
                 style={'p':(yu,4*i*yu+1),'s':(self.Size.x-2*yu,3*yu)})
         self.bindPopup(wx.EVT_MOTION,self.onMoveItem)
         self.bindPopup(wx.EVT_LEFT_DOWN,self.onClkItem)
-        self.Position((self.parent.Position.x+cpos[0],self.parent.Position.y+cpos[1]),(0,0))
+        self.setPopupPos(cpos)
         self.Show()
         return
 

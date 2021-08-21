@@ -1,6 +1,6 @@
-import _glm as glm
+# import _glm as glm
 import numpy as np
-from core import esui,esgl
+from core import esgl
 class TdpXyzAxis(esgl.ToolDrawPart):
     def __init__(self,tool):
         super().__init__(tool)
@@ -42,6 +42,7 @@ class TdpViewBall(esgl.ToolDrawPart):
     def __init__(self,tool):
         super().__init__(tool)
         self.dict_fix['fix']=True
+        from core import esui
         self.dict_fix['pos']=[0,65*esui.YU,10*esui.XU,10*esui.YU]
         VA=np.array([
             [0,0,0,     1,0,0,1],

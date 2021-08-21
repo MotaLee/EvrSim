@@ -1,23 +1,7 @@
 import time
 import wx
-from core import ESC,esui,estl
+from core import ESC,esc,esui,estl
 yu=esui.YU
-
-# Other reliabilities;
-# class ALibsTreePlc(esui.TreePlc):
-#     def buildTree(self):
-#         self.item_list=list()
-#         for modname in ESC.MOD_TREE_DICT.keys():
-#             aroci=eval('mod.'+modname+'.ARO_INDEX')
-#             acpci=eval('mod.'+modname+'.ACP_INDEX')
-#             ti=self.tree_item(modname,children=aroci+acpci)
-#             self.item_list.append(ti)
-#             for aitem in aroci+acpci:
-#                 ti=self.tree_item(aitem,depth=1,parent=modname)
-#                 self.item_list.append(ti)
-#         self.drawTree()
-#         return
-#     pass
 # Tool class defination;
 class AroMenu(estl.ToolBase,esui.MenuBtnDiv):
     ''' Menu to create Aro.
@@ -52,17 +36,17 @@ class AcpMenu(estl.ToolBase,esui.MenuBtnDiv):
     def onClkPopup(self,e):
         e.Skip()
         abbrclass=e.EventObject.label
-        if hasattr(ESC,abbrclass):
-            acpclass=getattr(ESC,abbrclass)
+        if hasattr(esc,abbrclass):
+            acpclass=getattr(esc,abbrclass)
         else:
             acpclass='mod.'+self.mod+'.'+abbrclass
         esui.UMR.MDL_DIV.addAcpNode(acpclass)
         return
     pass
 
-class RunSimBtn(estl.ToggleButton):
-    def __init__(self,parent,name,mod,**argkw):
-        super().__init__(parent,name,mod,**argkw)
+class RunSimBtn(esui.TglBtn):
+    def __init__(self,parent,**argkw):
+        super().__init__(parent,**argkw)
         self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
         return
 
@@ -170,6 +154,7 @@ class RealTimeText(esui.DivText):
     pass
 
 class ALibsBtn(estl.Button):
+    'todo'
     def __init__(self,name,parent,p,s,label):
         super().__init__(name,parent,p,s,label)
         self.show_lib=False
@@ -216,5 +201,19 @@ class WrkSpcBtn(estl.Button):
 
     def onClk(self,e):
         esui.toggleWorkspace()
+        return
+    pass
+
+class EnablePresetBtn(esui.TglBtn):
+    def __init__(self,parent,**argkw):
+        super().__init__(parent,**argkw)
+        self.Bind(wx.EVT_LEFT_DOWN,self.onClk)
+        return
+
+    def onClk(self,e):
+        e.Skip()
+        ESC.setSim({'flag_preset':self.getStatus()})
+        if ESC.isCoreReady():
+            esui.sendComEvt(esui.ETYPE_RUN_PRESET,target=esui.UMR.ESMW)
         return
     pass

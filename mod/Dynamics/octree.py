@@ -1,8 +1,8 @@
 # import os,sys
 import interval
 import numpy as np
-from core import ESC,esgl
-GLC=esgl.glc
+from core import ESC,esc,esgl
+GLC=esgl.GLC
 class OcTree(ESC.EsTree):
     def __init__(self):
         self.bound=100
@@ -48,7 +48,7 @@ class OcTree(ESC.EsTree):
         return pairs
     pass
 
-class OcTreeNode(ESC.TreeNode):
+class OcTreeNode(esc.TreeNode):
     def __init__(self,block,ntype='space'):
         super().__init__()
         self.type=ntype   # Emum for space/axis;

@@ -1,5 +1,6 @@
 import numpy as np
-import _glm as glm
+# import _glm as glm
+from . import glm
 from core import ESC,esgl
 
 class VtxLayout(object):
@@ -15,7 +16,7 @@ class VtxLayout(object):
     pass
 class Mesh(object):
     def __init__(self,**argkw):
-        ''' Para argkw: vertices/faces/edges/layout.'''
+        ''' Para argkw: vertices/faces/edges/layout/trans.'''
         self.id=argkw.get('id',0)
         self.name=argkw.get('name','')
         self.draw_type=argkw.get('draw_type',esgl.DT_TRI)
@@ -58,6 +59,10 @@ class DrawPart(object):
             vtx2=self.list_mesh[i].vertices[:,0:3]
             vtx=np.hstack((vtx,vtx2))
         return vtx
+
+    def clearMesh(self):
+        self.list_mesh.clear()
+        return
     pass
 
 class AroDrawPart(DrawPart):

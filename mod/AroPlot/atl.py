@@ -1,7 +1,7 @@
-import _glm as glm
 import numpy as np
 from core import ESC,esui,esgl,estl
-GLC=esgl.glc
+GLC=esgl.GLC
+glm=esgl.glm
 from .tdp import TdpXyzAxis,TdpGrid,TdpViewBall,TdpTrack
 class XyzAxisTool(estl.GLTool):
     def __init__(self):

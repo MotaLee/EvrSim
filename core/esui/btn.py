@@ -65,6 +65,7 @@ class Btn(wx.Button):
 # Select button wx sub class;
 class SltBtn(wx.ToggleButton):
     ''' Para argkw: tip/enable/exclusive/select/cn/tsize'''
+    'deco'
     def __init__(self,parent,p,s,label,**argkw):
         super().__init__(parent,pos=p,size=s,style=wx.NO_BORDER)
         self.option={'border':True,'ext':False}
@@ -149,11 +150,12 @@ class DivBtn(esui.Div):
         ''' Para:
             * Argkw enable: True default;'''
         super().__init__(parent, **argkw)
-        self._flag_enable=argkw.get('enable',True)
+        # self._flag_enable=argkw.get('enable',True)
+        self.setEnable(argkw.get('enable',True))
         self.updateStyle(
-            style={'bgc':esui.COLOR_BACK,'border':argkw['style'].get('border',esui.COLOR_FRONT)},
-            hover={'bgc':esui.COLOR_HOVER},
-            active={'bgc':esui.COLOR_FRONT,'text':esui.COLOR_BLACK})
+            style={'bgc':argkw['style'].get('bgc',esui.COLOR_BACK),
+                'border':argkw['style'].get('border',esui.COLOR_FRONT)},
+            hover={'bgc':esui.COLOR_HOVER})
         return
 
     def setEnable(self, flag: bool=None):
@@ -167,7 +169,7 @@ class DivBtn(esui.Div):
             if flag:
                 self.updateStyle(style={'text':esui.COLOR_TEXT})
             else:
-                self.updateStyle(style={'text':esui.COLOR_LBACK})
+                self.updateStyle(style={'text':esui.COLOR_HOVER})
         self.Refresh()
         return self._flag_enable
 
@@ -190,6 +192,7 @@ class TglBtn(DivBtn):
         super().__init__(parent, **argkw)
         self._flag_exclusive=argkw.get('exclusive',False)
         if argkw.get('select',False):self.setActive(True)
+        self.updateStyle(active={'bgc':esui.COLOR_FRONT,'text':esui.COLOR_BACK})
         return
 
     def _onClk(self,e):
@@ -200,4 +203,7 @@ class TglBtn(DivBtn):
                     ctrl.setActive(False)
         super()._onClk(e)
         return
+
+    def getStatus(self):
+        return self._flag_active
     pass

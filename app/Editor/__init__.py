@@ -5,10 +5,11 @@ ES_EDITOR_TITLE='EvrSim Editor'
 import wx
 # EvrSim libs;
 import EvrSim
-from core import esui,esgl,estl
+from core import esui,estl
 xu=esui.XU
 yu=esui.YU
 UMR=esui.UMR
+from core.esgl.gl_div import GLDiv
 # Editor main window;
 class EvrSimEditor(esui.EsWindow):
     def __init__(self,**argkw):
@@ -17,8 +18,9 @@ class EvrSimEditor(esui.EsWindow):
         UMR.HEAD_DIV=estl.HeadDiv(self)
         UMR.TOOL_DIV=estl.ToolDiv(self,style={'p':(0,4*yu),'s':(75*xu,21*yu)})
         UMR.CMD_DIV=estl.CmdDiv(self,style={'p':(0,4*yu),'s':(75*xu,21*yu)})
-        UMR.MAP_DIV=esgl.GLDiv(self,(0,25*yu),(75*xu,75*yu))
+        UMR.MAP_DIV=GLDiv(self,(0,25*yu),(75*xu,75*yu))
         estl.AroToolbar()
+        estl.MsgDiv(self,style={'p':(70*xu-yu,79*yu),'s':(30*xu,20*yu)})
         UMR.MDL_DIV=estl.MdlDiv(self,style={'p':(0,25*yu),'s':(75*xu,75*yu)})
         UMR.SIDE_DIV=estl.SideDiv(self,style={'p':(75*xu,4*yu),'s':(25*xu,96*yu)})
         WelDiv(self,style={'p':(self.Size.x/2-360,self.Size.y/2-225),'s':(720,450)})

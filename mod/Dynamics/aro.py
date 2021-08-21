@@ -1,10 +1,10 @@
 import numpy
 inf=numpy.inf
-from core import EvrSimCore
-from mod.AroCore import AroTargets,AroField
+from core import esc
+from mod.AroCore import AroField
 
 # Aro class defination;
-class MassPoint(EvrSimCore.Aro):
+class MassPoint(esc.Aro):
     ''' Addition Arove: velocity, force, mass;'''
     def __init__(self):
         super().__init__()
@@ -16,11 +16,12 @@ class MassPoint(EvrSimCore.Aro):
         return
     pass
 
-class RigidBody(EvrSimCore.AroNode):
+class RigidBody(esc.Aro):
     def __init__(self):
         super().__init__()
         self.mass=0
-        self.position=[0,0,0]   # Also Mass center;
+        self.position=[0,0,0]
+        self.center=[0,0,0]
         self.velocity=[0,0,0]
         self.agl_v=[0,0,0]
         self.force=[0,0,0]
@@ -31,7 +32,7 @@ class RigidBody(EvrSimCore.AroNode):
         return
     pass
 
-class PointForce(AroTargets):
+class PointForce(esc.Aro):
     def __init__(self):
         super().__init__()
         self.adp='mod.AroCore.AdpArrow'
@@ -42,7 +43,7 @@ class PointForce(AroTargets):
         return
     pass
 
-class Moment(AroTargets):
+class Moment(esc.Aro):
     def __init__(self):
         super().__init__()
         self.adp='DpMoment'
@@ -52,10 +53,9 @@ class Moment(AroTargets):
         return
     pass
 
-class Constraint(EvrSimCore.Aro):
+class Constraint(esc.Aro):
     def __init__(self):
         super().__init__()
-        self._flag['target']+=['master','servant','m_target','s_target']
         self.adp='AdpConstraint'
         self.position=[0,0,0]
         self.UXYZ=[0,0,0]
@@ -70,7 +70,7 @@ class Constraint(EvrSimCore.Aro):
 class Ground(RigidBody):
     def __init__(self):
         super().__init__()
-        self.addAroveFlag(enum='style')
+        self.addFlag(enum='style')
         self.adp='AdpGnd'
         self.mass=inf
         self.inertia=[inf,inf,inf]
@@ -104,6 +104,9 @@ class BodyCombo(RigidBody):
     def __init__(self):
         RigidBody.__init__(self)
         self.adp='AdpBC'
+        self.refs=-1
+        self.connections=-1
+        self.addFlag(link=['refs','connections'],hide=['refs','connections'])
         return
 
     def onAdd(self):
@@ -111,14 +114,41 @@ class BodyCombo(RigidBody):
         r=ESC.addAro(AroClass=ComboNode,AroName='Refs',parent=self.AroID)
         c=ESC.addAro(AroClass=ComboNode,AroName='Connections',parent=self.AroID)
         self.children=[r.AroID,c.AroID]
+        self.refs=r.AroID
+        self.connections=c.AroID
+        ESC.updateLink(self)
         return
     pass
-class ComboNode(EvrSimCore.AroNode):
+class ComboNode(esc.Aro):
     def __init__(self):
         super().__init__()
         self.icon={
             'normal':'res\img\Icon_model.png',
             'unfold':'res\img\Icon_model.png'}
-        self.addAroveFlag(uneditable='AroName',invisible='icon')
+        self.addFlag(lock='AroName',hide='icon')
+        return
+    pass
+
+class Beam2D(RigidBody):
+    def __init__(self):
+        super().__init__()
+        self.adp='AdpBeam2D'
+        self.radius=.2
+        self.length=2
+        self.color=[1,0,0]
+        self.ptf=[1,0,0]
+        self.pts=[-1,0,0]
+        return
+    pass
+
+class RefPoint(esc.Aro):
+    def __init__(self):
+        super().__init__()
+        self.adp='AdpRefPoint'
+        self.position=[0,0,0]
+        self.color=[1,0,0]
+        self.ref=-1
+        self.refattr=''
+        self.addFlag(link='ref')
         return
     pass

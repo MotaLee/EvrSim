@@ -1,7 +1,7 @@
-import _glm as glm
+# import _glm as glm
 import numpy as np
-import OpenGL.GL as gl
 from core import ESC,esgl
+glm=esgl.glm
 class AdpPoint(esgl.AroDrawPart):
     def __init__(self,aroid):
         super().__init__(aroid=aroid)

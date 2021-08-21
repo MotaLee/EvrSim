@@ -1,7 +1,7 @@
 import numpy as np
-from core import ESC
+from core import ESC,esc
 from mod.Dynamics import Constraint
-class IPE(ESC.AcpExecutor):
+class IPE(esc.AcpExecutor):
     def execute(self):
         joints=list()
         for aro in ESC.MAP_QUEUE[0].values():
@@ -62,12 +62,17 @@ class IPE(ESC.AcpExecutor):
                 servant.agl_v+=np.cross(rs,fp)/Is/ESC.fps
                 i+=1
 
-            ESC.setAro(master.AroID,**{'velocity':master.velocity.tolist(),'agl_v':master.agl_v.tolist()})
-            ESC.setAro(servant.AroID,**{'velocity':servant.velocity.tolist(),'agl_v':servant.agl_v.tolist()})
+            ESC.setAro(master.AroID,**{'velocity':list(master.velocity),'agl_v':list(master.agl_v)})
+            ESC.setAro(servant.AroID,**{'velocity':list(servant.velocity),'agl_v':list(servant.agl_v)})
         return
     pass
 
-# class CPE(ESC.AcpExecutor):
+class DPE(esc.AcpExecutor):
+    def execute(self):
+
+        return
+    pass
+# class CPE(esc.AcpExecutor):
 #     def __init__(self):
 #         super().__init__()
 #         self._octree=OcTree()

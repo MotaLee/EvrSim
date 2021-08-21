@@ -1,8 +1,8 @@
 'ESUI defination.'
 import wx
-cx,cy,cw,ch=wx.ClientDisplayRect()
-XU=cw/100
-YU=ch/100
+CX,CY,CW,CH=wx.ClientDisplayRect()
+XU=CW/100
+YU=CH/100
 COLOR_FRONT='#66ffcc'
 COLOR_BLACK='#000000'
 COLOR_BACK='#222222'
@@ -12,7 +12,6 @@ COLOR_HOVER='#555555'
 COLOR_DECRO='#996600'
 TEXT_FONT='Microsoft YaHei'
 
-STL_DFT={'p':(0,0),'s':(0,0),'bgc':COLOR_BACK}
 STL_BOX={'border':COLOR_FRONT}
 STL_FILL={'bgc':COLOR_FRONT}
 ICON={'normal':'res/img/aro.png'}
@@ -135,6 +134,10 @@ class UIManager(object):
                 cursor=wx.Cursor(img)
                 self.dict_cursor[path]=cursor
                 return cursor
+        return
+
+    def rebuildStyle(self):
+
         return
     pass
 UMR=UIManager()

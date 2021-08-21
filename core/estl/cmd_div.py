@@ -1,5 +1,5 @@
 import wx
-from core import ESC,esui
+from core import esui
 xu=esui.XU
 yu=esui.YU
 class CmdDiv(esui.Div):
@@ -13,15 +13,8 @@ class CmdDiv(esui.Div):
         self.comtxt.SetExtraStyle(wx.TE_PROCESS_ENTER)
         self.Bind(esui.EBIND_COMEVT,self.onComEvt)
         self.comtxt.Bind(wx.EVT_TEXT_ENTER,self.onCmd)
-        # self._err=ESC.err
-        ESC.err=self.err
 
         self.Hide()
-        return
-
-    def err(self,bugstr,report=False):
-        esui.sendComEvt(esui.ETYPE_OPEN_CMD)
-        self.histxt.appendText(bugstr+'\n')
         return
 
     def onComEvt(self,e):
@@ -36,6 +29,7 @@ class CmdDiv(esui.Div):
 
     def onCmd(self,e):
         self.histxt.appendText('EvrSim>>'+e.String+'\n')
+        'todo: command'
         self.histxt.Refresh()
         return
 

@@ -1,6 +1,6 @@
 import wx
 from core import ESC,esui,esgl
-GLC=esgl.glc
+GLC=esgl.GLC
 yu=esui.YU
 xu=esui.XU
 
@@ -81,7 +81,7 @@ class Input(esui.InputText,ToolBase):
 
 from .tool_div import ToolDiv,ModTab
 from .aro_toolbar import AroToolbar
-
+from .msg_div import MsgDiv
 from .mdl_div import MdlDiv
 
 from .side_div import SideDiv

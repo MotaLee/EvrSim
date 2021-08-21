@@ -53,25 +53,32 @@ class InputText(esui.Div):
         hint=argkw.get('hint','')
         s=self.style['s']
         tsize=argkw.get('tsize',s[1]/2)
-        readonly=argkw.get('readonly',0)
-        if readonly:readonly=wx.TE_READONLY
+        self.flag_readonly=argkw.get('readonly',False)
+        if self.flag_readonly:
+            stl=wx.TE_READONLY
+            txt_color=esui.COLOR_HOVER
+        else:
+            stl=0
+            txt_color=esui.COLOR_TEXT
         self.input=wx.TextCtrl(self,pos=(1,1),
             size=(s[0]-2,s[1]-2),
-            style=wx.NO_BORDER | readonly)
+            style=wx.NO_BORDER | stl)
+        self.input.SetForegroundColour(txt_color)
         self.input.SetBackgroundColour(esui.COLOR_BACK)
-        self.input.SetForegroundColour(esui.COLOR_TEXT)
         self.input.SetFont(esui.ESFont(size=tsize))
         self.input.SetValue(hint)
 
         self.setValue=self.input.SetValue
         self.getValue=self.input.GetValue
+        self.appendText=self.input.AppendText
         self.input.Bind(wx.EVT_ERASE_BACKGROUND,lambda e: None)
         self.input.Bind(wx.EVT_ENTER_WINDOW,self.onEnterInput)
         self.input.Bind(wx.EVT_LEAVE_WINDOW,self.onLeaveInput)
         return
 
     def onEnterInput(self,e):
-        self.input.SetBackgroundColour(esui.COLOR_HOVER)
+        if not self.flag_readonly:
+            self.input.SetBackgroundColour(esui.COLOR_HOVER)
         e.Skip()
         return
 
@@ -80,6 +87,8 @@ class InputText(esui.Div):
         e.Skip()
         return
 
+    def isReadonly(self):
+        return self.HasExtraStyle(wx.TE_READONLY)
     pass
 
 # Multiline text ctrl;
@@ -115,6 +124,8 @@ class MultilineText(esui.ScrollDiv):
         if e.WheelRotation<0:self.mtc.PageDown()
         else:self.mtc.PageUp()
         return
+    def isReadonly(self):
+        return self.HasExtraStyle(wx.TE_READONLY)
     pass
 
 class DivText(esui.Div):
@@ -148,6 +159,6 @@ class TransText(esui.Div):
     def __init__(self,parent,**argkw):
         argkw['passing']=True
         super().__init__(parent,**argkw)
-        self.updateStyle(style={'bgc':''})
+        self.updateStyle(style={'bgc':'TRANSPARENT'})
         return
     pass
